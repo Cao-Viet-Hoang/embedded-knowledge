@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>B3 · Communication Stack — COM/PduR/Can* — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/style.css?v=4" />
+</head>
+<body data-page="B3" data-root="../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">B3</span>
+            <span class="badge badge--core">Core</span>
+            <span class="chip">AUTOSAR — Module (đào sâu)</span>
+          </div>
+          <h1>Communication Stack (CAN)</h1>
+          <p class="lead">Từ <strong>signal</strong> của app xuống <strong>bit trên bus</strong>: COM (signal↔PDU) → PduR (route) → CanIf (abstraction) → Can (MCAL) → bus; cộng CanTp (segment), CanSM (state + bus-off), CanNm (sleep/wakeup mạng), ComM (điều phối). Mỗi module một mục đầy đủ.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> 🟠 Core</span>
+            <span><b>Gắn:</b> CAN/UDS (bài <a href="E-protocols.html">E</a>), Diag (<a href="B4-diagnostics.html">B4</a>)</span>
+            <span><b>Tổng quan:</b> bài <a href="B-autosar.html">B</a></span>
+          </div>
+        </div>
+
+        <div class="callout callout--note">
+          <div class="callout__icon">📌</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Nguồn:</strong> tên module/API/PDU đối chiếu <strong>AUTOSAR Classic SWS</strong> (Com, PduR, CanIf, CanTp, CanSM, CanNm, ComM) &amp; <strong>ISO 15765-2</strong> (CAN-TP) — xem cuối bài. Lớp protocol CAN/UDS ở bài <a href="E-protocols.html">E</a>.</p>
+          </div>
+        </div>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 250" role="img" aria-label="Luồng dữ liệu communication stack" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="cf1" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="20" y="20" width="120" height="40" rx="7" fill="var(--brand-800)"/><text x="80" y="38" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">SWC / RTE</text><text x="80" y="52" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">signal</text>
+            <rect x="20" y="86" width="120" height="40" rx="7" fill="var(--brand-600)"/><text x="80" y="104" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">COM</text><text x="80" y="118" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">signal↔I-PDU</text>
+            <rect x="20" y="152" width="120" height="40" rx="7" fill="var(--brand-600)"/><text x="80" y="170" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">PduR</text><text x="80" y="184" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">route PDU</text>
+            <rect x="300" y="152" width="120" height="40" rx="7" fill="var(--brand-400)"/><text x="360" y="170" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">CanIf</text><text x="360" y="184" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">L-PDU↔I-PDU</text>
+            <rect x="300" y="206" width="120" height="36" rx="7" fill="var(--brand-900)"/><text x="360" y="228" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Can (MCAL)</text>
+            <rect x="470" y="206" width="120" height="36" rx="7" fill="var(--core)"/><text x="530" y="228" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">CAN bus</text>
+            <rect x="300" y="86" width="120" height="40" rx="7" fill="var(--surface)" class="dgm-layer"/><text x="360" y="104" text-anchor="middle" class="dgm-text" font-size="10.5">CanTp</text><text x="360" y="118" text-anchor="middle" class="dgm-sub" font-size="8.5">segment >8B</text>
+            <rect x="470" y="86" width="120" height="40" rx="7" fill="var(--surface)" class="dgm-layer"/><text x="530" y="104" text-anchor="middle" class="dgm-text" font-size="10.5">Dcm (diag)</text>
+            <rect x="470" y="20" width="230" height="40" rx="7" fill="var(--surface-2)" class="dgm-layer"/><text x="585" y="38" text-anchor="middle" class="dgm-label" font-size="10" font-weight="700">Control: ComM · CanSM · CanNm</text><text x="585" y="52" text-anchor="middle" class="dgm-sub" font-size="8.5">mode · bus-off · sleep/wakeup</text>
+            <line x1="80" y1="60" x2="80" y2="84" class="dgm-arrow" stroke-width="1.3" marker-end="url(#cf1)"/><line x1="80" y1="84" x2="80" y2="62" class="dgm-arrow" stroke-width="1.3" marker-end="url(#cf1)"/>
+            <line x1="80" y1="126" x2="80" y2="150" class="dgm-arrow" stroke-width="1.3" marker-end="url(#cf1)"/>
+            <line x1="140" y1="172" x2="298" y2="172" class="dgm-arrow" stroke-width="1.4" marker-end="url(#cf1)"/>
+            <line x1="360" y1="152" x2="360" y2="128" class="dgm-arrow" stroke-width="1.3" marker-end="url(#cf1)"/>
+            <line x1="360" y1="192" x2="360" y2="204" class="dgm-arrow" stroke-width="1.4" marker-end="url(#cf1)"/>
+            <line x1="420" y1="224" x2="468" y2="224" class="dgm-arrow" stroke-width="1.4" marker-end="url(#cf1)"/>
+            <line x1="420" y1="106" x2="468" y2="106" class="dgm-arrow" stroke-width="1.3" marker-end="url(#cf1)"/>
+          </svg>
+          <div class="figure__cap"><b>Luồng dữ liệu.</b> Tín hiệu app: COM↔PduR↔CanIf↔Can↔bus. Gói lớn (diag) đi nhánh CanTp↔Dcm. Mặt điều khiển ComM/CanSM/CanNm lo mode, bus-off, sleep/wakeup.</div>
+        </div>
+
+        <!-- ================= COM ================= -->
+        <h2>1. COM (Communication Services)</h2>
+        <p><strong>Vai trò:</strong> cầu nối giữa RTE (signal) và lớp PDU — <em>đóng gói</em> signal vào I-PDU lúc gửi, <em>giải gói</em> lúc nhận, kèm giám sát thời hạn.</p>
+        <h3>1.1 Khái niệm cốt lõi</h3>
+        <dl class="kv">
+          <dt>Signal ↔ I-PDU (packing)</dt><dd>Nhiều <strong>signal</strong> (vd tốc độ 16-bit, cờ 1-bit) được <em>pack</em> vào một <strong>I-PDU</strong> (gói dữ liệu, vd 8 byte) theo vị trí bit cấu hình; phía Rx unpack ngược lại cho RTE. COM lo bố trí bit, không lo bus.</dd>
+          <dt>Byte order &amp; bit position</dt><dd>Mỗi signal có <strong>start bit</strong>, <strong>bit size</strong>, <strong>endianness</strong> (big/little). <em>Sai endianness</em> giữa hai ECU là lỗi tích hợp <strong>kinh điển</strong> (giá trị đảo byte) — thường lộ khi test integration.</dd>
+          <dt>Transmission mode</dt><dd><strong>CYCLIC</strong> (gửi định kỳ), <strong>DIRECT/event</strong> (gửi khi signal đổi/được trigger), <strong>MIXED</strong> (cả hai). <strong>TMS</strong> (Transmission Mode Selector) đổi mode runtime theo điều kiện (vd chỉ gửi nhanh khi có sự kiện).</dd>
+          <dt>Minimum delay time</dt><dd>Khoảng tối thiểu giữa 2 lần gửi cùng I-PDU → chống “spam” bus khi signal đổi liên tục.</dd>
+          <dt>Deadline monitoring (Rx)</dt><dd>Nếu một I-PDU/signal <strong>không tới đúng hạn</strong> (timeout) → COM thay bằng <em>init/replacement value</em> &amp; gọi notification → app biết mất gói (vd cảm biến mất tín hiệu). Đây là cơ chế phát hiện lỗi giao tiếp ở mức signal.</dd>
+          <dt>Update bit</dt><dd>Một bit kèm signal báo “signal này có dữ liệu mới trong PDU lần này không” → phía Rx phân biệt giá trị mới vs giá trị cũ lặp lại.</dd>
+          <dt>Signal gateway</dt><dd>COM (cùng PduR) có thể <em>route signal</em> giữa các bus mà không cần lên app (gateway tín hiệu).</dd>
+          <dt>MainFunction Tx/Rx</dt><dd><code>Com_MainFunctionTx</code> xử lý gửi cyclic &amp; minimum delay; <code>Com_MainFunctionRx</code> xử lý deadline monitoring. <code>Com_IpduGroup</code> bật/tắt nhóm PDU (vd tắt giao tiếp khi sleep).</dd>
+        </dl>
+        <p class="small text-mute"><strong>API:</strong> <code>Com_SendSignal</code>/<code>Com_ReceiveSignal</code>/<code>Com_TriggerIPDUSend</code>/<code>Com_MainFunctionTx</code>/<code>Rx</code>/<code>Com_IpduGroupControl</code>. <strong>Bẫy:</strong> sai endianness/start-bit; thiếu update bit gây hiểu nhầm giá trị; deadline quá chặt/lỏng.</p>
+
+        <!-- ================= PduR ================= -->
+        <h2>2. PduR (PDU Router)</h2>
+        <p><strong>Vai trò:</strong> định tuyến PDU giữa các module (COM, Dcm, CanIf, CanTp, IpduM) theo <strong>bảng routing tĩnh</strong> — “tổng đài” của stack.</p>
+        <dl class="kv">
+          <dt>Routing path table</dt><dd>Bảng tĩnh (cấu hình) ánh xạ <em>nguồn PDU → đích PDU</em>. PduR chỉ chuyển tiếp theo bảng, không hiểu nội dung. Có thể <strong>multicast</strong> (một PDU tới nhiều đích).</dd>
+          <dt>IF routing vs TP routing</dt><dd><strong>IF</strong> (Interface) routing: PDU vừa một frame, chuyển một phát (COM↔CanIf). <strong>TP</strong> (Transport) routing: PDU lớn cần phân mảnh, đi qua CanTp (Dcm↔CanTp↔CanIf). PduR phân biệt hai loại.</dd>
+          <dt>Gateway</dt><dd>Route PDU <strong>bus ↔ bus</strong> (vd CAN1↔CAN2) <em>không lên tới app</em> — ECU gateway dùng nhiều; có thể gateway-on-the-fly (chuyển từng phần khi nhận).</dd>
+        </dl>
+        <p class="small text-mute"><strong>API:</strong> <code>PduR_ComTransmit</code>/<code>PduR_DcmTransmit</code>/<code>PduR_CanIfRxIndication</code>/<code>PduR_CanIfTxConfirmation</code>. <strong>Bẫy:</strong> routing path cấu hình thiếu/sai đích.</p>
+
+        <!-- ================= CanIf ================= -->
+        <h2>3. CanIf (CAN Interface)</h2>
+        <p><strong>Vai trò:</strong> lớp ECU Abstraction giữa PduR/COM/CanTp/CanNm và <strong>CAN driver (MCAL)</strong> — che chi tiết controller, ánh xạ PDU↔mailbox HW.</p>
+        <dl class="kv">
+          <dt>L-PDU ↔ I-PDU + HRH/HTH</dt><dd>CanIf ánh xạ giữa <em>I-PDU</em> (lớp trên) và <em>L-PDU</em> (CAN frame có CAN ID + DLC). <strong>HRH</strong> (Hardware Receive Handle) &amp; <strong>HTH</strong> (Hardware Transmit Handle) = tham chiếu tới mailbox/hardware object của controller cho Rx/Tx.</dd>
+          <dt>Controller mode</dt><dd>STARTED / STOPPED / SLEEP. CanIf đổi mode controller (qua Can driver) theo yêu cầu CanSM. STOPPED không tham gia bus.</dd>
+          <dt>PDU mode</dt><dd>ONLINE/OFFLINE (và OFFLINE_ACTIVE): kiểm soát có cho phép Tx/Rx PDU không — vd tắt Tx khi đang vào bus-off recovery.</dd>
+          <dt>Tx buffer</dt><dd>Khi mailbox HW bận, CanIf <strong>đệm</strong> PDU Tx (theo PDU hoặc theo độ ưu tiên) rồi gửi khi rảnh → tránh mất frame; quản lý thứ tự/ưu tiên.</dd>
+          <dt>Software filtering</dt><dd>Nếu HW không lọc đủ, CanIf lọc <em>CAN ID</em> ở phần mềm để chỉ nhận PDU quan tâm.</dd>
+        </dl>
+        <p class="small text-mute"><strong>API:</strong> <code>CanIf_Transmit</code>/<code>CanIf_RxIndication</code>/<code>CanIf_TxConfirmation</code>/<code>CanIf_SetControllerMode</code>/<code>CanIf_SetPduMode</code>.</p>
+
+        <!-- ================= CanTp ================= -->
+        <h2>4. CanTp (Transport — ISO 15765-2)</h2>
+        <p><strong>Vai trò:</strong> truyền gói <em>lớn hơn một CAN frame</em> (CAN cổ điển ≤8 byte; CAN FD ≤64) bằng cách phân mảnh — nền cho UDS qua CAN.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 200" role="img" aria-label="CanTp segmentation và flow control" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="ct1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="40" y="14" width="180" height="34" rx="7" fill="var(--brand-600)"/><text x="130" y="35" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Sender</text>
+            <rect x="500" y="14" width="180" height="34" rx="7" fill="var(--defend)"/><text x="590" y="35" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Receiver</text>
+            <line x1="130" y1="48" x2="130" y2="190" stroke="var(--border-strong)" stroke-width="1.4"/>
+            <line x1="590" y1="48" x2="590" y2="190" stroke="var(--border-strong)" stroke-width="1.4"/>
+            <line x1="130" y1="72" x2="586" y2="72" class="dgm-arrow" stroke-width="1.4" marker-end="url(#ct1)"/><text x="360" y="66" text-anchor="middle" class="dgm-mono" font-size="10">FF — First Frame (12 bit length)</text>
+            <line x1="590" y1="102" x2="134" y2="102" class="dgm-arrow" stroke-width="1.4" marker-end="url(#ct1)"/><text x="360" y="96" text-anchor="middle" class="dgm-mono" font-size="10">FC — Flow Control (CTS · BS · STmin)</text>
+            <line x1="130" y1="130" x2="586" y2="130" class="dgm-arrow" stroke-width="1.4" marker-end="url(#ct1)"/><text x="360" y="124" text-anchor="middle" class="dgm-mono" font-size="10">CF — Consecutive Frame ×BS (cách nhau STmin)</text>
+            <line x1="130" y1="158" x2="586" y2="158" class="dgm-arrow" stroke-width="1.4" marker-end="url(#ct1)" stroke-dasharray="4 3"/><text x="360" y="152" text-anchor="middle" class="dgm-mono" font-size="10">… (FC kế nếu còn block) … CF cuối</text>
+            <text x="360" y="186" text-anchor="middle" class="dgm-sub" font-size="9.5">Gói nhỏ (≤7 byte) đi gọn trong 1 Single Frame (SF) — không cần FF/FC</text>
+          </svg>
+          <div class="figure__cap"><b>CanTp (ISO-TP).</b> SF cho gói nhỏ; gói lớn = FF → receiver gửi FC (CTS + block size + STmin) → sender gửi CF theo block, cách nhau STmin.</div>
+        </div>
+
+        <dl class="kv">
+          <dt>4 loại frame</dt><dd><strong>SF</strong> (Single Frame): gói ≤7 byte (CAN cổ điển) trong một frame. <strong>FF</strong> (First Frame): frame đầu gói lớn, chứa <em>tổng độ dài</em> (12-bit, hoặc 32-bit escape cho gói rất lớn). <strong>CF</strong> (Consecutive Frame): các frame tiếp theo mang data, có <em>sequence number</em>. <strong>FC</strong> (Flow Control): receiver điều khiển sender.</dd>
+          <dt>Flow Status (FC)</dt><dd><strong>CTS</strong> (Clear To Send — cho gửi tiếp), <strong>WAIT</strong> (chờ, receiver bận), <strong>OVFLW</strong> (overflow — buffer receiver không đủ, huỷ). Cơ chế back-pressure để receiver không bị tràn.</dd>
+          <dt>Block Size (BS)</dt><dd>Số CF receiver cho phép gửi <em>trước khi cần một FC mới</em>. BS=0 = gửi hết không cần FC giữa chừng. Điều tiết theo khả năng nhận.</dd>
+          <dt>STmin (Separation Time)</dt><dd>Khoảng cách <em>tối thiểu giữa 2 CF</em> mà receiver yêu cầu (vd 0–127 ms, hoặc 100–900 µs mã hoá riêng) → cho receiver kịp xử lý. Sender phải tôn trọng.</dd>
+          <dt>Timing N_As/N_Ar/N_Bs/N_Cr</dt><dd>Các timeout chuẩn ISO 15765-2: N_As/N_Ar (thời gian gửi một frame Tx/Rx), N_Bs (sender chờ FC), N_Cr (receiver chờ CF). Quá hạn → abort + báo lỗi.</dd>
+          <dt>Padding</dt><dd>Frame chưa đủ 8 (hoặc DLC cố định) được pad (vd 0xCC/0x00) — phải khớp giữa hai bên.</dd>
+        </dl>
+        <p class="small text-mute"><strong>API:</strong> <code>CanTp_Transmit</code>/<code>CanTp_RxIndication</code>; <code>CanTp_MainFunction</code>. Dùng cho <strong>UDS</strong> (request/response &gt;7 byte) — bài <a href="E-protocols.html">E</a> &amp; <a href="B4-diagnostics.html">B4</a>.</p>
+
+        <!-- ================= CanSM ================= -->
+        <h2>5. CanSM (CAN State Manager)</h2>
+        <p><strong>Vai trò:</strong> quản lý <em>trạng thái giao tiếp</em> của một network &amp; xử lý <strong>bus-off recovery</strong>.</p>
+        <dl class="kv">
+          <dt>Communication state</dt><dd><strong>FULL_COM</strong> (Tx+Rx bình thường), <strong>SILENT_COM</strong> (chỉ nghe, không gửi — chuẩn bị ngủ), <strong>NO_COM</strong> (ngắt giao tiếp/controller STOPPED). CanSM đổi state theo yêu cầu ComM.</dd>
+          <dt>Bus-off recovery</dt><dd>Khi controller vào <em>bus-off</em> (TEC&gt;255), CanSM nhận thông báo → <strong>chờ một khoảng (cấu hình) rồi restart</strong> controller. Mục đích: tránh node lỗi liên tục restart phá bus; có thể giới hạn số lần recovery rồi escalate. (Cơ chế bus-off ở phần CAN, bài <a href="E-protocols.html">E</a> &amp; <a href="B-autosar.html">B</a>: phục hồi sau 128×11 bit recessive.)</dd>
+          <dt>Phối hợp</dt><dd>CanSM điều phối CanIf (controller/PDU mode) + CanNm (sleep) + báo ComM. Là “bộ não trạng thái” của một network CAN.</dd>
+        </dl>
+        <p class="small text-mute"><strong>API:</strong> <code>CanSM_RequestComMode</code>/<code>CanSM_GetCurrentComMode</code>/<code>CanSM_ControllerBusOff</code>.</p>
+
+        <!-- ================= CanNm ================= -->
+        <h2>6. CanNm (Network Management)</h2>
+        <p><strong>Vai trò:</strong> phối hợp <strong>sleep/wakeup toàn mạng</strong> — để cả mạng ngủ đồng bộ (tiết kiệm điện) &amp; thức cùng nhau, bằng cách trao đổi NM-PDU.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 170" role="img" aria-label="CanNm state machine" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="nm1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="20" y="60" width="150" height="48" rx="9" fill="var(--brand-600)"/><text x="95" y="80" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Repeat Message</text><text x="95" y="96" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">phát NM-PDU dồn</text>
+            <line x1="170" y1="84" x2="206" y2="84" class="dgm-arrow" stroke-width="1.4" marker-end="url(#nm1)"/>
+            <rect x="208" y="60" width="150" height="48" rx="9" fill="var(--brand-800)"/><text x="283" y="80" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Normal Operation</text><text x="283" y="96" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">network requested</text>
+            <line x1="358" y1="84" x2="394" y2="84" class="dgm-arrow" stroke-width="1.4" marker-end="url(#nm1)"/><text x="376" y="76" text-anchor="middle" class="dgm-sub" font-size="8">release</text>
+            <rect x="396" y="60" width="150" height="48" rx="9" fill="var(--brand-400)"/><text x="471" y="80" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Ready Sleep</text><text x="471" y="96" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">không còn ai cần</text>
+            <line x1="546" y1="84" x2="582" y2="84" class="dgm-arrow" stroke-width="1.4" marker-end="url(#nm1)"/>
+            <rect x="584" y="60" width="116" height="48" rx="9" fill="var(--brand-900)"/><text x="642" y="80" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Bus Sleep</text><text x="642" y="96" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">ngủ</text>
+            <path d="M471,108 q0,34 -188,34 q-188,0 -188,-30" fill="none" class="dgm-arrow" stroke-width="1.3" marker-end="url(#nm1)"/><text x="283" y="158" text-anchor="middle" class="dgm-sub" font-size="9">NetworkRequest / nhận NM-PDU → thức lại</text>
+          </svg>
+          <div class="figure__cap"><b>CanNm states.</b> Có yêu cầu → Repeat Message → Normal Operation; hết yêu cầu → Ready Sleep → Bus Sleep. Bất kỳ NM-PDU/NetworkRequest nào kéo cả mạng thức lại.</div>
+        </div>
+
+        <dl class="kv">
+          <dt>NM-PDU</dt><dd>Bản tin NM định kỳ mỗi node phát để báo “tôi còn cần mạng”. Còn ai phát/nhận NM-PDU → mạng giữ thức; im lặng đủ lâu → cả mạng đồng thuận ngủ.</dd>
+          <dt>4 trạng thái</dt><dd><strong>Repeat Message</strong> (phát dồn NM-PDU để đồng bộ khi mới thức), <strong>Normal Operation</strong> (đang dùng mạng), <strong>Ready Sleep</strong> (không còn ai cần, chờ timeout), <strong>Bus Sleep</strong> (ngủ). Chuyển bằng <code>CanNm_NetworkRequest</code>/<code>NetworkRelease</code> &amp; timeout.</dd>
+          <dt>Coordinator</dt><dd>Khi ECU nối nhiều mạng, NM coordinator đồng bộ để các mạng ngủ/thức nhất quán (không để một mạng ngủ trong khi mạng kia còn dùng gateway).</dd>
+        </dl>
+        <p class="small text-mute"><strong>API:</strong> <code>CanNm_NetworkRequest</code>/<code>NetworkRelease</code>/<code>PassiveStartUp</code>.</p>
+
+        <!-- ================= ComM ================= -->
+        <h2>7. ComM (Communication Manager)</h2>
+        <p><strong>Vai trò:</strong> gom yêu cầu “cần giao tiếp” từ nhiều <em>user</em> (app, Dcm, Nm) và quyết định <strong>mode</strong> cho từng channel, rồi điều phối CanSM/Nm.</p>
+        <dl class="kv">
+          <dt>User &amp; mode</dt><dd>Mỗi user gọi <code>ComM_RequestComMode</code>. ComM lấy <em>mức cao nhất</em> trong các yêu cầu: <strong>FULL_COMMUNICATION</strong> (cần Tx+Rx), <strong>SILENT_COMMUNICATION</strong> (chỉ nghe), <strong>NO_COMMUNICATION</strong> (cho phép ngủ). Mạng chỉ ngủ khi <em>không user nào</em> còn cần.</dd>
+          <dt>Điều phối</dt><dd>ComM dịch mode thành lệnh cho <strong>CanSM</strong> (đổi communication state) &amp; <strong>Nm</strong> (request/release network) — là “công tắc tổng” của giao tiếp một channel.</dd>
+          <dt>Channel</dt><dd>Quản lý theo từng <em>communication channel</em> (network); một ECU nhiều channel độc lập.</dd>
+        </dl>
+        <p class="small text-mute"><strong>API:</strong> <code>ComM_RequestComMode</code>/<code>ComM_GetCurrentComMode</code>. <strong>Nhắc:</strong> <strong>SecOC</strong> (MAC+freshness, bài <a href="B-autosar.html">B</a>), <strong>IpduM</strong> (multiplex nhiều PDU vào một), <strong>LdCom</strong> (large data, ít overhead) cũng trong nhóm communication.</p>
+
+        <!-- ================= Trước -> Nay ================= -->
+        <h2>8. Trước (~2020) → Nay</h2>
+        <div class="evo">
+          <div class="evo__head">🌐 <span>Communication stack: Ethernet, security, SDV</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>CAN stack (CanIf/CanTp/CanSM/CanNm) là trung tâm; UDS-on-CAN.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p>Thêm stack <strong>Ethernet</strong> (EthIf/SoAd/SOME-IP/DoIP) song song; <strong>SecOC</strong> bắt buộc trên PDU nhạy; CAN FD/XL; <strong>UDS-on-IP (DoIP)</strong>; PduR route đa-bus cho zonal/SDV.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> nói được “PduR là tổng đài route giữa CAN/Ethernet, CanTp cho diag-on-CAN còn DoIP cho diag-on-IP” cho thấy bạn hiểu kiến trúc mạng hiện đại.</div>
+        </div>
+
+        <!-- ================= Q&A ================= -->
+        <h2>9. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">Một signal đi từ app xuống bus qua những module nào? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">RTE → <strong>COM</strong> (pack signal↔I-PDU) → <strong>PduR</strong> (route) → <strong>CanIf</strong> (I-PDU↔L-PDU, HTH) → <strong>Can</strong> (MCAL, mailbox) → bus. Chiều Rx ngược lại. Gói lớn (diag) đi nhánh <strong>CanTp</strong> (segment) ↔ Dcm. Mặt điều khiển: ComM/CanSM/CanNm.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>HRH/HTH là gì?</li><li>IF routing vs TP routing?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">CanTp phân mảnh thế nào? Flow control, block size, STmin là gì? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Gói ≤7 byte = <strong>SF</strong>. Gói lớn: <strong>FF</strong> (có tổng độ dài) → receiver gửi <strong>FC</strong> (<em>CTS/WAIT/OVFLW</em> + <strong>block size BS</strong> + <strong>STmin</strong>) → sender gửi <strong>CF</strong> theo block, cách nhau ≥STmin. BS = số CF trước khi cần FC mới; STmin = khoảng tối thiểu giữa 2 CF. Timeout N_Bs/N_Cr bảo vệ. Dùng cho UDS.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>OVFLW xảy ra khi nào?</li><li>BS=0 nghĩa là gì?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Bus-off recovery do ai xử lý? CanSM làm gì? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Controller vào bus-off (TEC&gt;255) → báo <strong>CanSM</strong> → CanSM <strong>chờ một khoảng rồi restart</strong> controller (qua CanIf), có thể giới hạn số lần rồi escalate. Mục đích: tránh node lỗi liên tục phá bus. CanSM cũng quản lý FULL/SILENT/NO_COM theo yêu cầu ComM.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Vì sao cần delay trước restart?</li><li>SILENT_COM dùng khi nào?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Cả mạng ngủ/thức đồng bộ nhờ gì? ComM &amp; CanNm phối hợp ra sao? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>ComM</strong> gom yêu cầu user → nếu không ai cần FULL/SILENT thì cho NO_COM. <strong>CanNm</strong> trao đổi <strong>NM-PDU</strong>: còn ai phát/nhận → mạng thức; im đủ lâu (Ready Sleep timeout) → Bus Sleep. Bất kỳ NetworkRequest/NM-PDU nào kéo cả mạng thức lại. Coordinator đồng bộ nhiều mạng.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>4 trạng thái CanNm?</li><li>Repeat Message để làm gì?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Một signal nhận sai giá trị — bạn debug từ đâu? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Soi từ dưới lên: bus (CANoe/oscilloscope) → CAN ID/DLC đúng PDU? → CanIf mapping (HRH) → PduR routing → COM <strong>signal packing</strong> (start bit/bit size/<strong>endianness</strong> — lỗi kinh điển) → update bit/deadline monitoring (có thay bằng replacement value không). Dùng TRACE32 soi buffer PDU, đối chiếu ARXML.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Deadline monitoring ảnh hưởng giá trị thế nào?</li></ul></div>
+          </div></div>
+        </div>
+
+        <!-- ================= Cheat-sheet ================= -->
+        <h2>10. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>Luồng</h4><ul>
+            <li>COM↔PduR↔CanIf↔Can↔bus</li>
+            <li>Diag: Dcm↔CanTp↔PduR↔CanIf</li>
+            <li>Control: ComM/CanSM/CanNm</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>COM</h4><ul>
+            <li>Signal↔I-PDU (start bit/size/endianness)</li>
+            <li>Tx mode: cyclic/direct/mixed + TMS</li>
+            <li>Deadline monitoring → replacement value</li>
+            <li>Update bit · MainFunctionTx/Rx</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>PduR / CanIf</h4><ul>
+            <li>PduR: routing table, gateway, IF vs TP</li>
+            <li>CanIf: L-PDU↔I-PDU, HRH/HTH</li>
+            <li>Controller/PDU mode, Tx buffer</li>
+            <li>Software filtering</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>CanTp (ISO 15765-2)</h4><ul>
+            <li>SF / FF / CF / FC</li>
+            <li>FC: CTS/WAIT/OVFLW</li>
+            <li>Block size BS · STmin</li>
+            <li>N_Bs/N_Cr timeout · cho UDS</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>CanSM / CanNm</h4><ul>
+            <li>CanSM: FULL/SILENT/NO_COM + bus-off recovery</li>
+            <li>CanNm: NM-PDU đồng bộ ngủ/thức</li>
+            <li>States: RepeatMsg/Normal/ReadySleep/BusSleep</li>
+            <li>Coordinator đa mạng</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>ComM / nay</h4><ul>
+            <li>ComM: FULL/SILENT/NO_COMMUNICATION</li>
+            <li>Gom user → CanSM/Nm</li>
+            <li>SecOC/IpduM/LdCom</li>
+            <li>Nay: Ethernet/SOME-IP/DoIP song song</li>
+          </ul></div>
+        </div>
+
+        <!-- ================= Sources ================= -->
+        <h2>11. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li>AUTOSAR Classic SWS — <strong>Com</strong>, <strong>PduR</strong>, <strong>CanIf</strong>, <strong>CanTp</strong>, <strong>CanSM</strong>, <strong>CanNm</strong>, <strong>ComM</strong>.</li>
+          <li><strong>ISO 15765-2</strong> (CAN Transport Protocol — SF/FF/CF/FC, BS, STmin); ISO 11898 (CAN).</li>
+          <li>Vector / AUTOSAR Compendium — <a href="https://www.ar-compendium.com/" target="_blank" rel="noopener">communication stack</a>; CAN-TP tutorials.</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi vẽ được luồng COM→Can, giải thích CanTp (SF/FF/CF/FC, BS/STmin), bus-off recovery &amp; CanNm sleep.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">
+        Chủ đề B3 · Communication Stack — Interview Prep
+      </footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../assets/js/app.js?v=4"></script>
+</body>
+</html>

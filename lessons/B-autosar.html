@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>B · AUTOSAR Classic &amp; Adaptive — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/style.css?v=4" />
+</head>
+<body data-page="B" data-root="../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">B</span>
+            <span class="badge badge--must">Must-tell</span>
+            <span class="chip">Vòng 1–2 · Core của 4 năm</span>
+          </div>
+          <h1>AUTOSAR — Classic &amp; Adaptive</h1>
+          <p class="lead">Đây là <strong>lõi</strong> của 4 năm kinh nghiệm. Interviewer chắc chắn đào kiến trúc tầng, BSW/MCAL bạn integrate, RTE, vòng đời tích hợp, và câu kinh điển <em>“so sánh Classic vs Adaptive”</em>. Bài này đi <strong>sâu cơ chế thật</strong> (không dừng ở khái niệm) để bạn bảo vệ được khi bị hỏi dồn, kèm phần <strong>kiến thức cập nhật 2025–2026</strong>.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> 🔴 Cao</span>
+            <span><b>Việc thật:</b> CUBAS integrator, test MCAL/BSW trên RH850, system test ARA</span>
+            <span><b>Câu kinh điển:</b> Classic vs Adaptive</span>
+          </div>
+        </div>
+
+        <div class="callout callout--note">
+          <div class="callout__icon">📚</div>
+          <div class="callout__body">
+            <div class="callout__title">AUTOSAR là gì (một câu để mở màn)</div>
+            <p class="mb-0"><strong>AUTOSAR</strong> (AUTomotive Open System ARchitecture) là chuẩn kiến trúc phần mềm ô tô do consortium các OEM/Tier-1 lập ra, <strong>tách application khỏi hardware</strong> qua các lớp trừu tượng chuẩn hoá và mô tả cấu hình bằng <strong>ARXML</strong>, để phần mềm <em>tái sử dụng</em> và <em>di chuyển</em> giữa ECU/nhà cung cấp khác nhau. Hiện có hai nền tảng: <strong>Classic Platform (CP)</strong> cho điều khiển real-time và <strong>Adaptive Platform (AP)</strong> cho tính toán hiệu năng cao, dùng chung tầng <strong>Foundation</strong> (định nghĩa chung: protocol, methodology, requirements).</p>
+          </div>
+        </div>
+
+        <div class="callout callout--tip">
+          <div class="callout__icon">🚗</div>
+          <div class="callout__body">
+            <div class="callout__title">Bối cảnh hiện nay: Software-Defined Vehicle (SDV)</div>
+            <p class="mb-0">Xe hiện đại chuyển từ <em>nhiều ECU nhỏ phân tán</em> sang <strong>kiến trúc zonal + vài High-Performance Computer (HPC)</strong>. AUTOSAR là một mảnh trong bức tranh đó: <strong>Classic</strong> chạy trên MCU vùng/actuator, <strong>Adaptive</strong> chạy trên HPC (ADAS/AD, infotainment) và nói chuyện service-oriented qua Ethernet. Nắm được câu chuyện SDV giúp bạn trả lời “AUTOSAR đi về đâu” — câu interviewer hay hỏi để test độ cập nhật.</p>
+          </div>
+        </div>
+
+        <!-- ============ PART 1: CLASSIC ============ -->
+        <h2>1. AUTOSAR Classic — kiến trúc tầng</h2>
+        <p>Classic Platform chạy trên MCU (thường không MMU), <strong>RTOS tĩnh, real-time</strong> (AUTOSAR OS, gốc OSEK/VDX), giao tiếp <strong>signal-oriented</strong> với liên kết cố định lúc build. Kiến trúc gồm các lớp xếp chồng; mỗi lớp chỉ phụ thuộc lớp ngay dưới qua API chuẩn:</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 432" role="img" aria-label="Kiến trúc tầng AUTOSAR Classic" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arA" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker>
+            </defs>
+            <rect x="24" y="12" width="672" height="60" rx="9" fill="var(--brand-800)"/>
+            <text x="360" y="38" text-anchor="middle" class="dgm-inv" font-size="15" font-weight="800">Application Layer — Software Components (SWC)</text>
+            <text x="360" y="57" text-anchor="middle" class="dgm-inv-sub" font-size="11">Logic ứng dụng thuần · không biết phần cứng · giao tiếp qua port</text>
+            <line x1="360" y1="74" x2="360" y2="85" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arA)"/>
+            <rect x="24" y="88" width="672" height="46" rx="9" fill="var(--brand-600)"/>
+            <text x="360" y="107" text-anchor="middle" class="dgm-inv" font-size="13.5" font-weight="800">RTE — Runtime Environment</text>
+            <text x="360" y="124" text-anchor="middle" class="dgm-inv-sub" font-size="11">“virtual bus”: nối SWC↔SWC và SWC↔BSW · sinh tự động · hiện thực hoá VFB</text>
+            <line x1="360" y1="136" x2="360" y2="147" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arA)"/>
+            <rect x="24" y="150" width="672" height="194" rx="9" fill="var(--surface-2)" class="dgm-layer"/>
+            <text x="40" y="172" class="dgm-label" font-size="13" font-weight="800">BSW — Basic Software</text>
+            <rect x="40" y="180" width="552" height="44" rx="7" fill="var(--surface)" class="dgm-layer"/>
+            <text x="316" y="199" text-anchor="middle" class="dgm-label" font-size="12.5" font-weight="700">Services Layer</text>
+            <text x="316" y="215" text-anchor="middle" class="dgm-sub" font-size="10.5">OS · COM · PduR · NvM · Dcm/Dem · EcuM · BswM · ComM · WdgM · Crypto/SecOC</text>
+            <rect x="40" y="230" width="552" height="44" rx="7" fill="var(--surface)" class="dgm-layer"/>
+            <text x="316" y="249" text-anchor="middle" class="dgm-label" font-size="12.5" font-weight="700">ECU Abstraction Layer</text>
+            <text x="316" y="265" text-anchor="middle" class="dgm-sub" font-size="10.5">CanIf · driver interfaces — trừu tượng hoá ngoại vi onboard/offboard</text>
+            <rect x="40" y="280" width="552" height="48" rx="7" fill="var(--brand-400)"/>
+            <text x="316" y="300" text-anchor="middle" class="dgm-inv" font-size="12.5" font-weight="700">MCAL — Microcontroller Abstraction Layer</text>
+            <text x="316" y="317" text-anchor="middle" class="dgm-inv-sub" font-size="10.5">DIO · PORT · ADC · GPT · ICU · PWM · SPI · CAN · WDG · MCU · Fls</text>
+            <rect x="604" y="180" width="80" height="148" rx="7" fill="var(--core)"/>
+            <text x="644" y="254" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700" transform="rotate(-90 644 254)">Complex Device Drivers</text>
+            <line x1="360" y1="346" x2="360" y2="357" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arA)"/>
+            <rect x="24" y="360" width="672" height="58" rx="9" fill="var(--brand-900)"/>
+            <text x="360" y="385" text-anchor="middle" class="dgm-inv" font-size="14" font-weight="800">Microcontroller (HW)</text>
+            <text x="360" y="404" text-anchor="middle" class="dgm-inv-sub" font-size="11">Core · Flash · RAM · ngoại vi (vd Renesas RH850)</text>
+          </svg>
+          <div class="figure__cap"><b>Kiến trúc tầng Classic.</b> BSW chia 3 phân lớp ngang (Services → ECU Abstraction → MCAL) cộng <b>Complex Device Drivers (CDD)</b> cắt dọc — đường “thoát hiểm” cho phần HW chưa được chuẩn hoá hoặc cần timing đặc biệt, truy cập thẳng phần cứng.</div>
+        </div>
+
+        <div class="kv">
+          <dt>SWC</dt><dd>Đơn vị ứng dụng, không biết HW, không biết mình chạy trên ECU nào. Chỉ giao tiếp qua <strong>port</strong> nối vào RTE.</dd>
+          <dt>VFB</dt><dd><strong>Virtual Function Bus</strong> — khái niệm trừu tượng: ở giai đoạn thiết kế, mọi SWC “nói chuyện” qua một bus ảo lý tưởng. <strong>RTE chính là hiện thực hoá VFB</strong> cho một ECU cụ thể.</dd>
+          <dt>RTE</dt><dd>Lớp keo sinh tự động, ánh xạ port của SWC thành lời gọi thật (nội ECU = function call; liên ECU = qua COM/bus).</dd>
+          <dt>BSW</dt><dd>Dịch vụ nền: OS, communication, memory, diagnostics, mode, crypto…</dd>
+          <dt>MCAL</dt><dd>Driver chạm thẳng thanh ghi vi điều khiển; “che” HW cho các lớp trên. Đây là lớp <strong>bạn từng test ở giai đoạn Classic</strong>.</dd>
+          <dt>CDD</dt><dd>Truy cập HW trực tiếp khi cần (sensor đặc thù, timing khắt khe) mà không qua chuẩn — đánh đổi tính khả chuyển lấy hiệu năng/đặc thù.</dd>
+        </div>
+
+        <h3>1.1 MCAL — các module driver</h3>
+        <p>MCAL gom các driver theo nhóm chức năng. Mỗi driver cung cấp API chuẩn (vd <code>Adc_StartGroupConversion</code>, <code>Dio_WriteChannel</code>) nhưng <strong>bên trong đụng thẳng thanh ghi</strong> của MCU. Khi unit test MCAL không có HW, bạn phải <strong>stub các truy cập thanh ghi</strong> (xem bài <a href="C-testing.html">C</a>).</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 372" role="img" aria-label="Bản đồ module MCAL" xmlns="http://www.w3.org/2000/svg">
+            <rect x="24" y="12" width="672" height="38" rx="8" fill="var(--brand-600)"/>
+            <text x="360" y="36" text-anchor="middle" class="dgm-inv" font-size="12.5" font-weight="700">▲ Lên: ECU Abstraction → BSW → RTE → Application (qua API chuẩn)</text>
+            <rect x="24" y="62" width="672" height="244" rx="9" fill="var(--surface-2)" class="dgm-layer"/>
+            <rect x="36" y="74" width="126" height="30" rx="6" fill="var(--brand-400)"/><text x="99" y="94" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Digital I/O</text>
+            <rect x="44" y="112" width="110" height="26" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="99" y="129" text-anchor="middle" class="dgm-text" font-size="11">DIO</text>
+            <rect x="44" y="144" width="110" height="26" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="99" y="161" text-anchor="middle" class="dgm-text" font-size="11">PORT</text>
+            <rect x="174" y="74" width="126" height="30" rx="6" fill="var(--brand-400)"/><text x="237" y="94" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Analog</text>
+            <rect x="182" y="112" width="110" height="26" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="237" y="129" text-anchor="middle" class="dgm-text" font-size="11">ADC</text>
+            <rect x="312" y="74" width="126" height="30" rx="6" fill="var(--brand-400)"/><text x="375" y="94" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Timer</text>
+            <rect x="320" y="112" width="110" height="26" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="375" y="129" text-anchor="middle" class="dgm-text" font-size="11">GPT</text>
+            <rect x="320" y="144" width="110" height="26" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="375" y="161" text-anchor="middle" class="dgm-text" font-size="11">PWM</text>
+            <rect x="320" y="176" width="110" height="26" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="375" y="193" text-anchor="middle" class="dgm-text" font-size="11">ICU</text>
+            <rect x="450" y="74" width="126" height="30" rx="6" fill="var(--brand-400)"/><text x="513" y="94" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Communication</text>
+            <rect x="458" y="112" width="110" height="26" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="513" y="129" text-anchor="middle" class="dgm-text" font-size="11">SPI</text>
+            <rect x="458" y="144" width="110" height="26" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="513" y="161" text-anchor="middle" class="dgm-text" font-size="11">CAN</text>
+            <rect x="458" y="176" width="110" height="26" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="513" y="193" text-anchor="middle" class="dgm-text" font-size="11">LIN · FlexRay</text>
+            <rect x="582" y="74" width="104" height="30" rx="6" fill="var(--brand-400)"/><text x="634" y="94" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">System/Mem</text>
+            <rect x="588" y="112" width="92" height="26" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="634" y="129" text-anchor="middle" class="dgm-text" font-size="11">MCU</text>
+            <rect x="588" y="144" width="92" height="26" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="634" y="161" text-anchor="middle" class="dgm-text" font-size="11">WDG</text>
+            <rect x="588" y="176" width="92" height="26" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="634" y="193" text-anchor="middle" class="dgm-text" font-size="11">Fls / Fee</text>
+            <text x="360" y="236" text-anchor="middle" class="dgm-sub" font-size="11">Mỗi driver: API chuẩn ở trên · ghi/đọc thanh ghi (register) ở dưới · ISR cho sự kiện HW</text>
+            <text x="360" y="258" text-anchor="middle" class="dgm-sub" font-size="11">Cấu hình tĩnh qua ARXML (kênh, prescaler, ngắt…) → generate Cfg → biên dịch cùng driver</text>
+            <line x1="360" y1="278" x2="360" y2="316" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arA)"/>
+            <rect x="24" y="320" width="672" height="40" rx="8" fill="var(--brand-900)"/>
+            <text x="360" y="345" text-anchor="middle" class="dgm-inv" font-size="12.5" font-weight="700">▼ Microcontroller HW — thanh ghi ngoại vi (registers) &amp; lõi xử lý</text>
+          </svg>
+          <div class="figure__cap"><b>Bản đồ MCAL.</b> Driver nhóm theo chức năng, đứng giữa lớp trừu tượng (trên) và thanh ghi HW (dưới). Cấu hình là <b>tĩnh</b> (ARXML → code), đúng tinh thần real-time tất định của Classic.</div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nhóm</th><th>Module</th><th>Cơ chế &amp; điểm hay bị hỏi</th></tr></thead>
+            <tbody>
+              <tr><td>Digital I/O</td><td><code>DIO</code>, <code>PORT</code></td><td><strong>PORT</strong> cấu hình chức năng/hướng/pull chân (chạy 1 lần lúc init); <strong>DIO</strong> đọc/ghi mức logic runtime. Hỏi bẫy: “PORT vs DIO khác gì?” → PORT lo <em>cấu hình</em>, DIO lo <em>truy cập</em>.</td></tr>
+              <tr><td>Analog</td><td><code>ADC</code></td><td>Group conversion, trigger (SW/HW), kết quả qua polling/interrupt/DMA. Hay hỏi resolution, sampling time, và đọc kết quả thế nào.</td></tr>
+              <tr><td>Timer</td><td><code>GPT</code>, <code>PWM</code>, <code>ICU</code></td><td><strong>GPT</strong> định thời chung; <strong>PWM</strong> băm xung (duty/period); <strong>ICU</strong> đo/bắt cạnh tín hiệu vào (edge/pulse/duty) — gốc rễ để hiểu đo timing như SENT (bài <a href="E-protocols.html">E</a>).</td></tr>
+              <tr><td>Communication</td><td><code>SPI</code>, <code>CAN</code>, <code>LIN</code></td><td>Driver bus; SPI có khái niệm sequence/job/channel; CAN driver chỉ lo HW mailbox, phần stack ở trên (CanIf…).</td></tr>
+              <tr><td>System</td><td><code>MCU</code>, <code>WDG</code>, <code>Fls</code></td><td><strong>MCU</strong> clock/PLL/reset/power; <strong>WDG</strong> watchdog (window vs timeout); <strong>Fls</strong> driver flash cho memory stack.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout--interview">
+          <div class="callout__icon">🗣️</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Kể được:</strong> “Tôi thiết kế Unit/Component test cho các nhóm driver digital I/O, analog, timer, communication, watchdog trên RH850 (D3/D4/D5), chạy trên cả target thật và VECU, dùng Pytest/Cantata/ECU-Test. Trọng tâm là <em>dependency isolation</em> (stub truy cập thanh ghi), <em>fault injection</em> (ép driver trả mã lỗi/timeout) và edge case để tối đa coverage tới MC/DC.”</p>
+          </div>
+        </div>
+
+        <h3>1.2 BSW — các stack bạn integrate (CUBAS)</h3>
+        <p>Đây là phần <strong>must-tell</strong>: bạn là CUBAS integrator tích hợp full BSW stack. Mỗi accordion dưới đi vào <strong>cơ chế thật</strong>, không chỉ định nghĩa — hãy đọc kỹ phần “hay bị hỏi xoáy”.</p>
+        <div class="accordion">
+
+          <div class="accordion__item"><button class="accordion__head"><code>COM</code> + <code>PduR</code> — communication &amp; routing <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p><strong>COM</strong> đóng/mở gói <strong>signal ↔ I-PDU</strong>: phía Tx pack nhiều signal vào một I-PDU rồi đẩy xuống; phía Rx unpack I-PDU thành signal cho RTE. <strong>PduR</strong> (PDU Router) định tuyến PDU giữa COM, CanIf/CanTp, Dcm… theo bảng routing tĩnh.</p>
+              <ul class="mb-0">
+                <li><strong>Transmission modes:</strong> cyclic (định kỳ), event (khi đổi), hoặc mixed. Hỏi xoáy: phân biệt cyclic vs on-change.</li>
+                <li><strong>Deadline monitoring:</strong> nếu signal không tới trong hạn → báo timeout, dùng <em>init/replacement value</em>. Đây là cơ chế phát hiện mất gói.</li>
+                <li><strong>Signal gateway:</strong> route signal/PDU giữa các bus (vd CAN↔CAN) mà không cần lên tới app.</li>
+                <li><strong>Update bit, byte order (endianness), packing:</strong> sai endianness là lỗi tích hợp kinh điển.</li>
+              </ul>
+            </div></div>
+          </div>
+
+          <div class="accordion__item"><button class="accordion__head">CAN stack — <code>CanIf</code>, <code>CanTp</code>, <code>CanSM</code>, <code>CanNm</code> <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p>Luồng dữ liệu: <code>Can</code> (MCAL, mailbox HW) → <code>CanIf</code> (trừu tượng, L-PDU↔I-PDU) → <code>PduR</code>/<code>CanTp</code> (segment gói lớn theo ISO-TP 15765-2) → <code>COM</code>/<code>Dcm</code>.</p>
+              <ul>
+                <li><strong>CanSM</strong>: quản lý trạng thái communication của một network (FULL_COM / SILENT / NO_COM) và <strong>xử lý bus-off</strong>.</li>
+                <li><strong>CanNm</strong>: network management — phối hợp sleep/wakeup toàn mạng bằng NM-PDU, để cả mạng ngủ/thức đồng bộ tiết kiệm điện.</li>
+              </ul>
+              <div class="callout callout--key" style="margin:8px 0 0">
+                <div class="callout__icon">⚙️</div>
+                <div class="callout__body"><p class="mb-0"><strong>Bus-off recovery (hay bị hỏi):</strong> bộ đếm lỗi TX (TEC) vượt 255 → node vào <em>bus-off</em>, ngắt khỏi bus. CAN controller phục hồi sau khi quan sát đủ <strong>128×11 bit recessive</strong>. CanSM điều phối recovery (thường có thời gian chờ trước khi bật lại) để tránh node lỗi quấy nhiễu bus liên tục.</p></div>
+              </div>
+            </div></div>
+          </div>
+
+          <div class="accordion__item"><button class="accordion__head">Diagnostics — <code>Dcm</code> / <code>Dem</code> (UDS) <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p><strong>Dcm</strong> (Diagnostic Communication Manager) là <strong>dispatcher UDS</strong> (ISO 14229): nhận request từ tester, kiểm <em>session</em> (0x10) và <em>security access</em> (0x27, cơ chế seed→key), route tới service handler, trả response. <strong>Dem</strong> (Diagnostic Event Manager) quản lý <strong>DTC</strong> và bộ nhớ sự kiện lỗi.</p>
+              <ul class="mb-0">
+                <li><strong>Service hay gặp:</strong> 0x22 ReadDataByIdentifier, 0x2E WriteDataByIdentifier, 0x27 SecurityAccess, 0x31 RoutineControl, 0x19 ReadDTCInformation, 0x14 ClearDTC, 0x10 SessionControl, 0x85 ControlDTCSetting (chi tiết ở bài <a href="E-protocols.html">E</a>).</li>
+                <li><strong>Dem — debounce:</strong> lỗi phải “đủ độ tin” (counter/time-based) mới chuyển <em>confirmed</em>; hết lỗi thì <strong>aging</strong> mới xoá. Tránh báo DTC do nhiễu thoáng qua.</li>
+                <li><strong>Dcm ↔ Dem:</strong> khi tester đọc DTC (0x19), Dcm lấy dữ liệu từ Dem.</li>
+              </ul>
+            </div></div>
+          </div>
+
+          <div class="accordion__item"><button class="accordion__head">Memory stack — <code>NvM</code>, <code>MemIf</code>, <code>Fee</code>/<code>Ea</code>, <code>Fls</code>/<code>Eep</code> <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p>Lưu dữ liệu không bay hơi theo <strong>block</strong>. App làm việc với NvM (logic), còn chi tiết phần cứng bị che dần xuống dưới:</p>
+              <div class="figure figure--tight" style="margin:6px 0 10px">
+                <svg viewBox="0 0 680 96" role="img" aria-label="Memory stack Classic" xmlns="http://www.w3.org/2000/svg">
+                  <defs><marker id="arM" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+                  <rect x="6" y="34" width="118" height="34" rx="7" fill="var(--brand-600)"/><text x="65" y="56" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">NvM</text>
+                  <line x1="126" y1="51" x2="146" y2="51" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arM)"/>
+                  <rect x="148" y="34" width="118" height="34" rx="7" fill="var(--brand-400)"/><text x="207" y="56" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">MemIf</text>
+                  <line x1="268" y1="51" x2="288" y2="51" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arM)"/>
+                  <rect x="290" y="34" width="160" height="34" rx="7" fill="var(--surface)" class="dgm-layer"/><text x="370" y="55" text-anchor="middle" class="dgm-text" font-size="11.5">Fee (flash) / Ea (eeprom)</text>
+                  <line x1="452" y1="51" x2="472" y2="51" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arM)"/>
+                  <rect x="474" y="34" width="160" height="34" rx="7" fill="var(--brand-900)"/><text x="554" y="55" text-anchor="middle" class="dgm-inv" font-size="11.5">Fls / Eep (MCAL)</text>
+                  <text x="320" y="20" text-anchor="middle" class="dgm-sub" font-size="11">App ⟶ logic block ⟶ trừu tượng ⟶ giả lập/translate ⟶ driver HW</text>
+                  <text x="320" y="88" text-anchor="middle" class="dgm-sub" font-size="10.5">Fee “giả lập EEPROM trên flash” + ghi luân phiên (wear-leveling) vì flash phải erase theo sector</text>
+                </svg>
+              </div>
+              <p class="mb-0"><strong>Hay bị hỏi:</strong> “Vì sao cần Fee?” → flash không ghi đè byte tuỳ ý (phải erase cả sector), nên Fee mô phỏng ngữ nghĩa EEPROM (đọc/ghi block nhỏ) và rải block để <em>cân bằng hao mòn (wear-leveling)</em>. NvM lo redundancy/CRC block, write strategy (deferred/immediate).</p>
+            </div></div>
+          </div>
+
+          <div class="accordion__item"><button class="accordion__head">Mode mgmt — <code>EcuM</code>, <code>BswM</code>, <code>ComM</code> <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <ul class="mb-0">
+                <li><strong>EcuM</strong>: “điểm vào” sau reset — init driver theo thứ tự, quản lý <em>wakeup sources</em>, đưa ECU vào/ra các chế độ nguồn (RUN/SLEEP/OFF), giữ RUN request.</li>
+                <li><strong>BswM</strong>: cơ chế <strong>rules → actions</strong>: nhận “mode request” (vd communication on/off, app mode), so với rule (điều kiện logic), thực thi action (bật/tắt PDU group, đổi schedule…). Là trung tâm điều phối hành vi theo trạng thái.</li>
+                <li><strong>ComM</strong>: Communication Manager — gom yêu cầu “cần giao tiếp” từ user (app/Dcm/NM), điều phối CanSM bật/tắt bus.</li>
+              </ul>
+            </div></div>
+          </div>
+
+          <div class="accordion__item"><button class="accordion__head"><code>OS</code> — AUTOSAR OS (gốc OSEK/VDX) <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p>RTOS <strong>ưu tiên cố định, tĩnh</strong> (mọi task/alarm khai báo lúc cấu hình, không tạo động). Đối tượng:</p>
+              <ul>
+                <li><strong>Task</strong>: basic (chạy tới khi terminate/preempt) vs extended (có thể <code>WaitEvent</code> → block). Lập lịch preemptive theo priority.</li>
+                <li><strong>Counter / Alarm</strong>: Alarm gắn Counter, hết hạn thì kích Task/Event hoặc gọi callback. Cơ chế “định kỳ” cổ điển.</li>
+                <li><strong>Event</strong>: đồng bộ cho extended task (set/wait/clear).</li>
+                <li><strong>Resource</strong> + <strong>Priority Ceiling Protocol</strong>: chống priority inversion &amp; deadlock bằng cách nâng priority tạm khi giữ resource.</li>
+                <li><strong>Schedule Table</strong>: lịch tĩnh, <em>tất định</em> theo expiry point — ưu việt hơn nhiều alarm rời rạc khi cần đồng bộ thời gian chặt.</li>
+                <li><strong>Conformance classes</strong>: BCC1/2, ECC1/2 (basic/extended × số lượng). <strong>Memory protection (MPU)</strong> &amp; <strong>Timing Protection</strong> + OS-Application phục vụ an toàn (ISO 26262, bài <a href="H-iso26262.html">H</a>).</li>
+              </ul>
+              <p class="mb-0"><strong>Hỏi xoáy:</strong> “Schedule Table vs Alarm?” → Alarm linh hoạt nhưng khó đảm bảo quan hệ thời gian giữa nhiều sự kiện; Schedule Table cho phép định nghĩa một chuỗi expiry point <em>đồng bộ &amp; tất định</em>, dễ chứng minh timing.</p>
+            </div></div>
+          </div>
+
+          <div class="accordion__item"><button class="accordion__head">Security stack — <code>SecOC</code>, Crypto (<code>Csm</code>/<code>CryIf</code>), <code>IdsM</code> <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <ul class="mb-0">
+                <li><strong>SecOC</strong> (Secure Onboard Communication): gắn <strong>MAC + freshness value</strong> vào PDU để chống giả mạo &amp; replay trên bus — bảo vệ <em>tính xác thực/toàn vẹn</em>, không phải mã hoá nội dung.</li>
+                <li><strong>Crypto Stack</strong>: <code>Csm</code> (Crypto Service Manager, API dịch vụ) → <code>CryIf</code> → Crypto driver (HW HSM/SHE hoặc SW). <code>KeyM</code> quản lý khoá/chứng chỉ.</li>
+                <li><strong>IdsM</strong> (Intrusion Detection System Manager): thu thập “security event”, lọc/đánh giá, báo lên IDS backend — phần khá <strong>mới</strong> (xem mục “Trước → Nay”).</li>
+              </ul>
+            </div></div>
+          </div>
+
+        </div>
+
+        <h3>1.3 RTE — Runtime Environment</h3>
+        <p>RTE là “bus ảo” nối các thành phần và là <strong>code sinh tự động</strong> riêng cho từng ECU. Hai kiểu giao tiếp port:</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 290" role="img" aria-label="RTE virtual bus" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="arR" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="40" y="16" width="180" height="58" rx="8" fill="var(--brand-800)"/><text x="130" y="42" text-anchor="middle" class="dgm-inv" font-size="13" font-weight="700">SWC A</text><text x="130" y="60" text-anchor="middle" class="dgm-inv-sub" font-size="10">phát tốc độ</text>
+            <rect x="270" y="16" width="180" height="58" rx="8" fill="var(--brand-800)"/><text x="360" y="42" text-anchor="middle" class="dgm-inv" font-size="13" font-weight="700">SWC B</text><text x="360" y="60" text-anchor="middle" class="dgm-inv-sub" font-size="10">nhận tốc độ · gọi service</text>
+            <rect x="500" y="16" width="180" height="58" rx="8" fill="var(--brand-800)"/><text x="590" y="42" text-anchor="middle" class="dgm-inv" font-size="13" font-weight="700">SWC C</text><text x="590" y="60" text-anchor="middle" class="dgm-inv-sub" font-size="10">cung cấp service</text>
+            <line x1="130" y1="74" x2="130" y2="118" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arR)"/>
+            <text x="150" y="100" class="dgm-mono" font-size="10">S/R ▷ data</text>
+            <line x1="360" y1="118" x2="360" y2="74" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arR)"/>
+            <line x1="590" y1="118" x2="590" y2="74" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arR)"/>
+            <text x="608" y="100" class="dgm-mono" font-size="10">C/S ⇄ call</text>
+            <rect x="40" y="120" width="640" height="46" rx="9" fill="var(--brand-600)"/>
+            <text x="360" y="143" text-anchor="middle" class="dgm-inv" font-size="13.5" font-weight="800">RTE — virtual bus (sinh tự động)</text>
+            <text x="360" y="159" text-anchor="middle" class="dgm-inv-sub" font-size="10.5">nội ECU = function call · liên ECU = qua COM/bus · kích Runnable theo RTE event</text>
+            <line x1="360" y1="166" x2="360" y2="206" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arR)"/>
+            <rect x="40" y="208" width="640" height="64" rx="9" fill="var(--surface-2)" class="dgm-layer"/>
+            <text x="360" y="234" text-anchor="middle" class="dgm-label" font-size="13" font-weight="800">BSW (OS · COM · Dcm · NvM · …)</text>
+            <text x="360" y="254" text-anchor="middle" class="dgm-sub" font-size="11">RTE map mỗi Runnable vào một OS Task; cấp “service port” cho SWC gọi BSW</text>
+          </svg>
+          <div class="figure__cap"><b>RTE như virtual bus.</b> <b>S/R</b> = truyền dữ liệu (phát–nhận); <b>C/S</b> = gọi hàm dịch vụ. RTE che việc đối tác nằm cùng ECU (function call) hay khác ECU (đi qua COM/bus).</div>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="card">
+            <h4 class="mt-0">Sender / Receiver (S/R)</h4>
+            <p class="mb-0 small">Truyền <strong>dữ liệu/signal</strong> phát–nhận, bất đồng bộ. <strong>Implicit</strong> (RTE copy vào buffer, đọc nhất quán trong runnable) vs <strong>explicit</strong> (<code>Rte_Read/Rte_Write</code> gọi tường minh). Hỗ trợ queued (event) vs last-is-best (data).</p>
+          </div>
+          <div class="card">
+            <h4 class="mt-0">Client / Server (C/S)</h4>
+            <p class="mb-0 small">Gọi <strong>operation</strong> (request/response), <strong>đồng bộ</strong> (chờ kết quả) hoặc <strong>bất đồng bộ</strong>. Dùng cho service tính toán/diagnostic. Server runnable thực thi khi có lời gọi.</p>
+          </div>
+        </div>
+        <p class="mb-0"><strong>Runnable</strong> là đơn vị thực thi nhỏ nhất của SWC, kích bởi <strong>RTE event</strong> (timing, data received, operation invoked…). RTE <strong>map runnable vào OS task</strong> theo cấu hình — đây là chỗ nối thế giới “SWC” với thế giới “OS”.</p>
+
+        <h3>1.4 Quy trình tích hợp CUBAS (must-tell)</h3>
+        <ul class="steps">
+          <li><h4>Configure</h4><p class="mb-0">Cấu hình tham số từng BSW module bằng tool cấu hình AUTOSAR; mọi thứ mô tả trong <strong>ARXML</strong> (ECU configuration). Đây là nơi quyết định signal/PDU, task mapping, NvM block, routing…</p></li>
+          <li><h4>Generate</h4><p class="mb-0">Sinh code BSW config + <strong>RTE</strong> từ ARXML. RTE generator tạo glue code khớp đúng port/interface đã khai báo.</p></li>
+          <li><h4>Integrate</h4><p class="mb-0">Ghép full BSW stack + MCAL + SWC, biên dịch chéo cho target RH850. Xử lý phụ thuộc init order, linker, memory mapping.</p></li>
+          <li><h4>Validate</h4><p class="mb-0">Chạy trên target; dùng <strong>TRACE32</strong> soi register/memory, đặt breakpoint, phân tích trace; đối chiếu requirement, đảm bảo <strong>traceability</strong> ASPICE. Lỗi tích hợp điển hình: sai endianness, sai task timing, NvM block layout lệch.</p></li>
+        </ul>
+
+        <h3>1.5 ASPICE &amp; V-model</h3>
+        <p><strong>ASPICE</strong> (Automotive SPICE) là khung đánh giá năng lực <em>quy trình</em> phát triển, gắn chặt với <strong>V-model</strong>: nhánh trái phân tích/thiết kế, nhánh phải test tương ứng, nối bằng <strong>traceability</strong> hai chiều.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 360" role="img" aria-label="V-model ASPICE" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="arV" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <polyline points="125,52 205,128 285,204 360,302 445,204 525,128 605,52" fill="none" stroke="var(--border-strong)" stroke-width="2"/>
+            <rect x="40" y="30" width="170" height="44" rx="7" fill="var(--brand-800)"/><text x="125" y="57" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">Requirements</text>
+            <rect x="120" y="106" width="170" height="44" rx="7" fill="var(--brand-800)"/><text x="205" y="133" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">System / SW Architecture</text>
+            <rect x="200" y="182" width="170" height="44" rx="7" fill="var(--brand-800)"/><text x="285" y="209" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">SW Detailed Design</text>
+            <rect x="275" y="280" width="170" height="44" rx="7" fill="var(--brand-900)"/><text x="360" y="307" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">Implementation (code)</text>
+            <rect x="350" y="182" width="190" height="44" rx="7" fill="var(--ok)"/><text x="445" y="203" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Unit / Component Test</text><text x="445" y="218" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">SWE.4</text>
+            <rect x="430" y="106" width="190" height="44" rx="7" fill="var(--ok)"/><text x="525" y="127" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Integration Test</text><text x="525" y="142" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">SWE.5</text>
+            <rect x="510" y="30" width="190" height="44" rx="7" fill="var(--ok)"/><text x="605" y="51" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Qualification / System</text><text x="605" y="66" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">SWE.6</text>
+            <line x1="210" y1="50" x2="510" y2="50" stroke="var(--must)" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#arV)" marker-start="url(#arV)"/>
+            <line x1="290" y1="126" x2="430" y2="126" stroke="var(--must)" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#arV)" marker-start="url(#arV)"/>
+            <line x1="370" y1="202" x2="350" y2="202" stroke="var(--must)" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#arV)" marker-start="url(#arV)"/>
+            <text x="360" y="44" text-anchor="middle" class="dgm-sub" font-size="10">⟵ traceability ⟶</text>
+          </svg>
+          <div class="figure__cap"><b>V-model &amp; ASPICE.</b> Mỗi mức thiết kế (trái) có một mức test tương ứng (phải), nối bằng <b>traceability</b> (đường đỏ). Đây chính là lý do report automation của bạn (bài <a href="D-sent-automation.html">D</a>) phải tự map requirement ↔ test.</div>
+        </div>
+        <div class="callout callout--tip">
+          <div class="callout__icon">🔗</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Vì sao quan trọng:</strong> ASPICE đòi <em>requirement → design → code → test → kết quả</em> truy vết được hai chiều. Mọi work product (test spec, case, result) phải link tới requirement — nền tảng để nói chuyện “chất lượng quy trình” trong phỏng vấn automotive.</p>
+          </div>
+        </div>
+
+        <!-- ============ PART 2: ADAPTIVE ============ -->
+        <h2>2. AUTOSAR Adaptive Platform (ARA)</h2>
+        <p>Adaptive Platform ra đời cho xe “software-defined”: nhiều tính toán (ADAS/AD, infotainment), cập nhật OTA, triển khai động. Chạy trên <strong>SoC mạnh</strong> (R-Car, Qualcomm, Nvidia), <strong>POSIX OS</strong> (Linux/QNX/INTEGRITY, profile PSE51), giao tiếp <strong>service-oriented</strong>, viết bằng <strong>C++ hiện đại</strong>.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 430" role="img" aria-label="Kiến trúc Adaptive Platform" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="arP" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="24" y="12" width="672" height="58" rx="9" fill="var(--brand-800)"/>
+            <text x="360" y="37" text-anchor="middle" class="dgm-inv" font-size="14" font-weight="800">Adaptive Applications (mỗi app = 1 process)</text>
+            <text x="360" y="56" text-anchor="middle" class="dgm-inv-sub" font-size="11">ADAS/AD · sensor fusion · infotainment · gateway … (C++ hiện đại)</text>
+            <line x1="360" y1="70" x2="360" y2="82" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arP)"/>
+            <rect x="24" y="86" width="672" height="206" rx="9" fill="var(--surface-2)" class="dgm-layer"/>
+            <text x="40" y="108" class="dgm-label" font-size="13" font-weight="800">ARA — AUTOSAR Runtime for Adaptive (Functional Clusters)</text>
+            <rect x="40" y="118" width="208" height="36" rx="6" fill="var(--brand-600)"/><text x="144" y="141" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Communication (ara::com)</text>
+            <rect x="256" y="118" width="200" height="36" rx="6" fill="var(--brand-600)"/><text x="356" y="141" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Execution Mgmt (EM)</text>
+            <rect x="464" y="118" width="216" height="36" rx="6" fill="var(--brand-600)"/><text x="572" y="141" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">State Mgmt (SM)</text>
+            <rect x="40" y="160" width="208" height="34" rx="6" fill="var(--surface)" class="dgm-layer"/><text x="144" y="182" text-anchor="middle" class="dgm-text" font-size="10.5">Diagnostics (ara::diag)</text>
+            <rect x="256" y="160" width="200" height="34" rx="6" fill="var(--surface)" class="dgm-layer"/><text x="356" y="182" text-anchor="middle" class="dgm-text" font-size="10.5">Persistency</text>
+            <rect x="464" y="160" width="216" height="34" rx="6" fill="var(--surface)" class="dgm-layer"/><text x="572" y="182" text-anchor="middle" class="dgm-text" font-size="10.5">Update &amp; Config (UCM/OTA)</text>
+            <rect x="40" y="200" width="208" height="34" rx="6" fill="var(--surface)" class="dgm-layer"/><text x="144" y="222" text-anchor="middle" class="dgm-text" font-size="10.5">Time Sync · Network Mgmt</text>
+            <rect x="256" y="200" width="200" height="34" rx="6" fill="var(--surface)" class="dgm-layer"/><text x="356" y="222" text-anchor="middle" class="dgm-text" font-size="10.5">Identity/Access · Crypto</text>
+            <rect x="464" y="200" width="216" height="34" rx="6" fill="var(--surface)" class="dgm-layer"/><text x="572" y="222" text-anchor="middle" class="dgm-text" font-size="10.5">Log&amp;Trace · Platform Health</text>
+            <text x="360" y="262" text-anchor="middle" class="dgm-sub" font-size="11">App dùng cluster qua API chuẩn ara::* ; binding (SOME/IP, DDS, IPC) ẩn dưới ara::com</text>
+            <text x="360" y="280" text-anchor="middle" class="dgm-sub" font-size="11">Mọi thứ deploy theo Manifest (Execution / Service Instance / Machine)</text>
+            <line x1="360" y1="292" x2="360" y2="304" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arP)"/>
+            <rect x="24" y="308" width="672" height="44" rx="9" fill="var(--brand-400)"/>
+            <text x="360" y="335" text-anchor="middle" class="dgm-inv" font-size="13" font-weight="700">POSIX OS (PSE51) — Linux · QNX · INTEGRITY</text>
+            <line x1="360" y1="352" x2="360" y2="364" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arP)"/>
+            <rect x="24" y="368" width="672" height="50" rx="9" fill="var(--brand-900)"/>
+            <text x="360" y="390" text-anchor="middle" class="dgm-inv" font-size="13" font-weight="800">High-Performance SoC (MMU, đa lõi)</text>
+            <text x="360" y="408" text-anchor="middle" class="dgm-inv-sub" font-size="10.5">Renesas R-Car · Qualcomm · Nvidia · (có thể chạy trên hypervisor/virtualization)</text>
+          </svg>
+          <div class="figure__cap"><b>Adaptive Platform.</b> Khác Classic ở chỗ: <b>process cách ly (MMU)</b>, deploy động qua <b>Manifest</b>, và giao tiếp <b>service-oriented</b> với binding (SOME/IP, DDS) ẩn dưới <code>ara::com</code>.</div>
+        </div>
+
+        <h3>2.1 Signal-oriented vs Service-oriented</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th></th><th>Classic (signal)</th><th>Adaptive (service)</th></tr></thead>
+            <tbody>
+              <tr><td>Giao tiếp</td><td>Signal/PDU cố định, broadcast định kỳ</td><td>Service: client tìm &amp; gọi method/subscribe event khi cần</td></tr>
+              <tr><td>Liên kết</td><td>Tĩnh, định nghĩa lúc build</td><td>Động, qua <strong>service discovery</strong> runtime</td></tr>
+              <tr><td>Ví dụ</td><td>COM gửi signal tốc độ mỗi 10 ms</td><td>Proxy gọi method / subscribe event của một service</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>2.2 ara::com — xương sống giao tiếp</h3>
+        <div class="grid grid-2">
+          <div class="card">
+            <h4 class="mt-0">Skeleton / Proxy</h4>
+            <p class="mb-0 small"><strong>Skeleton</strong> = phía cung cấp service (server). <strong>Proxy</strong> = phía dùng service (client). Cả hai <strong>sinh từ service interface</strong> trong ARXML. App code làm việc với proxy/skeleton, <em>không quan tâm transport</em> (SOME/IP hay DDS hay IPC).</p>
+          </div>
+          <div class="card">
+            <h4 class="mt-0">3 phần tử của một service</h4>
+            <dl class="kv mb-0">
+              <dt>Event</dt><dd>Server phát, client subscribe (1→n, notification). Nhận qua polling hoặc callback.</dd>
+              <dt>Method</dt><dd>Client gọi hàm trên server (request/response, có future/async).</dd>
+              <dt>Field</dt><dd>Giá trị có trạng thái: getter/setter + notifier khi đổi (= event + method “đóng gói”).</dd>
+            </dl>
+          </div>
+        </div>
+        <p class="mb-0"><strong>Binding:</strong> <code>ara::com</code> trừu tượng hoá transport. Cùng một app có thể bind sang <strong>SOME/IP</strong> (phổ biến nhất), <strong>DDS</strong> (data-centric, real-time pub/sub) hoặc <strong>IPC</strong> (cùng máy) chỉ bằng đổi cấu hình — đây là điểm hay được hỏi để test độ hiểu sâu.</p>
+
+        <h3>2.3 Execution &amp; State Management + Manifest</h3>
+        <div class="kv">
+          <dt>Execution Mgmt (EM)</dt><dd>Khởi động/dừng <strong>Adaptive Application</strong> (mỗi app là process), quản lý vòng đời, <em>startup dependencies</em>, hỗ trợ deterministic execution. Đọc <strong>Execution Manifest</strong>.</dd>
+          <dt>State Mgmt (SM)</dt><dd>Quyết định <em>app/function nào chạy ở trạng thái nào</em> qua <strong>Machine State</strong> &amp; <strong>Function Group State</strong>.</dd>
+          <dt>Manifest</dt><dd>Mô tả triển khai: <strong>Execution Manifest</strong> (cách chạy process), <strong>Service Instance Manifest</strong> (binding service↔transport), <strong>Machine Manifest</strong> (cấu hình máy/OS). Tương đương “ARXML cho Adaptive”.</dd>
+        </div>
+
+        <h3>2.4 SOME/IP</h3>
+        <p><strong>SOME/IP</strong> (Scalable service-Oriented MiddlewarE over IP) là giao thức truyền service trên Ethernet/IP — binding mặc định của <code>ara::com</code>.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 332" role="img" aria-label="SOME/IP service discovery" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="arS" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="60" y="14" width="200" height="40" rx="8" fill="var(--brand-600)"/><text x="160" y="33" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">Server (Skeleton)</text><text x="160" y="48" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">offer service</text>
+            <rect x="460" y="14" width="200" height="40" rx="8" fill="var(--defend)"/><text x="560" y="33" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">Client (Proxy)</text><text x="560" y="48" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">find / subscribe</text>
+            <line x1="160" y1="54" x2="160" y2="318" stroke="var(--border-strong)" stroke-width="1.5"/>
+            <line x1="560" y1="54" x2="560" y2="318" stroke="var(--border-strong)" stroke-width="1.5"/>
+            <line x1="160" y1="84" x2="556" y2="84" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arS)"/><text x="360" y="78" text-anchor="middle" class="dgm-mono" font-size="10">OfferService (SD, multicast)</text>
+            <line x1="560" y1="120" x2="164" y2="120" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arS)"/><text x="360" y="114" text-anchor="middle" class="dgm-mono" font-size="10">FindService (nếu chưa thấy offer)</text>
+            <line x1="560" y1="156" x2="164" y2="156" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arS)"/><text x="360" y="150" text-anchor="middle" class="dgm-mono" font-size="10">SubscribeEventgroup</text>
+            <line x1="160" y1="192" x2="556" y2="192" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arS)"/><text x="360" y="186" text-anchor="middle" class="dgm-mono" font-size="10">SubscribeEventgroupAck</text>
+            <line x1="160" y1="232" x2="556" y2="232" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arS)" stroke-dasharray="4 3"/><text x="360" y="226" text-anchor="middle" class="dgm-mono" font-size="10">Event notifications (chu kỳ/khi đổi)</text>
+            <line x1="560" y1="272" x2="164" y2="272" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arS)"/><text x="360" y="266" text-anchor="middle" class="dgm-mono" font-size="10">Method request (RPC)</text>
+            <line x1="160" y1="300" x2="556" y2="300" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arS)"/><text x="360" y="294" text-anchor="middle" class="dgm-mono" font-size="10">Method response</text>
+          </svg>
+          <div class="figure__cap"><b>SOME/IP-SD &amp; truyền service.</b> Server <b>offer</b> (multicast), client <b>subscribe</b> eventgroup rồi nhận <b>event</b>; <b>method</b> là RPC request/response. Đây là cơ chế “liên kết động” mà Classic không có.</div>
+        </div>
+
+        <ul>
+          <li><strong>Serialization:</strong> đóng gói tham số method/event thành byte stream theo wire format SOME/IP (header: message ID, request ID, length, protocol/interface version, message type, return code).</li>
+          <li><strong>Service Discovery (SOME/IP-SD):</strong> server “OfferService”, client “FindService/Subscribe” — nền cho liên kết động.</li>
+          <li><strong>Transport:</strong> UDP (event/nhỏ/nhanh) hoặc TCP (lớn/tin cậy). <strong>So với DDS:</strong> SOME/IP service-centric, cấu hình tường minh; DDS data-centric với QoS phong phú, phù hợp pub/sub dữ liệu lớn (vd ADAS).</li>
+        </ul>
+
+        <h3>2.5 Nền tảng chạy &amp; việc thật của bạn</h3>
+        <div class="callout callout--interview">
+          <div class="callout__icon">🗣️</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Kể được:</strong> “Tôi làm system test cho full ARA stack trên Raspberry Pi 4, Renesas R-Car, QNX và Embedded Linux — áp dụng kiến thức Linux để xử lý <em>process/service</em>, <em>networking</em> (SOME/IP trên Ethernet) và phân tích log (Log&amp;Trace). Tôi cũng xây framework test/dev/doc tái sử dụng được ARA system team adopt.”</p>
+          </div>
+        </div>
+
+        <!-- ============ PART 3: SO SÁNH ============ -->
+        <h2>3. Classic vs Adaptive — câu hỏi kinh điển</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tiêu chí</th><th>Classic Platform</th><th>Adaptive Platform</th></tr></thead>
+            <tbody>
+              <tr><td>Mục tiêu</td><td>Điều khiển real-time cứng (powertrain, body, chassis)</td><td>Tính toán cao (ADAS/AD, infotainment), OTA</td></tr>
+              <tr><td>OS</td><td>AUTOSAR OS (OSEK, static, real-time)</td><td>POSIX (Linux/QNX/INTEGRITY, PSE51)</td></tr>
+              <tr><td>Giao tiếp</td><td>Signal-oriented (COM/PDU)</td><td>Service-oriented (ara::com, SOME/IP, DDS)</td></tr>
+              <tr><td>Liên kết</td><td>Tĩnh, build-time</td><td>Động, service discovery</td></tr>
+              <tr><td>Ngôn ngữ</td><td>C</td><td>C++ (modern)</td></tr>
+              <tr><td>Bộ nhớ</td><td>Thường không MMU, một image</td><td>MMU, mỗi app là process cách ly</td></tr>
+              <tr><td>Cấu hình/Deploy</td><td>ARXML, tĩnh</td><td>Manifest, deploy/cài-gỡ động</td></tr>
+              <tr><td>Cập nhật</td><td>Khó, ít linh hoạt</td><td>OTA qua UCM, cài/gỡ app động</td></tr>
+              <tr><td>Tất định thời gian</td><td>Rất cao (cốt lõi)</td><td>“Đủ tốt” + cơ chế deterministic, nhưng không cứng như CP</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout--key">
+          <div class="callout__icon">⚖️</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Câu chốt:</strong> “Không phải Adaptive <em>thay</em> Classic, mà <strong>bổ sung</strong>. Xe hiện đại dùng <em>cả hai</em>: Classic cho điều khiển real-time đòi an toàn/độ tin cậy cao, Adaptive cho tính toán lớn và khả năng cập nhật. Chúng nói chuyện với nhau qua <strong>gateway + SOME/IP/Ethernet</strong>, và đang hội tụ trong kiến trúc <strong>zonal/SDV</strong>.”</p>
+          </div>
+        </div>
+
+        <!-- ============ PART 4: TRƯỚC -> NAY ============ -->
+        <h2>4. Trước (~2020) → Nay — kiến thức cập nhật</h2>
+        <p>Phần này giúp bạn tránh học theo tài liệu cũ. Nếu interviewer hỏi “có gì mới trong AUTOSAR gần đây”, đây là đạn:</p>
+
+        <div class="evo">
+          <div class="evo__head">🔄 <span>Lịch release &amp; cấu trúc tài liệu</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>Quanh R19-11 / R20-11. CP và AP phát triển khá tách biệt; nhiều người chỉ biết Classic.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay (2025–2026)</div><p>Chu kỳ release năm “Rxx-11” đều đặn (…R22-11, R23-11, R24-11). CP, AP &amp; <strong>Foundation</strong> đồng bộ; Foundation gom các định nghĩa dùng chung (protocol, methodology).</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> nói được “release mới nhất khoảng R24-11, dùng chung Foundation” cho thấy bạn theo dõi chuẩn, không kẹt ở kiến thức 5 năm trước.</div>
+        </div>
+
+        <div class="evo">
+          <div class="evo__head">🔐 <span>Cybersecurity trở thành bắt buộc</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>SecOC &amp; Crypto stack đã có nhưng <em>cybersecurity thường là “nice to have”</em>; nhiều dự án chưa bắt buộc.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay (2025–2026)</div><p><strong>ISO/SAE 21434</strong> + <strong>UNECE R155/R156</strong> khiến security là điều kiện <em>type approval</em>. <strong>IdsM</strong> (Intrusion Detection) là cluster/module tương đối mới ở cả CP &amp; AP; SecOC/Key management được dùng rộng.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> “SecOC bảo vệ authenticity/integrity (MAC + freshness), không mã hoá payload; IdsM lo phát hiện xâm nhập” là câu trả lời ăn điểm — và phản ánh xu hướng hiện tại.</div>
+        </div>
+
+        <div class="evo">
+          <div class="evo__head">🧩 <span>Adaptive trưởng thành &amp; đa binding</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>AP còn mới, ít triển khai loạt; <code>ara::com</code> gần như đồng nghĩa SOME/IP.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay (2025–2026)</div><p>AP đã vào sản xuất cho ADAS/AD &amp; HPC. <code>ara::com</code> hỗ trợ <strong>DDS binding</strong> bên cạnh SOME/IP; UCM (OTA), Diagnostics ara::diag, Persistency… chín hơn.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> phân biệt được SOME/IP vs DDS và biết binding là cấu hình → thể hiện hiểu sâu kiến trúc, không chỉ thuộc lòng.</div>
+        </div>
+
+        <div class="evo">
+          <div class="evo__head">🚘 <span>SDV · Zonal · Virtualization</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>Kiến trúc “nhiều ECU theo domain”, mỗi chức năng một hộp; phần mềm gắn chặt phần cứng.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay (2025–2026)</div><p><strong>Software-Defined Vehicle</strong>: kiến trúc <strong>zonal</strong> + vài HPC, service-oriented toàn xe, OTA. Xu hướng <strong>virtualization/hypervisor</strong> và sáng kiến như <strong>SOAFEE</strong> (cloud-native trên xe) nổi lên; AP là mảnh ghép quan trọng.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> đây là câu chuyện “AUTOSAR đi về đâu” — gắn được với mạch automation/AI trong CV của bạn càng tốt.</div>
+        </div>
+
+        <!-- ============ PART 5: Q&A ============ -->
+        <h2>5. Tự kiểm tra — Q&amp;A như interviewer</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+
+        <div class="qa"><div class="qa__q">5 lớp của AUTOSAR Classic từ trên xuống? RTE đóng vai trò gì? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p>Application (SWC) → RTE → BSW → MCAL → Microcontroller (HW). <strong>RTE</strong> là “virtual bus” hiện thực hoá VFB cho một ECU: nối SWC↔SWC và SWC↔BSW, sinh tự động từ cấu hình, ánh xạ port thành function call (nội ECU) hoặc đường COM (liên ECU).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul>
+              <li>BSW gồm những phân lớp nào? (Services, ECU Abstraction, MCAL + CDD cắt dọc)</li>
+              <li>VFB khác RTE thế nào? (VFB = khái niệm thiết kế; RTE = hiện thực cho ECU cụ thể)</li>
+            </ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">Phân biệt S/R và C/S; implicit vs explicit access? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p><strong>S/R</strong> truyền dữ liệu/signal (phát–nhận, bất đồng bộ; queued hoặc last-is-best). <strong>C/S</strong> gọi operation (request/response, đồng bộ/bất đồng bộ). <strong>Implicit</strong>: RTE copy dữ liệu vào buffer cục bộ để runnable đọc/ghi nhất quán trong suốt lần chạy; <strong>explicit</strong>: gọi <code>Rte_Read/Rte_Write</code> tường minh, lấy giá trị tại thời điểm gọi.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul>
+              <li>Khi nào chọn implicit? (cần data consistency/atomicity trong runnable, tránh đọc giá trị đổi giữa chừng)</li>
+              <li>Runnable map vào OS thế nào? (RTE map runnable → OS task theo cấu hình)</li>
+            </ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">Mô tả memory stack Classic từ ứng dụng xuống flash. Vì sao cần Fee? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p><code>NvM</code> (block cho app, lo CRC/redundancy/write strategy) → <code>MemIf</code> (trừu tượng) → <code>Fee</code> (giả lập EEPROM trên flash) / <code>Ea</code> (trên EEPROM) → <code>Fls</code>/<code>Eep</code> (driver HW, MCAL). Cần <strong>Fee</strong> vì flash không ghi đè byte tuỳ ý — phải erase cả sector; Fee cung cấp ngữ nghĩa đọc/ghi block nhỏ và <strong>rải block để wear-leveling</strong>.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul>
+              <li>Write strategy deferred vs immediate? Hệ quả khi mất điện đột ngột?</li>
+              <li>Làm sao đảm bảo toàn vẹn block? (CRC + redundant block + read-back)</li>
+            </ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">Bus-off recovery của CAN xảy ra thế nào? Ai điều phối? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p>CAN controller có TEC/REC (Tx/Rx error counter). TEC vượt 255 → node vào <strong>bus-off</strong> (ngắt khỏi bus). Phục hồi khi controller quan sát đủ <strong>128 × 11 bit recessive</strong> (mạng rảnh). Trong AUTOSAR, <strong>CanSM</strong> điều phối recovery — thường chờ một khoảng (cấu hình) trước khi bật lại để tránh node lỗi liên tục phá bus.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul>
+              <li>Phân biệt error-active / error-passive / bus-off theo TEC/REC.</li>
+              <li>Vì sao cần delay trước khi re-init bus?</li>
+            </ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">Dcm và Dem khác nhau thế nào? Debounce DTC là gì? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p><strong>Dcm</strong> xử lý <em>giao tiếp</em> chẩn đoán (dispatcher UDS: session 0x10, security access 0x27 seed→key, route service 0x22/0x2E/0x31…). <strong>Dem</strong> quản lý <em>sự kiện lỗi</em> &amp; <strong>DTC</strong> (lưu/đếm/trạng thái). <strong>Debounce</strong>: lỗi phải đủ độ tin (counter- hoặc time-based) mới chuyển <em>confirmed</em>; hết lỗi thì <em>aging</em> mới xoá — tránh báo DTC do nhiễu thoáng qua. Khi tester đọc 0x19, Dcm lấy DTC từ Dem.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul>
+              <li>Seed/key trong 0x27 hoạt động ra sao? Vì sao cần?</li>
+              <li>Sự khác nhau giữa “failed”, “confirmed”, “aged” DTC?</li>
+            </ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">Schedule Table vs Alarm trong AUTOSAR OS — chọn cái nào, khi nào? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p><strong>Alarm</strong> gắn Counter, hết hạn kích Task/Event/callback — linh hoạt nhưng nhiều alarm rời rạc khó đảm bảo quan hệ thời gian giữa chúng. <strong>Schedule Table</strong> định nghĩa một chuỗi <em>expiry point</em> đồng bộ, <strong>tất định</strong>, dễ chứng minh timing và đồng bộ nhiều hành động — ưu tiên khi cần lịch chặt (vd kích các runnable theo pha).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul>
+              <li>Priority Ceiling Protocol giải quyết vấn đề gì? (priority inversion, deadlock)</li>
+              <li>Basic vs Extended task?</li>
+            </ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">So sánh Classic vs Adaptive (câu kinh điển). <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p>Trục so sánh: <strong>mục tiêu</strong> (real-time cứng vs tính toán cao/OTA), <strong>OS</strong> (OSEK static vs POSIX), <strong>giao tiếp</strong> (signal vs service-oriented), <strong>liên kết</strong> (tĩnh build-time vs động/service discovery), <strong>ngôn ngữ</strong> (C vs C++), <strong>bộ nhớ</strong> (không MMU/một image vs MMU/process cách ly), <strong>deploy</strong> (ARXML tĩnh vs Manifest động). Chốt: <em>bổ sung chứ không thay thế</em>, cùng tồn tại trong xe, nói chuyện qua gateway/SOME/IP, hội tụ trong SDV/zonal.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul>
+              <li>Vì sao Adaptive cần service discovery còn Classic thì không?</li>
+              <li>Khi nào KHÔNG nên dùng Adaptive cho một chức năng? (real-time cứng/an toàn cao, tài nguyên nhỏ)</li>
+            </ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">Vì sao Adaptive cần service discovery còn Classic thì không? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p>Classic liên kết <strong>tĩnh lúc build</strong> (signal/PDU cố định) nên đối tác đã biết trước, không cần khám phá. Adaptive liên kết <strong>động</strong>: app có thể cài/gỡ, service xuất hiện/biến mất runtime → cần <strong>SOME/IP-SD</strong> để client tìm và subscribe service đang “offer”.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul>
+              <li>Offer/Find/Subscribe diễn ra thế nào? Dùng multicast hay unicast?</li>
+            </ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">ara::com: Event / Method / Field khác nhau? Binding là gì? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p><strong>Event</strong>: server phát, client subscribe (notification 1→n). <strong>Method</strong>: client gọi hàm trên server (request/response, hỗ trợ future). <strong>Field</strong>: giá trị có trạng thái với getter/setter + notifier (event + method gói lại). <strong>Binding</strong>: lớp transport thật dưới <code>ara::com</code> (SOME/IP, DDS, IPC) — đổi binding bằng cấu hình, app code không đổi.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul>
+              <li>Nhận event qua polling vs callback khác gì về latency/CPU?</li>
+              <li>SOME/IP vs DDS chọn khi nào?</li>
+            </ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">SecOC bảo vệ điều gì? Có mã hoá payload không? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p><strong>SecOC</strong> bảo vệ <strong>tính xác thực &amp; toàn vẹn</strong> của PDU bằng <strong>MAC + freshness value</strong> (chống replay), <em>không mã hoá nội dung</em> (không bảo mật confidentiality). Khoá/dịch vụ crypto đi qua <code>Csm</code>→<code>CryIf</code>→Crypto driver (HSM/SHE nếu có). Việc phát hiện xâm nhập là của <strong>IdsM</strong>.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul>
+              <li>Freshness value chống tấn công gì? (replay)</li>
+              <li>ISO/SAE 21434 &amp; UNECE R155 liên quan thế nào?</li>
+            </ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">Kể một lần bạn debug một lỗi tích hợp BSW khó (vai trò CUBAS). <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p>Khung STAR: <em>Tình huống</em> (tích hợp full BSW + MCAL + SWC trên RH850, một signal nhận sai giá trị) → <em>Nhiệm vụ</em> (tìm gốc rễ, đảm bảo traceability) → <em>Hành động</em> (dùng TRACE32 soi memory/PDU buffer, đối chiếu ARXML packing/endianness, kiểm tra task timing &amp; deadline monitoring, thu hẹp tới sai byte order trong COM config) → <em>Kết quả</em> (sửa cấu hình, thêm test fault-injection để regression, cập nhật trace tới requirement). Nhấn: lỗi tích hợp hay nằm ở <strong>cấu hình</strong> (endianness, mapping) chứ không phải code.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul>
+              <li>Bạn dùng công cụ gì để cô lập? (TRACE32, log, so ARXML)</li>
+              <li>Làm sao tránh tái diễn? (test tự động, review config, traceability)</li>
+            </ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">Có gì mới trong AUTOSAR gần đây? (test độ cập nhật) <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p>Ba mạch: (1) <strong>Cybersecurity bắt buộc</strong> — ISO/SAE 21434, UNECE R155/R156, IdsM (Intrusion Detection) + SecOC/Crypto dùng rộng. (2) <strong>Adaptive trưởng thành</strong> — vào sản xuất ADAS/AD, <code>ara::com</code> hỗ trợ DDS bên cạnh SOME/IP, UCM/OTA chín. (3) <strong>SDV &amp; zonal</strong> — service-oriented toàn xe, virtualization/hypervisor, sáng kiến cloud-native như SOAFEE. Release mới nhất quanh R24-11, dùng chung Foundation.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul>
+              <li>SDV ảnh hưởng vai trò embedded engineer thế nào?</li>
+              <li>Bạn liên hệ xu hướng này với mảng automation/AI của mình ra sao?</li>
+            </ul></div>
+          </div></div>
+        </div>
+
+        <div class="grid grid-2" style="margin-top:18px">
+          <div class="flashcard"><div class="flashcard__inner">
+            <div class="flashcard__face flashcard__face--front"><div class="flashcard__tag">Định nghĩa</div><div class="flashcard__q">3 phân lớp của BSW + lớp cắt dọc?</div><div class="flashcard__hint">bấm để lật</div></div>
+            <div class="flashcard__face flashcard__face--back"><p class="mb-0">Services → ECU Abstraction → MCAL (ngang) + Complex Device Drivers (CDD) cắt dọc, truy cập HW trực tiếp.</p></div>
+          </div></div>
+          <div class="flashcard"><div class="flashcard__inner">
+            <div class="flashcard__face flashcard__face--front"><div class="flashcard__tag">Áp dụng</div><div class="flashcard__q">3 phần tử của service trong ara::com?</div><div class="flashcard__hint">bấm để lật</div></div>
+            <div class="flashcard__face flashcard__face--back"><p class="mb-0">Event (subscribe/notify), Method (request/response), Field (get/set + notify).</p></div>
+          </div></div>
+          <div class="flashcard"><div class="flashcard__inner">
+            <div class="flashcard__face flashcard__face--front"><div class="flashcard__tag">Số liệu</div><div class="flashcard__q">CAN bus-off phục hồi sau bao nhiêu bit recessive?</div><div class="flashcard__hint">bấm để lật</div></div>
+            <div class="flashcard__face flashcard__face--back"><p class="mb-0">128 × 11 bit recessive (TEC vượt 255 → bus-off). CanSM điều phối re-init.</p></div>
+          </div></div>
+          <div class="flashcard"><div class="flashcard__inner">
+            <div class="flashcard__face flashcard__face--front"><div class="flashcard__tag">Cập nhật</div><div class="flashcard__q">IdsM là gì &amp; vì sao mới?</div><div class="flashcard__hint">bấm để lật</div></div>
+            <div class="flashcard__face flashcard__face--back"><p class="mb-0">Intrusion Detection System Manager — thu thập/đánh giá security event, báo lên IDS backend. Nổi lên cùng làn sóng ISO/SAE 21434 &amp; UNECE R155.</p></div>
+          </div></div>
+        </div>
+
+        <!-- ============ PART 6: CHEAT-SHEET ============ -->
+        <h2>6. Cheat-sheet 1 trang (ôn nhanh trước phỏng vấn)</h2>
+        <div class="callout callout--note">
+          <div class="callout__icon">🖨️</div>
+          <div class="callout__body"><p class="mb-0">Mẹo: dùng <strong>In trang</strong> (Ctrl/Cmd+P) — sidebar/topbar tự ẩn, chỉ in phần nội dung &amp; cheat-sheet.</p></div>
+        </div>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>Kiến trúc Classic</h4><ul>
+            <li><strong>App→RTE→BSW→MCAL→HW</strong></li>
+            <li>RTE = hiện thực VFB cho 1 ECU</li>
+            <li>BSW: Services · ECU Abstraction · MCAL + CDD (cắt dọc)</li>
+            <li>Tĩnh, signal-oriented, C, OSEK OS</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>MCAL</h4><ul>
+            <li>DIO/PORT · ADC · GPT/PWM/ICU · SPI/CAN · MCU/WDG/Fls</li>
+            <li>API chuẩn trên, chạm <strong>register</strong> dưới</li>
+            <li>Cấu hình tĩnh qua ARXML</li>
+            <li>Test: stub register + fault injection</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>BSW stacks</h4><ul>
+            <li>COM: signal↔I-PDU, deadline monitoring</li>
+            <li>CAN: Can→CanIf→CanTp→CanSM(bus-off)/CanNm</li>
+            <li>Diag: Dcm (UDS dispatch) + Dem (DTC, debounce/aging)</li>
+            <li>Mem: NvM→MemIf→Fee/Ea→Fls/Eep</li>
+            <li>Mode: EcuM, BswM (rules→actions), ComM</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>AUTOSAR OS</h4><ul>
+            <li>Task (basic/extended), Alarm, Counter, Event</li>
+            <li>Resource + Priority Ceiling</li>
+            <li>Schedule Table = lịch tĩnh tất định</li>
+            <li>MPU + Timing Protection (safety)</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>RTE</h4><ul>
+            <li>S/R (data) vs C/S (call)</li>
+            <li>implicit vs explicit access</li>
+            <li>Runnable kích bởi RTE event → map vào OS task</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Adaptive / ARA</h4><ul>
+            <li>POSIX, C++, process cách ly (MMU)</li>
+            <li>Clusters: ara::com, EM, SM, ara::diag, UCM, Persistency, IAM, Crypto, PHM…</li>
+            <li>Deploy bằng Manifest</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>ara::com &amp; SOME/IP</h4><ul>
+            <li>Skeleton (server) / Proxy (client)</li>
+            <li>Event / Method / Field</li>
+            <li>SOME/IP-SD: Offer/Find/Subscribe</li>
+            <li>Binding: SOME/IP · DDS · IPC</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Cybersecurity (mới)</h4><ul>
+            <li>SecOC: MAC + freshness (auth+integrity, không mã hoá)</li>
+            <li>Crypto: Csm→CryIf→driver (HSM/SHE), KeyM</li>
+            <li>IdsM: intrusion detection</li>
+            <li>ISO/SAE 21434 · UNECE R155/R156</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Câu chốt &amp; số liệu</h4><ul>
+            <li>Classic + Adaptive <strong>bổ sung</strong>, không thay thế</li>
+            <li>CAN bus-off: TEC&gt;255 → 128×11 bit recessive</li>
+            <li>Release mới ~R24-11, dùng chung Foundation</li>
+            <li>Hội tụ ở SDV / zonal</li>
+          </ul></div>
+        </div>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi vẽ được kiến trúc tầng + bảng so sánh từ trí nhớ, và trả lời trôi 3 câu Q&amp;A bất kỳ.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">
+        Chủ đề B · AUTOSAR Classic &amp; Adaptive — Interview Prep
+      </footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../assets/js/app.js?v=4"></script>
+</body>
+</html>

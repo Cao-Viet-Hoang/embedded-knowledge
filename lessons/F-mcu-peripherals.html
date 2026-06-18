@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>F · MCU Peripherals &amp; HW Debug — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/style.css?v=4" />
+</head>
+<body data-page="F" data-root="../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">F</span>
+            <span class="badge badge--core">Core</span>
+            <span class="chip">Vòng 2 · Gắn target thật</span>
+          </div>
+          <h1>MCU Peripherals &amp; Hardware Debug</h1>
+          <p class="lead">Ngoại vi vi điều khiển và debug phần cứng — gắn trực tiếp với RH850, TRACE32, UDE bạn dùng thật. Nắm <strong>cơ chế từng ngoại vi</strong> và <strong>workflow debug</strong> để kể được “tôi đã debug thế nào”.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> 🟠 Core</span>
+            <span><b>Must-tell:</b> TRACE32, UDE</span>
+            <span><b>Target:</b> RH850 (D3/D4/D5)</span>
+          </div>
+        </div>
+
+        <div class="callout callout--note">
+          <div class="callout__icon">📌</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Nguồn:</strong> đặc tả RH850 (Renesas), watchdog/ADC/clock và TRACE32/NEXUS (Lauterbach) đối chiếu tài liệu nhà sản xuất — xem “Nguồn tham khảo” cuối bài.</p>
+          </div>
+        </div>
+
+        <!-- 1. Peripherals -->
+        <h2>1. Ngoại vi cơ bản</h2>
+        <div class="accordion">
+          <div class="accordion__item"><button class="accordion__head">GPIO — chân vào/ra số <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p class="mb-0">Cấu hình hướng (input/output), chế độ (push-pull / open-drain), pull-up/pull-down, tốc độ slew, và <strong>alternate function</strong> (gán chân cho ngoại vi SPI/UART/CAN…). Điều khiển qua thanh ghi: DIR, OUT, IN, MODE/PMC. Trong AUTOSAR là <code>PORT</code> (cấu hình) + <code>DIO</code> (truy cập).</p>
+            </div></div>
+          </div>
+          <div class="accordion__item"><button class="accordion__head">Timer / PWM / Input Capture <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <ul class="mb-0">
+                <li><strong>Timer</strong>: đếm theo clock; tạo ngắt tràn định kỳ (vd tick OS — trên RH850 là <code>OSTM</code>).</li>
+                <li><strong>PWM</strong>: băm xung — điều khiển duty cycle (motor/LED); period &amp; compare value quyết định tần số/độ rộng.</li>
+                <li><strong>Input Capture (ICU)</strong>: ghi timestamp cạnh tín hiệu → đo tần số/độ rộng xung — chính là cách đo <strong>timing SENT</strong>.</li>
+                <li><strong>Output Compare</strong>: sinh sự kiện/đảo chân khi counter đạt giá trị. RH850 có khối <code>TAUD</code>/<code>TAUJ</code>.</li>
+              </ul>
+            </div></div>
+          </div>
+          <div class="accordion__item"><button class="accordion__head">ADC (SAR 12-bit) / DAC <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p>RH850 dùng <strong>ADC SAR 12-bit</strong> (khối <code>ADCF</code>). SAR = <em>Successive Approximation Register</em>: tìm nhị phân từng bit MSB→LSB bằng so sánh với DAC nội. Quan tâm: độ phân giải, <strong>sampling time</strong> (phụ thuộc clock ngoại vi), reference voltage, kênh, mode (single/scan/continuous), trigger (SW/HW). <strong>DAC</strong>: ngược lại, số→analog.</p>
+              <p class="mb-0 small text-mute">Công thức: <code>digital ≈ round( Vin / Vref × 2ⁿ )</code>; N-bit SAR cần <strong>N chu kỳ so sánh</strong> (một mẫu/lần, độ trễ thấp → hợp control loop).</p>
+            </div></div>
+          </div>
+          <div class="accordion__item"><button class="accordion__head">Watchdog — window vs independent <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <div class="table-wrap"><table>
+                <thead><tr><th></th><th>Independent (IWDG)</th><th>Window (WWDG / RH850 WDTA)</th></tr></thead>
+                <tbody>
+                  <tr><td>Clock</td><td>Riêng (LSI) — độc lập CPU</td><td>Theo clock hệ thống/khối</td></tr>
+                  <tr><td>Ngưỡng</td><td>Chỉ <strong>1 ngưỡng</strong> (max)</td><td><strong>2 ngưỡng</strong>: cửa sổ [min, max]</td></tr>
+                  <tr><td>Refresh</td><td>Bất kỳ lúc nào trước khi hết hạn</td><td>Chỉ trong “cửa sổ”; quá sớm cũng reset</td></tr>
+                  <tr><td>Bắt lỗi</td><td>Treo CPU (CPU chết vẫn reset được)</td><td>Treo CPU <em>và</em> chạy quá nhanh/lệch nhịp</td></tr>
+                </tbody>
+              </table></div>
+              <p class="mb-0 small">Window watchdog mạnh hơn cho safety: refresh <strong>quá sớm</strong> cũng bị coi là lỗi (code chạy sai nhịp/loop bất thường). Trong AUTOSAR là <code>WDG</code> driver + <code>WdgM</code> (supervision: alive/deadline/logical).</p>
+            </div></div>
+          </div>
+          <div class="accordion__item"><button class="accordion__head">DMA — Direct Memory Access <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p class="mb-0">Chuyển dữ liệu memory↔peripheral <strong>không cần CPU</strong> → giải phóng CPU, tăng throughput (vd nạp buffer ADC/SPI liên tục). CPU chỉ cấu hình nguồn/đích/độ dài rồi nhận ngắt khi xong. RH850 phân biệt <strong>DMAC</strong> (đầy đủ) và <strong>DTS</strong> (Data Transfer System, nhẹ). Lưu ý cấu hình: <em>một kênh DMA chỉ cho một module dùng độc quyền</em>.</p>
+            </div></div>
+          </div>
+        </div>
+
+        <!-- 2. Clock & power -->
+        <h2>2. Clock tree &amp; power mode</h2>
+        <p>Một nguồn dao động được PLL nhân lên rồi prescaler chia xuống cho từng miền clock (CPU, bus, ngoại vi):</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 226" role="img" aria-label="Clock tree" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="arK" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="16" y="86" width="120" height="50" rx="8" fill="var(--brand-800)"/><text x="76" y="108" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">Xtal / RC OSC</text><text x="76" y="124" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">8–40 MHz</text>
+            <line x1="136" y1="111" x2="170" y2="111" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arK)"/>
+            <rect x="172" y="86" width="120" height="50" rx="8" fill="var(--brand-600)"/><text x="232" y="108" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="800">PLL ×N</text><text x="232" y="124" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">→ 120–400 MHz</text>
+            <line x1="292" y1="111" x2="330" y2="111" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arK)"/>
+            <rect x="332" y="86" width="60" height="50" rx="7" fill="var(--brand-400)"/><text x="362" y="108" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Sys</text><text x="362" y="123" text-anchor="middle" class="dgm-inv-sub" font-size="9">clk</text>
+            <!-- 3 prescaler branches -->
+            <line x1="392" y1="100" x2="430" y2="48" class="dgm-arrow" stroke-width="1.4" marker-end="url(#arK)"/><text x="412" y="64" class="dgm-sub" font-size="9">/1</text>
+            <line x1="392" y1="111" x2="430" y2="111" class="dgm-arrow" stroke-width="1.4" marker-end="url(#arK)"/><text x="412" y="106" class="dgm-sub" font-size="9">/2</text>
+            <line x1="392" y1="122" x2="430" y2="174" class="dgm-arrow" stroke-width="1.4" marker-end="url(#arK)"/><text x="412" y="160" class="dgm-sub" font-size="9">/4</text>
+            <rect x="432" y="26" width="260" height="42" rx="7" fill="var(--surface)" class="dgm-layer"/><text x="562" y="52" text-anchor="middle" class="dgm-text" font-size="11">CPU core(s)</text>
+            <rect x="432" y="90" width="260" height="42" rx="7" fill="var(--surface)" class="dgm-layer"/><text x="562" y="116" text-anchor="middle" class="dgm-text" font-size="11">Flash / RAM bus</text>
+            <rect x="432" y="154" width="260" height="42" rx="7" fill="var(--surface)" class="dgm-layer"/><text x="562" y="180" text-anchor="middle" class="dgm-text" font-size="11">Peripheral (CAN · ADC · SPI · timer)</text>
+            <text x="360" y="216" text-anchor="middle" class="dgm-sub" font-size="10.5">RH850: hệ số PLL/prescaler đặt trong option bytes (flash) · ADC sampling phụ thuộc clock ngoại vi</text>
+          </svg>
+          <div class="figure__cap"><b>Clock tree.</b> OSC → PLL (×N) → prescaler chia cho từng miền. Quên <b>bật clock</b> (clock gating) hoặc đặt prescaler sai là lý do kinh điển khiến một ngoại vi “im lặng”.</div>
+        </div>
+
+        <div class="kv">
+          <dt>Nguồn clock</dt><dd>Dao động nội (RC) hoặc thạch anh ngoài; chọn theo độ chính xác cần.</dd>
+          <dt>PLL</dt><dd>Phase-Locked Loop — nhân tần số lên (vd 8 MHz → 160 MHz). Phải chờ <strong>PLL lock</strong> trước khi chuyển CPU sang dùng.</dd>
+          <dt>Prescaler</dt><dd>Chia tần số xuống cho từng ngoại vi/bus.</dd>
+          <dt>Power mode</dt><dd>RUN / HALT / STOP / STANDBY — tắt dần clock/nguồn để tiết kiệm; wakeup bằng ngắt/sự kiện.</dd>
+        </div>
+
+        <!-- 3. RH850 -->
+        <h2>3. RH850 — kiến trúc &amp; functional safety</h2>
+        <p>Dòng MCU ô tô 32-bit của Renesas, lõi RISC độc quyền (G3K/G3M/G4MH), tuân thủ <strong>AEC-Q100</strong> và <strong>ISO 26262</strong>. Bạn làm trên <strong>D3/D4/D5</strong> (integrate BSW + test MCAL, debug TRACE32).</p>
+        <ul>
+          <li><strong>Lõi:</strong> vd <code>G3KH</code> (body/gateway, ~120 MHz, pipeline 5 tầng, ~1 clock/lệnh cơ bản). Dòng cao: <code>U2A</code> tới 4×400 MHz, <code>U2C</code> 2×320 MHz (28 nm).</li>
+          <li><strong>Lockstep:</strong> dòng cao chạy <strong>dual-core lock-step</strong> (2 lõi chạy song song lệch pha, so sánh kết quả) cho ASIL cao; một số tích hợp <em>virtualization</em> để chạy nhiều phần mềm khác ASIL không can nhiễu.</li>
+          <li><strong>An toàn phần cứng:</strong> ECC cho RAM/flash, window watchdog (WDTA), clock/voltage monitor.</li>
+          <li><strong>Ngoại vi ô tô:</strong> CAN/CAN FD, SENT, LIN, TAUD/TAUJ timer, ADCF, DMAC/DTS.</li>
+        </ul>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 180" role="img" aria-label="Dual-core lockstep" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="arL" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="40" y="30" width="180" height="46" rx="8" fill="var(--brand-800)"/><text x="130" y="58" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">Core 1 (main)</text>
+            <rect x="40" y="104" width="180" height="46" rx="8" fill="var(--brand-600)"/><text x="130" y="132" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">Core 2 (checker, lệch pha)</text>
+            <line x1="220" y1="53" x2="360" y2="78" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arL)"/>
+            <line x1="220" y1="127" x2="360" y2="92" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arL)"/>
+            <rect x="362" y="62" width="150" height="46" rx="8" fill="var(--core)"/><text x="437" y="84" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">Comparator</text><text x="437" y="100" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">so khớp output</text>
+            <line x1="512" y1="85" x2="556" y2="85" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arL)"/>
+            <rect x="558" y="50" width="140" height="32" rx="7" fill="var(--ok)"/><text x="628" y="71" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">khớp → chạy tiếp</text>
+            <rect x="558" y="90" width="140" height="32" rx="7" fill="var(--must)"/><text x="628" y="111" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">lệch → safe state</text>
+          </svg>
+          <div class="figure__cap"><b>Dual-core lockstep.</b> Hai lõi chạy cùng lệnh (lệch vài chu kỳ); comparator phát hiện sai khác phần cứng → đưa hệ vào <b>safe state</b>. Đây là một <em>safety mechanism</em> điển hình của ISO 26262 (bài <a href="H-iso26262.html">H</a>).</div>
+        </div>
+
+        <div class="callout callout--interview"><div class="callout__icon">🗣️</div><div class="callout__body"><p class="mb-0"><strong>Kể được:</strong> “Tôi test MCAL và integrate full BSW stack trên RH850 D3/D4/D5, dùng TRACE32 soi register/memory và phân tích trace khi tích hợp; hiểu các cơ chế an toàn phần cứng (lockstep, ECC, window watchdog) vì chúng ảnh hưởng cách test &amp; init.”</p></div></div>
+
+        <!-- 4. TRACE32 -->
+        <h2>4. Lauterbach TRACE32 (must-tell)</h2>
+        <p>Debugger phần cứng (PowerView + PowerDebug) qua JTAG/serial; với RH850 hỗ trợ đầy đủ on-chip breakpoint, run-time memory access, flash programming, và trace NEXUS.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 190" role="img" aria-label="Topology debug TRACE32" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="arD" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="16" y="64" width="150" height="60" rx="9" fill="var(--brand-800)"/><text x="91" y="90" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">Host PC</text><text x="91" y="108" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">TRACE32 PowerView</text>
+            <line x1="166" y1="94" x2="206" y2="94" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arD)"/>
+            <rect x="208" y="64" width="150" height="60" rx="9" fill="var(--brand-600)"/><text x="283" y="90" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">Debug probe</text><text x="283" y="108" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">PowerDebug</text>
+            <line x1="358" y1="84" x2="430" y2="64" class="dgm-arrow" stroke-width="1.4" marker-end="url(#arD)"/><text x="396" y="66" class="dgm-sub" font-size="9">JTAG (debug)</text>
+            <line x1="358" y1="104" x2="430" y2="124" class="dgm-arrow" stroke-width="1.4" marker-end="url(#arD)"/><text x="392" y="128" class="dgm-sub" font-size="9">NEXUS trace</text>
+            <rect x="432" y="34" width="270" height="120" rx="9" fill="var(--surface-2)" class="dgm-layer"/>
+            <text x="567" y="56" text-anchor="middle" class="dgm-label" font-size="12" font-weight="800">RH850 target</text>
+            <rect x="448" y="66" width="240" height="34" rx="6" fill="var(--surface)" class="dgm-layer"/><text x="568" y="88" text-anchor="middle" class="dgm-text" font-size="10.5">Cores + 16 event breakpoints/core</text>
+            <rect x="448" y="108" width="240" height="34" rx="6" fill="var(--surface)" class="dgm-layer"/><text x="568" y="130" text-anchor="middle" class="dgm-text" font-size="10.5">Trace: on-chip buffer ↔ off-chip (Aurora/NEXUS AUX)</text>
+          </svg>
+          <div class="figure__cap"><b>Chuỗi debug.</b> Host → probe → JTAG (debug/breakpoint) + cổng NEXUS (trace). Trace có thể ghi <b>on-chip</b> (buffer nhỏ) hoặc <b>off-chip</b> (Aurora serial / parallel NEXUS AUX: MDO/MSEO/MCKO) cho dung lượng lớn.</div>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="card">
+            <h4 class="mt-0">Năng lực chính</h4>
+            <dl class="kv mb-0">
+              <dt>Breakpoint</dt><dd><strong>Software BP</strong> (thay lệnh bằng lệnh break — số lượng không giới hạn, cần ghi được vào RAM) vs <strong>on-chip BP</strong> (dùng tài nguyên HW, có hạn — bắt buộc cho code chạy từ flash).</dd>
+              <dt>Watchpoint</dt><dd>Dừng/ghi nhận khi <em>truy cập dữ liệu</em> một địa chỉ. Tuỳ chọn <strong>WATCH</strong> = không dừng CPU, chỉ phát “watchpoint-hit message” (non-intrusive với NEXUS).</dd>
+              <dt>Register/Memory</dt><dd>Soi &amp; sửa thanh ghi CPU/ngoại vi và bộ nhớ runtime; flash programming.</dd>
+              <dt>Trace</dt><dd>NEXUS program + data trace; lọc theo hàm/biến; trace được cả bus master như DMA.</dd>
+            </dl>
+          </div>
+          <div class="card">
+            <h4 class="mt-0">Khi nào dùng cái gì</h4>
+            <ul class="mb-0 small">
+              <li>Lỗi logic, biết chỗ → <strong>breakpoint</strong>.</li>
+              <li>Biến bị sửa bí ẩn → <strong>watchpoint</strong> (data BP) trên địa chỉ biến.</li>
+              <li>Ngoại vi không hoạt động → soi <strong>thanh ghi cấu hình</strong> &amp; clock.</li>
+              <li>Lỗi gián đoạn/timing → <strong>trace</strong> rồi đọc ngược luồng.</li>
+              <li>Code chạy từ flash → phải dùng <strong>on-chip BP</strong> (SW BP không ghi được flash).</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 5. UDE -->
+        <h2>5. UDE Debugger (must-tell) — workflow SENT</h2>
+        <p>UDE (Universal Debug Engine, PLS) bạn dùng để debug timing/signal SENT trên ST &amp; Infineon. Quy trình kể được:</p>
+        <ul class="steps">
+          <li><h4>Tái hiện &amp; quan sát</h4><p class="mb-0">Bắt tín hiệu SENT ở mức xung; xem tick time sau calibration (56 tick), độ dài từng nibble (12–27 tick), khung fast/slow.</p></li>
+          <li><h4>Đối chiếu kỳ vọng</h4><p class="mb-0">So timing đo được với reference manual/spec J2716 để xác định nibble/CRC sai ở đâu.</p></li>
+          <li><h4>Cô lập HW vs SW</h4><p class="mb-0">Chạy cùng software trên target khác (ST↔Infineon) để biết lỗi do phần cứng hay phần mềm.</p></li>
+          <li><h4>Phân tích tương tác</h4><p class="mb-0">Soi thanh ghi/timer (ICU/capture), kiểm tra cấu hình clock/prescaler ảnh hưởng đo timing.</p></li>
+          <li><h4>Sửa &amp; chốt</h4><p class="mb-0">Khắc phục, rồi đưa ca lỗi vào test tự động để bắt sớm lần sau (nối sang bài <a href="D-sent-automation.html">D</a>).</p></li>
+        </ul>
+
+        <!-- 6. Trước -> Nay -->
+        <h2>6. Trước (~2020) → Nay — MCU &amp; debug ô tô</h2>
+        <div class="evo">
+          <div class="evo__head">🔧 <span>Lockstep, virtualization &amp; trace tốc độ cao</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>MCU body/gateway lõi đơn ~120–240 MHz; trace chủ yếu parallel NEXUS; mỗi chức năng một MCU.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p>MCU <strong>zonal</strong> đa lõi 320–400 MHz, <strong>dual-core lockstep + hardware virtualization</strong> (nhiều ASIL trên một chip), trace <strong>Aurora Gigabit (AGBT)</strong> tốc độ cao; có dòng kèm co-processor RISC-V.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> hiểu lockstep/virtualization giúp trả lời “làm sao một chip chạy nhiều phần mềm khác mức an toàn” — câu hỏi gắn SDV/zonal.</div>
+        </div>
+
+        <!-- Self test -->
+        <h2>7. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">Window watchdog bắt được lỗi gì mà independent không? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Refresh <strong>quá sớm</strong>: code chạy sai nhịp/lặp bất thường vẫn “nuôi” watchdog. Window WDG chỉ chấp nhận refresh trong cửa sổ [min,max] → bắt cả chạy nhanh lẫn treo. Independent WDG (1 ngưỡng) chỉ bắt treo, nhưng bù lại chạy clock riêng nên reset được cả khi CPU/clock hệ thống chết.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Vì sao independent chạy clock riêng lại quan trọng?</li><li>WdgM trong AUTOSAR giám sát kiểu gì? (alive/deadline/logical)</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">SAR ADC hoạt động ra sao? Vì sao hợp control loop? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Tìm nhị phân: SAR đặt MSB=1, DAC nội tạo điện áp so với Vin qua comparator; nếu DAC &gt; Vin thì xoá bit, ngược lại giữ; lặp tới LSB. N-bit cần <strong>N chu kỳ so sánh</strong>, một mẫu/lần, <strong>độ trễ thấp &amp; tất định</strong> → hợp vòng điều khiển. Đổi lại tốc độ thấp hơn pipeline/flash ADC.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Sampling time ảnh hưởng gì? (quá ngắn → chưa nạp đủ tụ S/H → sai số)</li><li>12-bit, Vref=5V thì 1 LSB ≈ ? (≈1.22 mV)</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Khi một ngoại vi “im lặng”, bạn kiểm tra gì đầu tiên? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Thứ tự: (1) <strong>clock</strong> ngoại vi đã bật chưa (clock gating) + PLL lock; (2) cấu hình chân (alternate function/PORT); (3) thanh ghi enable + prescaler; (4) ngắt/cờ trạng thái. Dùng TRACE32 soi thanh ghi cấu hình so với datasheet — đa số lỗi là quên bật clock hoặc sai chân.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Làm sao xác nhận PLL đã lock? (đọc cờ lock / đo clock out)</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Breakpoint khác watchpoint thế nào? SW BP vs on-chip BP? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Breakpoint dừng tại <strong>lệnh/địa chỉ code</strong>; watchpoint (data BP) dừng/ghi nhận khi <strong>truy cập dữ liệu</strong>. <strong>SW BP</strong> thay lệnh trong bộ nhớ bằng lệnh break (không giới hạn, cần ghi được vào RAM); <strong>on-chip BP</strong> dùng tài nguyên HW (có hạn) — bắt buộc khi code chạy từ flash (không ghi đè được).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>WATCH (non-intrusive) khác breakpoint thường ra sao?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Vì sao DMA hữu ích cho ADC tốc độ cao? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">DMA chuyển mẫu ADC vào buffer bộ nhớ mà không làm CPU bận từng mẫu → CPU rảnh, tránh mất mẫu khi sampling nhanh. CPU chỉ cấu hình + nhận ngắt khi đầy buffer. (RH850: DMAC/DTS, một kênh cho một module.)</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>DMA gây vấn đề gì với cache/coherency?</li></ul></div>
+          </div></div>
+        </div>
+
+        <div class="grid grid-2" style="margin-top:18px">
+          <div class="flashcard"><div class="flashcard__inner">
+            <div class="flashcard__face flashcard__face--front"><div class="flashcard__tag">Định nghĩa</div><div class="flashcard__q">PLL và prescaler khác nhau gì?</div><div class="flashcard__hint">bấm để lật</div></div>
+            <div class="flashcard__face flashcard__face--back"><p class="mb-0">PLL <strong>nhân</strong> tần số lên (cần chờ lock); prescaler <strong>chia</strong> tần số xuống cho từng bus/ngoại vi.</p></div>
+          </div></div>
+          <div class="flashcard"><div class="flashcard__inner">
+            <div class="flashcard__face flashcard__face--front"><div class="flashcard__tag">Kinh nghiệm</div><div class="flashcard__q">Công cụ &amp; bước để debug timing SENT?</div><div class="flashcard__hint">bấm để lật</div></div>
+            <div class="flashcard__face flashcard__face--back"><p class="mb-0">UDE: bắt xung → so spec J2716 → cô lập HW/SW bằng cross-target → soi timer/clock (ICU) → sửa → đưa vào test tự động.</p></div>
+          </div></div>
+        </div>
+
+        <!-- 8. Cheat-sheet -->
+        <h2>8. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>Ngoại vi</h4><ul>
+            <li>GPIO: PORT (cấu hình) + DIO (truy cập)</li>
+            <li>Timer/PWM/ICU/Output Compare</li>
+            <li>ADC SAR 12-bit: binary search, N chu kỳ</li>
+            <li>DMA: memory↔periph không CPU (DMAC/DTS)</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Watchdog</h4><ul>
+            <li>Independent: 1 ngưỡng, clock riêng</li>
+            <li>Window: [min,max] — bắt cả quá sớm</li>
+            <li>RH850 = WDTA; AUTOSAR = WDG + WdgM</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Clock/power</h4><ul>
+            <li>OSC → PLL ×N → prescaler → domain</li>
+            <li>RH850: hệ số trong option bytes</li>
+            <li>Im lặng = quên clock gating / sai chân</li>
+            <li>RUN/HALT/STOP/STANDBY</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>RH850</h4><ul>
+            <li>Lõi G3K/G3M/G4MH, RISC, AEC-Q100</li>
+            <li>Dual-core lockstep (ASIL cao)</li>
+            <li>ECC RAM/flash, virtualization (dòng mới)</li>
+            <li>D3/D4/D5: BSW integ + MCAL test</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>TRACE32</h4><ul>
+            <li>SW BP (RAM, vô hạn) vs on-chip BP (flash, có hạn)</li>
+            <li>Watchpoint = data access; WATCH non-intrusive</li>
+            <li>Trace NEXUS: on-chip ↔ off-chip (Aurora/AUX)</li>
+            <li>Soi register/memory, flash program</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>UDE (SENT)</h4><ul>
+            <li>Bắt xung → so J2716</li>
+            <li>Cô lập HW/SW (cross-target ST↔Infineon)</li>
+            <li>Soi ICU/timer/clock</li>
+            <li>Sửa → đưa vào test tự động</li>
+          </ul></div>
+        </div>
+
+        <!-- 9. Sources -->
+        <h2>9. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li>Renesas — <a href="https://www.renesas.com/en/products/microcontrollers-microprocessors/rh850-automotive-mcus" target="_blank" rel="noopener">RH850 Automotive MCUs</a> (lõi, lockstep, safety).</li>
+          <li>Lauterbach — <a href="https://www.lauterbach.com/supported-platforms/architectures/rh850" target="_blank" rel="noopener">TRACE32 RH850 Debug &amp; Trace</a> (breakpoint, watchpoint WATCH, NEXUS).</li>
+          <li>Renesas — <a href="https://renesas.github.io/fsp/group___i_w_d_t.html" target="_blank" rel="noopener">Independent Watchdog</a> &amp; Window Watchdog (CS+ API).</li>
+          <li>Analog Devices / Wikipedia — <a href="https://en.wikipedia.org/wiki/Successive-approximation_ADC" target="_blank" rel="noopener">SAR ADC</a>.</li>
+          <li>Tài liệu gốc: <strong>RH850 Hardware User's Manual</strong> theo từng part; <strong>Lauterbach RH850 Debugger</strong> manual.</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi kể được workflow TRACE32 &amp; UDE và giải thích window watchdog + SAR ADC.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">
+        Chủ đề F · MCU Peripherals &amp; HW Debug — Interview Prep
+      </footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../assets/js/app.js?v=4"></script>
+</body>
+</html>

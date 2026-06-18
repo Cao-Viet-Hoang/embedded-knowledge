@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>C · Testing Methodology &amp; Tools — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/style.css?v=4" />
+</head>
+<body data-page="C" data-root="../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">C</span>
+            <span class="badge badge--must">Must-tell</span>
+            <span class="chip">Vòng 1 · Phần lớn công việc thực tế</span>
+          </div>
+          <h1>Testing Methodology &amp; Tools</h1>
+          <p class="lead">Phần lớn công việc thực tế của bạn là test. Phải nắm chắc <strong>test levels</strong>, <strong>test design techniques</strong> (ISTQB), <strong>coverage</strong> (đặc biệt MC/DC), <strong>mocking/stubbing</strong>, <strong>fault injection</strong>, gắn với <strong>ASPICE</strong> và các tool bạn dùng: Cantata, ECU-Test, Pytest, VECU, CANoe.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> 🔴 Cao</span>
+            <span><b>Trọng tâm:</b> MC/DC, mocking, fault injection</span>
+            <span><b>Tools:</b> Cantata · ECU-Test · Pytest · VECU</span>
+          </div>
+        </div>
+
+        <div class="callout callout--note">
+          <div class="callout__icon">📌</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Nguồn:</strong> các định nghĩa test design (ISTQB), coverage/MC-DC và yêu cầu ASIL (ISO 26262 / DO-178C), tên process ASPICE đều đối chiếu nguồn chuẩn — xem mục “Nguồn tham khảo” cuối bài.</p>
+          </div>
+        </div>
+
+        <!-- 1. Test levels -->
+        <h2>1. Test levels — ranh giới rõ ràng</h2>
+        <p>Interviewer hay hỏi “phân biệt unit và integration test”. Trả lời bằng <strong>phạm vi cô lập</strong> và <strong>cái gì được test</strong>. Mô hình kim tự tháp: càng xuống dưới càng nhiều test, nhanh, cô lập; càng lên trên càng ít, chậm, thực tế.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 300" role="img" aria-label="Kim tự tháp test levels" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="arC" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <polygon points="314,60 346,60 389,112 271,112" fill="var(--brand-900)"/>
+            <polygon points="271,112 389,112 433,165 227,165" fill="var(--brand-800)"/>
+            <polygon points="227,165 433,165 477,218 183,218" fill="var(--brand-600)"/>
+            <polygon points="183,218 477,218 520,270 140,270" fill="var(--brand-400)"/>
+            <text x="330" y="92" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">System</text>
+            <text x="330" y="145" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">Integration</text>
+            <text x="330" y="198" text-anchor="middle" class="dgm-inv" font-size="12.5" font-weight="700">Component</text>
+            <text x="330" y="250" text-anchor="middle" class="dgm-inv" font-size="13" font-weight="800">Unit</text>
+            <line x1="70" y1="252" x2="70" y2="84" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arC)"/>
+            <text x="62" y="80" text-anchor="middle" class="dgm-sub" font-size="10">thực tế · đắt</text>
+            <text x="62" y="266" text-anchor="middle" class="dgm-sub" font-size="10">cô lập · rẻ</text>
+            <line x1="389" y1="86" x2="540" y2="86" stroke="var(--border-strong)" stroke-width="1"/><text x="546" y="90" class="dgm-sub" font-size="10.5">target thật + VECU</text>
+            <line x1="433" y1="138" x2="540" y2="138" stroke="var(--border-strong)" stroke-width="1"/><text x="546" y="142" class="dgm-sub" font-size="10.5">ECU-Test · CANoe</text>
+            <line x1="477" y1="191" x2="540" y2="191" stroke="var(--border-strong)" stroke-width="1"/><text x="546" y="195" class="dgm-sub" font-size="10.5">Cantata · ECU-Test</text>
+            <line x1="520" y1="244" x2="540" y2="244" stroke="var(--border-strong)" stroke-width="1"/><text x="546" y="248" class="dgm-sub" font-size="10.5">Cantata · Pytest</text>
+          </svg>
+          <div class="figure__cap"><b>Test pyramid.</b> Nhiều unit (bắt lỗi logic sớm, rẻ) → ít system (bắt lỗi tương tác, đắt). Trả lời phỏng vấn nên bám trục <b>cô lập</b> và <b>cái gì được test</b>.</div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Level</th><th>Đối tượng</th><th>Cô lập</th><th>Tool bạn dùng</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Unit</strong></td><td>1 hàm/đơn vị nhỏ</td><td>Mock/stub mọi phụ thuộc</td><td>Cantata, Pytest</td></tr>
+              <tr><td><strong>Component</strong></td><td>1 module (vd 1 driver MCAL)</td><td>Stub bên ngoài module</td><td>Cantata, ECU-Test</td></tr>
+              <tr><td><strong>Integration</strong></td><td>Nhiều module ghép nhau</td><td>Ít/không mock, test interface</td><td>ECU-Test, CANoe</td></tr>
+              <tr><td><strong>System</strong></td><td>Toàn ECU/stack (ARA)</td><td>Môi trường thật/gần thật</td><td>ECU-Test, target + VECU</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout--key">
+          <div class="callout__icon">🎯</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Câu chốt:</strong> “Càng xuống thấp càng <em>cô lập</em> và rẻ; càng lên cao càng <em>thực tế</em> nhưng đắt. Unit bắt lỗi logic sớm, system bắt lỗi tương tác. Theo ASPICE: unit ↔ SWE.4, integration ↔ SWE.5, qualification ↔ SWE.6.”</p>
+          </div>
+        </div>
+
+        <!-- 2. Test design -->
+        <h2>2. Test design techniques (ISTQB black-box)</h2>
+        <p>Cách <strong>chọn test case</strong> sao cho ít ca nhất mà bao phủ tốt nhất. Bốn kỹ thuật <em>specification-based</em> (black-box) kinh điển của ISTQB:</p>
+        <div class="accordion">
+          <div class="accordion__item"><button class="accordion__head">Equivalence Partitioning (EP) <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner"><p class="mb-0">Chia input thành các <strong>lớp tương đương</strong> — mọi giá trị trong một lớp cho hành vi giống nhau → chỉ cần test 1 đại diện/lớp, giảm số ca test. Lớp thường suy từ requirement. Vd hàm nhận 0–100: lớp hợp lệ [0–100], lớp dưới (&lt;0), lớp trên (&gt;100). Áp dụng cho cả input lẫn (hiếm hơn) output.</p></div></div>
+          </div>
+          <div class="accordion__item"><button class="accordion__head">Boundary Value Analysis (BVA) <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner"><p class="mb-0">Lỗi hay nằm ở <strong>biên</strong> giữa các lớp tương đương. Với dải [0–100], test các giá trị quanh biên: -1, 0, 1, 99, 100, 101. BVA luôn đi cùng EP (EP chọn lớp, BVA chọn biên của lớp).</p></div></div>
+          </div>
+          <div class="accordion__item"><button class="accordion__head">Decision Table <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner"><p class="mb-0">Khi output phụ thuộc <strong>tổ hợp nhiều điều kiện</strong> (business/logic phức tạp). Liệt kê tổ hợp condition → action thành bảng, đảm bảo không sót tổ hợp quan trọng. Mỗi cột = một rule = một test.</p></div></div>
+          </div>
+          <div class="accordion__item"><button class="accordion__head">State Transition <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner"><p class="mb-0">Khi hệ có <strong>trạng thái</strong> (vd state machine của EcuM/BswM/CanSM). Test các chuyển trạng thái <em>hợp lệ</em> &amp; <em>không hợp lệ</em>, sự kiện kích hoạt, và hành vi ở mỗi state. Phủ được “0-switch” (transition đơn) tới “n-switch” (chuỗi transition).</p></div></div>
+          </div>
+        </div>
+        <div class="callout callout--tip">
+          <div class="callout__icon">🧠</div>
+          <div class="callout__body">
+            <p class="mb-0">Mẹo trả lời: “EP/BVA chọn <em>giá trị</em> input; decision table chọn <em>tổ hợp</em> điều kiện; state transition chọn <em>thứ tự</em> sự kiện. Đây là black-box (theo spec); còn coverage là white-box (theo code).”</p>
+          </div>
+        </div>
+
+        <!-- 3. Coverage -->
+        <h2>3. Code coverage — tới MC/DC</h2>
+        <p>Coverage (white-box) đo “test đã chạy qua bao nhiêu phần code”. Mức tăng dần độ nghiêm ngặt — mức mạnh hơn <strong>bao trùm (subsumes)</strong> mức yếu hơn:</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 250" role="img" aria-label="Phân cấp coverage subsumption" xmlns="http://www.w3.org/2000/svg">
+            <rect x="40" y="24" width="470" height="200" rx="12" fill="var(--brand-400)"/>
+            <text x="58" y="46" class="dgm-inv" font-size="12.5" font-weight="800">MC/DC (mạnh nhất)</text>
+            <rect x="78" y="64" width="394" height="140" rx="11" fill="var(--brand-600)"/>
+            <text x="96" y="86" class="dgm-inv" font-size="12" font-weight="700">Branch / Decision</text>
+            <rect x="116" y="104" width="318" height="80" rx="10" fill="var(--brand-800)"/>
+            <text x="134" y="126" class="dgm-inv" font-size="12" font-weight="700">Statement</text>
+            <text x="275" y="158" text-anchor="middle" class="dgm-inv-sub" font-size="10.5">mỗi dòng lệnh chạy ≥1 lần</text>
+            <text x="275" y="176" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">(không đảm bảo nhánh nào được test)</text>
+            <rect x="530" y="60" width="170" height="130" rx="9" fill="var(--surface-2)" class="dgm-layer"/>
+            <text x="615" y="84" text-anchor="middle" class="dgm-label" font-size="11" font-weight="700">if (A &amp;&amp; B)</text>
+            <text x="615" y="108" text-anchor="middle" class="dgm-sub" font-size="11">Statement: 1 test</text>
+            <text x="615" y="132" text-anchor="middle" class="dgm-sub" font-size="11">Branch: 2 test</text>
+            <text x="615" y="156" text-anchor="middle" class="dgm-sub" font-size="11">MC/DC: 3 test</text>
+            <text x="615" y="178" text-anchor="middle" class="dgm-sub" font-size="9.5">(n điều kiện → n+1)</text>
+          </svg>
+          <div class="figure__cap"><b>Subsumption.</b> MC/DC bao trùm Branch, Branch bao trùm Statement. Với <code>if(A &amp;&amp; B)</code>: 1 / 2 / 3 test — MC/DC cần <b>n+1</b> (rẻ hơn nhiều so với Multiple Condition Coverage = 2ⁿ).</div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Mức</th><th>Yêu cầu</th><th>Số test cho <code>if(A &amp;&amp; B)</code></th></tr></thead>
+            <tbody>
+              <tr><td><strong>Statement</strong></td><td>Mỗi dòng lệnh chạy ≥1 lần</td><td>1 (A=T,B=T)</td></tr>
+              <tr><td><strong>Branch / Decision</strong></td><td>Mỗi nhánh true &amp; false đều chạy</td><td>2 (kết quả T và F)</td></tr>
+              <tr><td><strong>MC/DC</strong></td><td>Mỗi điều kiện con <em>độc lập</em> ảnh hưởng kết quả</td><td>3 (n+1)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>3.1 MC/DC là gì — 4 điều kiện &amp; ví dụ</h3>
+        <p><strong>MC/DC</strong> (Modified Condition/Decision Coverage) đòi đồng thời 4 điều kiện (theo định nghĩa Chilenski–Miller, gốc DO-178B):</p>
+        <ol>
+          <li>Mỗi <strong>entry/exit point</strong> được gọi.</li>
+          <li>Mỗi <strong>decision</strong> nhận đủ true &amp; false.</li>
+          <li>Mỗi <strong>condition con</strong> nhận đủ true &amp; false.</li>
+          <li>Mỗi <strong>condition con tự nó độc lập</strong> lật được kết quả (giữ các điều kiện khác cố định — chỉ đổi một điều kiện tại một thời điểm).</li>
+        </ol>
+<pre><code class="language-c">// decision: result = A &amp;&amp; B  -> MC/DC cần 3 test (n+1)
+//  TC1: A=1, B=1  -> result=1
+//  TC2: A=0, B=1  -> result=0   (đổi A, giữ B=1 -> chứng minh A độc lập tác động)
+//  TC3: A=1, B=0  -> result=0   (đổi B, giữ A=1 -> chứng minh B độc lập tác động)
+// So sánh: Multiple Condition Coverage cần 2^n = 4 test. MC/DC chỉ n+1 = 3.</code></pre>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Test</th><th>A</th><th>B</th><th>result</th><th>Chứng minh</th></tr></thead>
+            <tbody>
+              <tr><td>TC1</td><td>1</td><td>1</td><td>1</td><td>baseline</td></tr>
+              <tr><td>TC2</td><td><strong>0</strong></td><td>1</td><td>0</td><td>đổi A (giữ B=1) → A độc lập</td></tr>
+              <tr><td>TC3</td><td>1</td><td><strong>0</strong></td><td>0</td><td>đổi B (giữ A=1) → B độc lập</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout--interview">
+          <div class="callout__icon">🛡️</div>
+          <div class="callout__body">
+            <div class="callout__title">Vì sao automotive bắt buộc MC/DC ở ASIL cao?</div>
+            <p class="mb-0">Theo <strong>ISO 26262</strong>: ở unit-level, <strong>branch coverage</strong> đủ cho <strong>ASIL A–C</strong>; còn <strong>MC/DC</strong> được <em>“highly recommended”</em> cho <strong>ASIL D</strong>. Lý do: branch chỉ cần decision đạt true/false, một điều kiện con có thể không bao giờ được test độc lập → che giấu lỗi logic. MC/DC bắt mỗi điều kiện <em>tự nó</em> được kiểm chứng. MC/DC có gốc từ <strong>DO-178B/C</strong> (hàng không, DAL A). Xem bài <a href="H-iso26262.html">H</a>.</p>
+          </div>
+        </div>
+
+        <!-- 4. Mocking/Stubbing -->
+        <h2>4. Mocking &amp; Stubbing — cô lập phụ thuộc</h2>
+        <div class="grid grid-2">
+          <div class="card">
+            <h4 class="mt-0">Stub</h4>
+            <p class="mb-0 small">Thay thế phụ thuộc bằng phiên bản “giả” trả về giá trị định sẵn. Mục đích: <strong>điều khiển input</strong> để unit chạy được độc lập. Kiểm tra <em>state</em> — quan tâm “trả về gì”.</p>
+          </div>
+          <div class="card">
+            <h4 class="mt-0">Mock</h4>
+            <p class="mb-0 small">Như stub nhưng còn <strong>kiểm tra tương tác</strong>: hàm có được gọi không, gọi mấy lần, với tham số gì. Kiểm tra <em>behavior</em> — quan tâm “được gọi thế nào”.</p>
+          </div>
+        </div>
+        <h3>4.1 Vì sao cần — và cơ chế của Cantata</h3>
+        <p>Driver MCAL gọi xuống thanh ghi/HW. Khi unit test không có HW, ta <strong>stub</strong> các hàm phần cứng để kiểm soát đầu vào và <strong>mock</strong> để kiểm tra driver gọi đúng. Cantata sinh khung test C/C++, cho phép <strong>wrap/stub</strong> hàm phụ thuộc, kiểm tra call sequence, và đo coverage tới MC/DC.</p>
+<pre><code class="language-c">// Ý tưởng (giả lược): test driver đọc ADC mà không cần phần cứng
+uint16_t Adc_ReadChannel(uint8_t ch);     // hàm cần test
+uint16_t Hw_ReadRegister(uint32_t addr);  // phụ thuộc HW -> sẽ STUB
+
+// Trong test:
+//  - STUB Hw_ReadRegister() để trả 0x0ABC
+//  - gọi Adc_ReadChannel(2)
+//  - EXPECT kết quả map đúng; EXPECT Hw_ReadRegister được gọi 1 lần với addr kênh 2 (MOCK)
+void test_Adc_ReadChannel_returns_mapped_value(void) {
+    stub_set_return(Hw_ReadRegister, 0x0ABC);
+    uint16_t v = Adc_ReadChannel(2);
+    CHECK_EQUAL(0x0ABC, v);
+    CHECK_CALLED_ONCE(Hw_ReadRegister);
+}</code></pre>
+
+        <!-- 5. Fault injection -->
+        <h2>5. Fault injection — test đường lỗi</h2>
+        <p>Happy path là chưa đủ. Phải <strong>chủ động tạo lỗi</strong> để kiểm tra error-handling — chính là điều bạn làm trong SENT automation (CRC sai, nibble ngoài dải, timing lệch).</p>
+        <ul>
+          <li><strong>Input lỗi:</strong> giá trị ngoài dải, NULL pointer, buffer rỗng/tràn.</li>
+          <li><strong>Phụ thuộc lỗi:</strong> stub trả mã lỗi (vd HW báo timeout) → kiểm tra code xử lý đúng.</li>
+          <li><strong>Trạng thái lỗi:</strong> đưa state machine vào tổ hợp bất thường.</li>
+          <li><strong>Protocol lỗi:</strong> khung sai CRC, sai timing → kiểm tra phát hiện &amp; báo lỗi.</li>
+        </ul>
+        <div class="callout callout--tip">
+          <div class="callout__icon">💡</div>
+          <div class="callout__body">
+            <p class="mb-0">Quy tắc: với mỗi requirement “khi X xảy ra thì hệ thống phải Y”, hãy <strong>tạo X bằng fault injection</strong> để chứng minh Y. Đó là bằng chứng mạnh cho ASPICE (test cả negative requirement).</p>
+          </div>
+        </div>
+
+        <!-- 6. Tools -->
+        <h2>6. Bộ công cụ (must-tell)</h2>
+        <div class="grid grid-2">
+          <div class="card"><h4 class="mt-0">Cantata</h4><p class="mb-0 small">Unit/Component test C/C++ với stub/mock &amp; coverage tới MC/DC. Dùng cho test driver MCAL.</p></div>
+          <div class="card"><h4 class="mt-0">ECU-Test</h4><p class="mb-0 small">Test tự động ở mức tích hợp/hệ thống, kịch bản test, kết nối nhiều công cụ/thiết bị (tracetronic).</p></div>
+          <div class="card"><h4 class="mt-0">Pytest</h4><p class="mb-0 small">Khung test Python cho automation framework &amp; scripting test (data-driven, fixture, parametrize).</p></div>
+          <div class="card"><h4 class="mt-0">VECU (Virtual ECU)</h4><p class="mb-0 small">Mô phỏng ECU để chạy test <strong>không cần target thật</strong> → chạy sớm, song song, CI-friendly.</p></div>
+          <div class="card"><h4 class="mt-0">CANoe</h4><p class="mb-0 small">Mô phỏng/giám sát mạng CAN/LIN/Ethernet; kích thích &amp; quan sát bus trong integration/system test (Vector).</p></div>
+          <div class="card"><h4 class="mt-0">TRACE32 / UDE</h4><p class="mb-0 small">Debug phần cứng: soi register/memory, breakpoint, trace; UDE cho debug timing SENT. Xem bài <a href="F-mcu-peripherals.html">F</a>.</p></div>
+        </div>
+
+        <h3>6.1 VECU vs target thật</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th></th><th>VECU</th><th>Target thật</th></tr></thead>
+            <tbody>
+              <tr><td>Tốc độ/chi phí</td><td>Nhanh, rẻ, chạy song song/CI</td><td>Chậm, cần thiết bị, khan hiếm</td></tr>
+              <tr><td>Độ thực tế</td><td>Thiếu hành vi HW/timing thật</td><td>Đúng hành vi phần cứng</td></tr>
+              <tr><td>Dùng khi</td><td>Test logic sớm, regression CI (shift-left)</td><td>Xác nhận cuối, lỗi liên quan HW/timing</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 7. ASPICE -->
+        <h2>7. ASPICE — work product SWE.4/5/6</h2>
+        <p>Các process SWE bên nhánh phải V-model gắn với test level (tên đối chiếu chuẩn Automotive SPICE):</p>
+        <div class="kv">
+          <dt>SWE.4</dt><dd><strong>Software Unit Verification</strong> — verify unit so với detailed design + non-functional req; nơi áp EP/BVA + coverage (statement/branch/MC-DC).</dd>
+          <dt>SWE.5</dt><dd><strong>Software Integration &amp; Integration Test</strong> — ghép unit/component, verify tương tác so với SW architecture.</dd>
+          <dt>SWE.6</dt><dd><strong>Software Qualification Test</strong> — verify phần mềm tích hợp so với <em>software requirements</em> (SWE.1).</dd>
+        </div>
+        <p class="small text-mute">Mỗi mức cần <strong>work product</strong>: test spec, test case, kết quả, và <strong>traceability</strong> requirement↔test hai chiều. Đây là lý do report automation (bài <a href="D-sent-automation.html">D</a>) phải tự map requirement↔test.</p>
+
+        <!-- 8. Trước -> Nay -->
+        <h2>8. Trước (~2020) → Nay — xu hướng kiểm thử</h2>
+        <div class="evo">
+          <div class="evo__head">🧪 <span>Virtual validation &amp; shift-left</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>Test nặng về <strong>target thật / HIL</strong>, chạy muộn trong vòng đời; thiết bị khan hiếm là nút thắt.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p><strong>Virtual ECU / SIL</strong> + CI <strong>shift-left</strong> trở thành chuẩn: chạy unit/integration sớm, song song, trong pipeline; target thật để xác nhận cuối. Đang nổi: <strong>AI-assisted test</strong> (sinh/ưu tiên test case).</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> đúng câu chuyện SENT automation của bạn — đưa test vào CI với VECU/Conan, bắt lỗi sớm thay vì chờ target.</div>
+        </div>
+
+        <!-- 9. Self test -->
+        <h2>9. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">Stub khác Mock thế nào? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>Stub</strong>: cấp input định sẵn (quan tâm “trả về gì” — kiểm tra <em>state</em>). <strong>Mock</strong>: ngoài ra còn <em>verify tương tác</em> (được gọi không, mấy lần, tham số gì — kiểm tra <em>behavior</em>).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Cantata cô lập phụ thuộc bằng cơ chế gì? (wrap/stub hàm + check call)</li><li>Over-mocking có hại gì? (test giòn, gắn chặt implementation)</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Cho <code>if(A || B)</code>, MC/DC cần mấy test và là những test nào? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">3 test (n+1): (A=0,B=0)→F; (A=1,B=0)→T chứng minh A; (A=0,B=1)→T chứng minh B. Mỗi điều kiện độc lập lật kết quả khi giữ điều kiện kia ở giá trị không che (ở đây =0).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Với A&amp;&amp;B thì “giá trị không che” là gì? (giữ điều kiện kia =1)</li><li>Short-circuit evaluation ảnh hưởng MC/DC ra sao?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Khi nào dùng VECU thay vì target thật? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Khi cần chạy <strong>sớm, song song, trong CI</strong> (shift-left) để bắt lỗi logic nhanh và rẻ. Nhưng lỗi liên quan timing/HW thật (vd SENT) vẫn phải xác nhận trên target.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>VECU không bắt được loại lỗi nào? (timing HW, đặc tính điện, ngắt thật)</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Vì sao branch coverage 100% vẫn có thể sót lỗi? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Branch chỉ cần decision đạt true/false, không bắt mỗi <em>điều kiện con</em> độc lập tác động. Một điều kiện luôn bị “che” bởi điều kiện khác có thể sai mà test không phát hiện → cần MC/DC (đó là lý do ASIL D yêu cầu MC/DC).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Cho ví dụ một lỗi mà branch 100% bỏ sót.</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Bạn thiết kế test cho một driver MCAL như thế nào? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Từ requirement → dùng EP/BVA chọn giá trị input (kênh, dải giá trị, biên), <strong>stub truy cập thanh ghi</strong> để cô lập HW, <strong>mock</strong> để verify driver gọi đúng (đúng addr/đúng số lần), thêm <strong>fault injection</strong> (HW trả lỗi/timeout) cho error path, đo coverage tới MC/DC, và map test↔requirement (ASPICE). Chạy trên VECU sớm + target để xác nhận.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Làm sao đạt MC/DC cho một hàm nhiều điều kiện?</li><li>Test một ISR/critical section thế nào?</li></ul></div>
+          </div></div>
+        </div>
+
+        <!-- 10. Cheat-sheet -->
+        <h2>10. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>Test levels</h4><ul>
+            <li>Unit → Component → Integration → System</li>
+            <li>Xuống: cô lập/rẻ/nhanh · Lên: thực tế/đắt</li>
+            <li>Pyramid: nhiều unit, ít system</li>
+            <li>ASPICE: SWE.4 / SWE.5 / SWE.6</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Test design (ISTQB)</h4><ul>
+            <li>EP: chọn lớp tương đương</li>
+            <li>BVA: test biên (-1,0,1,…)</li>
+            <li>Decision table: tổ hợp điều kiện</li>
+            <li>State transition: thứ tự sự kiện</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Coverage</h4><ul>
+            <li>Statement ⊂ Branch ⊂ MC/DC</li>
+            <li>MC/DC: mỗi điều kiện độc lập lật kết quả</li>
+            <li>n điều kiện → <strong>n+1</strong> test (MCC = 2ⁿ)</li>
+            <li>ISO 26262: branch A–C · MC/DC highly rec. cho D</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Mock/Stub/Fault</h4><ul>
+            <li>Stub = state (trả về gì)</li>
+            <li>Mock = behavior (gọi thế nào)</li>
+            <li>Fault injection: input/dependency/state/protocol</li>
+            <li>Mỗi negative req → 1 fault injection</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Tools</h4><ul>
+            <li>Cantata: unit C/C++ + MC/DC</li>
+            <li>ECU-Test: integration/system</li>
+            <li>Pytest: automation/scripting</li>
+            <li>VECU: shift-left CI · CANoe: bus</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Câu chốt</h4><ul>
+            <li>Black-box = theo spec · White-box = theo code</li>
+            <li>MC/DC bắt lỗi Boolean phức tạp</li>
+            <li>Test cả negative path (fault injection)</li>
+            <li>Traceability requirement ↔ test (ASPICE)</li>
+          </ul></div>
+        </div>
+
+        <!-- 11. Sources -->
+        <h2>11. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li>Wikipedia — <a href="https://en.wikipedia.org/wiki/Modified_condition/decision_coverage" target="_blank" rel="noopener">Modified condition/decision coverage</a> (định nghĩa, n+1, subsumption).</li>
+          <li>Wikipedia — <a href="https://en.wikipedia.org/wiki/Equivalence_partitioning" target="_blank" rel="noopener">Equivalence partitioning</a>, <a href="https://en.wikipedia.org/wiki/Boundary-value_analysis" target="_blank" rel="noopener">Boundary-value analysis</a> (ISTQB black-box).</li>
+          <li>Wikipedia — <a href="https://en.wikipedia.org/wiki/Automotive_SPICE" target="_blank" rel="noopener">Automotive SPICE</a> (SWE process group).</li>
+          <li>Rapita Systems — <a href="https://www.rapitasystems.com/iso26262" target="_blank" rel="noopener">ISO 26262 &amp; coverage</a> (branch ASIL A–C, MC/DC highly recommended ASIL D).</li>
+          <li>Chuẩn gốc: <strong>ISO 26262-6</strong> (automotive), <strong>DO-178C</strong> (hàng không, DAL A), ISTQB Foundation Syllabus.</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi giải thích được MC/DC bằng ví dụ và phân biệt stub/mock.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">
+        Chủ đề C · Testing Methodology &amp; Tools — Interview Prep
+      </footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../assets/js/app.js?v=4"></script>
+</body>
+</html>

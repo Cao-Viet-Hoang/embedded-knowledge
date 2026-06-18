@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>B5 · AUTOSAR OS — Task/Alarm/Schedule/MPU — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/style.css?v=4" />
+</head>
+<body data-page="B5" data-root="../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">B5</span>
+            <span class="badge badge--core">Core</span>
+            <span class="chip">AUTOSAR — Module (đào sâu)</span>
+          </div>
+          <h1>AUTOSAR OS — Task / Alarm / Schedule Table / MPU</h1>
+          <p class="lead">RTOS tĩnh, real-time (gốc <strong>OSEK/VDX</strong>). Đào sâu: Task (basic/extended), Counter/Alarm, Event, Resource &amp; <strong>Priority Ceiling</strong>, Schedule Table, ngắt cat1/cat2, hooks, và <strong>Protection (MPU/Timing) + OS-Application</strong> cho ISO 26262. RTE map Runnable→Task.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> 🟠 Core</span>
+            <span><b>Gắn:</b> RTE (bài <a href="B-autosar.html">B</a>), freedom from interference (<a href="H-iso26262.html">H</a>)</span>
+            <span><b>Cùng nhóm:</b> module B1a–B4</span>
+          </div>
+        </div>
+
+        <div class="callout callout--note">
+          <div class="callout__icon">📌</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Nguồn:</strong> đối chiếu <strong>OSEK/VDX OS</strong> &amp; <strong>AUTOSAR OS SWS</strong> (Task/Resource/Alarm/Schedule Table/Protection/Scalability Class) — xem cuối bài.</p>
+          </div>
+        </div>
+
+        <!-- ================= TASK ================= -->
+        <h2>1. Task</h2>
+        <p><strong>Vai trò:</strong> đơn vị thực thi được lập lịch theo <strong>priority cố định</strong>. Mọi task khai báo <em>tĩnh</em> lúc cấu hình (không tạo động) — đặc trưng real-time tất định.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 200" role="img" aria-label="Task state machine" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="ts1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="20" y="70" width="130" height="50" rx="9" fill="var(--surface-2)" class="dgm-layer"/><text x="85" y="100" text-anchor="middle" class="dgm-label" font-size="11" font-weight="700">SUSPENDED</text>
+            <rect x="210" y="70" width="120" height="50" rx="9" fill="var(--brand-400)"/><text x="270" y="100" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">READY</text>
+            <rect x="400" y="70" width="120" height="50" rx="9" fill="var(--brand-800)"/><text x="460" y="100" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">RUNNING</text>
+            <rect x="580" y="70" width="120" height="50" rx="9" fill="var(--brand-600)"/><text x="640" y="96" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">WAITING</text><text x="640" y="110" text-anchor="middle" class="dgm-inv-sub" font-size="8">(extended)</text>
+            <line x1="150" y1="88" x2="206" y2="88" class="dgm-arrow" stroke-width="1.4" marker-end="url(#ts1)"/><text x="178" y="80" text-anchor="middle" class="dgm-sub" font-size="8.5">activate</text>
+            <line x1="330" y1="88" x2="396" y2="88" class="dgm-arrow" stroke-width="1.4" marker-end="url(#ts1)"/><text x="363" y="80" text-anchor="middle" class="dgm-sub" font-size="8.5">start</text>
+            <line x1="396" y1="106" x2="332" y2="106" class="dgm-arrow" stroke-width="1.3" marker-end="url(#ts1)"/><text x="363" y="118" text-anchor="middle" class="dgm-sub" font-size="8.5">preempt</text>
+            <line x1="520" y1="92" x2="576" y2="92" class="dgm-arrow" stroke-width="1.4" marker-end="url(#ts1)"/><text x="548" y="84" text-anchor="middle" class="dgm-sub" font-size="8.5">wait</text>
+            <path d="M640,120 q0,38 -185,38 q-185,0 -185,-34" fill="none" class="dgm-arrow" stroke-width="1.3" marker-end="url(#ts1)"/><text x="455" y="172" text-anchor="middle" class="dgm-sub" font-size="8.5">release (event set) → READY</text>
+            <path d="M460,70 q0,-30 -187,-30 q-188,0 -188,26" fill="none" class="dgm-arrow" stroke-width="1.3" marker-end="url(#ts1)"/><text x="273" y="32" text-anchor="middle" class="dgm-sub" font-size="8.5">terminate → SUSPENDED</text>
+          </svg>
+          <div class="figure__cap"><b>Task state machine.</b> SUSPENDED →activate→ READY →start→ RUNNING →terminate→ SUSPENDED; preempt đẩy RUNNING về READY; chỉ <b>extended task</b> mới vào WAITING (chờ event).</div>
+        </div>
+
+        <h3>1.1 Khái niệm cốt lõi</h3>
+        <dl class="kv">
+          <dt>Basic vs Extended task</dt><dd><strong>Basic</strong>: chạy tới khi <em>terminate</em> hoặc bị preempt — <strong>không</strong> được <code>WaitEvent</code> (không vào WAITING), nên dùng chung stack hiệu quả. <strong>Extended</strong>: có thể <code>WaitEvent</code> → vào WAITING → block chờ event (đồng bộ phức tạp hơn nhưng tốn tài nguyên).</dd>
+          <dt>4 trạng thái</dt><dd><strong>SUSPENDED</strong> (chưa kích hoạt), <strong>READY</strong> (sẵn sàng, chờ CPU), <strong>RUNNING</strong> (đang chạy — chỉ 1 task/lõi), <strong>WAITING</strong> (chỉ extended, chờ event). Lập lịch chọn task READY priority cao nhất chạy.</dd>
+          <dt>Scheduling: full/non/mixed preemptive</dt><dd><strong>Full-preemptive</strong>: task priority cao hơn vừa READY là chen ngay. <strong>Non-preemptive</strong>: task chạy tới SchedulePoint mới nhường (đơn giản, latency cao). <strong>Mixed</strong>: một số task preemptive, số khác không (đặt theo <code>Schedule</code> point).</dd>
+          <dt>Priority &amp; multiple activation</dt><dd>Priority <strong>cố định</strong> lúc cấu hình. Nhiều task có thể cùng priority (xếp hàng FIFO trong cùng mức). <strong>Multiple activation</strong>: cho phép activate một task nhiều lần khi đang chạy → xếp hàng (chỉ BCC2/ECC2 + basic task).</dd>
+          <dt>ActivateTask / TerminateTask / ChainTask</dt><dd><code>ActivateTask</code> đưa task SUSPENDED→READY; <code>TerminateTask</code> kết thúc (task <strong>phải tự terminate</strong>, không “rơi” khỏi hàm); <code>ChainTask</code> = terminate task hiện tại &amp; activate task khác trong một thao tác (tránh khoảng trống).</dd>
+        </dl>
+        <h3>1.2 Conformance classes</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Class</th><th>Task</th><th>Activation / task per priority</th></tr></thead>
+          <tbody>
+            <tr><td><strong>BCC1</strong></td><td>Basic</td><td>1 activation · 1 task/priority</td></tr>
+            <tr><td><strong>BCC2</strong></td><td>Basic</td><td>Nhiều activation · nhiều task/priority</td></tr>
+            <tr><td><strong>ECC1</strong></td><td>Extended (event)</td><td>1 activation</td></tr>
+            <tr><td><strong>ECC2</strong></td><td>Extended</td><td>Nhiều activation · nhiều task/priority</td></tr>
+          </tbody>
+        </table></div>
+
+        <!-- ================= COUNTER & ALARM ================= -->
+        <h2>2. Counter &amp; Alarm</h2>
+        <p><strong>Vai trò:</strong> cơ chế “định kỳ/hẹn giờ” cổ điển của OSEK. Counter đếm tick; Alarm gắn Counter, hết hạn thì kích hành động.</p>
+        <dl class="kv">
+          <dt>Counter</dt><dd>Đối tượng đếm “tick”, nguồn từ HW (timer/GPT) hoặc SW. Có <em>max value</em> &amp; <em>ticks per base</em>. Là nền thời gian cho Alarm &amp; Schedule Table.</dd>
+          <dt>Alarm</dt><dd>Gắn một Counter; khi đạt giá trị hẹn → thực hiện <strong>action</strong>: <code>ActivateTask</code>, <code>SetEvent</code>, gọi <em>alarm callback</em>, hoặc <code>IncrementCounter</code>. <strong>Single</strong> (một lần) hoặc <strong>cyclic</strong> (lặp theo chu kỳ).</dd>
+          <dt>API</dt><dd><code>SetRelAlarm</code> (hẹn tương đối), <code>SetAbsAlarm</code> (tuyệt đối), <code>CancelAlarm</code>, <code>GetAlarm</code> (còn bao nhiêu tick). Alarm linh hoạt nhưng <em>nhiều alarm rời rạc khó đảm bảo quan hệ thời gian</em> giữa chúng → đó là lý do có Schedule Table.</dd>
+        </dl>
+
+        <!-- ================= EVENT ================= -->
+        <h2>3. Event (extended task)</h2>
+        <dl class="kv">
+          <dt>Event mechanism</dt><dd>Cơ chế đồng bộ cho <strong>extended task</strong>: mỗi extended task có một mặt nạ event. <code>SetEvent</code> (task/ISR/alarm đặt event), <code>WaitEvent</code> (task chờ — vào WAITING nếu chưa có), <code>ClearEvent</code> (xoá sau khi xử lý), <code>GetEvent</code> (đọc). Dùng để task chờ một điều kiện (vd dữ liệu sẵn sàng) mà không busy-wait.</dd>
+        </dl>
+
+        <!-- ================= RESOURCE & PRIORITY CEILING ================= -->
+        <h2>4. Resource &amp; Priority Ceiling Protocol</h2>
+        <p><strong>Vai trò:</strong> bảo vệ tài nguyên chia sẻ (loại trừ lẫn nhau) <em>mà không gây priority inversion hay deadlock</em> — bằng <strong>Priority Ceiling Protocol (OCPP/OCBP)</strong>.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 190" role="img" aria-label="Priority ceiling protocol" xmlns="http://www.w3.org/2000/svg">
+            <text x="20" y="22" class="dgm-sub" font-size="9.5">prio cao</text>
+            <text x="20" y="150" class="dgm-sub" font-size="9.5">prio thấp</text>
+            <line x1="60" y1="20" x2="60" y2="150" stroke="var(--border-strong)" stroke-width="1"/>
+            <line x1="60" y1="150" x2="700" y2="150" stroke="var(--border-strong)" stroke-width="1"/>
+            <text x="80" y="44" class="dgm-label" font-size="10" font-weight="700">H</text>
+            <text x="80" y="84" class="dgm-label" font-size="10" font-weight="700">M</text>
+            <text x="80" y="124" class="dgm-label" font-size="10" font-weight="700">L</text>
+            <rect x="110" y="110" width="90" height="22" rx="3" fill="var(--brand-400)"/><text x="155" y="126" text-anchor="middle" class="dgm-inv" font-size="8.5">L chạy</text>
+            <rect x="200" y="30" width="220" height="102" rx="4" fill="var(--core)" opacity="0.25"/>
+            <rect x="200" y="110" width="220" height="22" rx="3" fill="var(--core)"/><text x="310" y="126" text-anchor="middle" class="dgm-inv" font-size="8.5">L giữ R → priority = CEILING</text>
+            <line x1="240" y1="34" x2="240" y2="108" stroke="var(--must)" stroke-width="1.2" stroke-dasharray="3 2"/><text x="240" y="30" text-anchor="middle" class="dgm-sub" font-size="8">H muốn R</text>
+            <line x1="290" y1="74" x2="290" y2="108" stroke="var(--text-mute)" stroke-width="1.2" stroke-dasharray="3 2"/><text x="300" y="70" class="dgm-sub" font-size="8">M ready (bị chặn)</text>
+            <rect x="420" y="30" width="120" height="22" rx="3" fill="var(--must)"/><text x="480" y="46" text-anchor="middle" class="dgm-inv" font-size="8.5">H lấy R, chạy ngay</text>
+            <text x="360" y="178" text-anchor="middle" class="dgm-sub" font-size="9.5">Nâng L lên ceiling khi giữ R → M không chen được → H bị chặn TỐI ĐA một critical section (bounded) · không deadlock</text>
+          </svg>
+          <div class="figure__cap"><b>Priority Ceiling.</b> Khi L giữ resource R, priority L được nâng lên <b>ceiling</b> (= priority cao nhất trong các task dùng R). Nhờ vậy task trung gian M không preempt được L → H chỉ bị chặn tối đa một critical section, và không thể deadlock.</div>
+        </div>
+
+        <dl class="kv">
+          <dt>Priority inversion (vấn đề)</dt><dd>Task ưu tiên cao H bị chặn vì resource đang do task thấp L giữ; tệ hơn, một task <em>trung gian</em> M (không dùng R) chen vào chạy trước L → H chờ <strong>không giới hạn</strong> (unbounded inversion). Sự cố Mars Pathfinder là ví dụ kinh điển.</dd>
+          <dt>Priority Ceiling (giải pháp)</dt><dd>Mỗi resource có <strong>ceiling priority</strong> = priority cao nhất trong các task có dùng nó. Khi một task <code>GetResource</code>, priority nó <em>tạm nâng lên ceiling</em>; <code>ReleaseResource</code> trả về cũ. → M không chen được; H bị chặn tối đa <em>một</em> critical section (bounded); và vì task giữ resource luôn chạy ở priority cao nhất nên <strong>không thể deadlock</strong> (không lồng chờ chéo).</dd>
+          <dt>RES_SCHEDULER</dt><dd>Resource đặc biệt: <code>GetResource(RES_SCHEDULER)</code> nâng priority lên cao nhất → <strong>tạm khoá scheduler</strong> (không bị task khác preempt) mà vẫn nhận ngắt — nhẹ hơn disable interrupt.</dd>
+          <dt>API</dt><dd><code>GetResource</code> / <code>ReleaseResource</code> — phải lồng đúng (LIFO) &amp; release trước khi terminate task.</dd>
+        </dl>
+
+        <!-- ================= SCHEDULE TABLE ================= -->
+        <h2>5. Schedule Table</h2>
+        <p><strong>Vai trò:</strong> một chuỗi <strong>expiry point</strong> tất định gắn trên một Counter — đảm bảo <em>quan hệ thời gian cố định</em> giữa nhiều action, thay cho nhiều alarm rời rạc.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 160" role="img" aria-label="Schedule table expiry points" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="st1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <line x1="40" y1="110" x2="690" y2="110" class="dgm-arrow" stroke-width="1.5" marker-end="url(#st1)"/><text x="690" y="128" text-anchor="end" class="dgm-sub" font-size="9">tick (Counter)</text>
+            <line x1="120" y1="60" x2="120" y2="116" stroke="var(--must)" stroke-width="1.3"/><rect x="70" y="40" width="100" height="20" rx="4" fill="var(--brand-800)"/><text x="120" y="54" text-anchor="middle" class="dgm-inv" font-size="8.5">ActivateTask A</text><text x="120" y="128" text-anchor="middle" class="dgm-sub" font-size="8">EP1 (off 0)</text>
+            <line x1="320" y1="60" x2="320" y2="116" stroke="var(--must)" stroke-width="1.3"/><rect x="270" y="40" width="100" height="20" rx="4" fill="var(--brand-600)"/><text x="320" y="54" text-anchor="middle" class="dgm-inv" font-size="8.5">SetEvent E</text><text x="320" y="128" text-anchor="middle" class="dgm-sub" font-size="8">EP2 (off 5)</text>
+            <line x1="500" y1="60" x2="500" y2="116" stroke="var(--must)" stroke-width="1.3"/><rect x="450" y="40" width="100" height="20" rx="4" fill="var(--brand-800)"/><text x="500" y="54" text-anchor="middle" class="dgm-inv" font-size="8.5">ActivateTask B</text><text x="500" y="128" text-anchor="middle" class="dgm-sub" font-size="8">EP3 (off 8)</text>
+            <line x1="620" y1="84" x2="620" y2="116" stroke="var(--text-mute)" stroke-width="1.2" stroke-dasharray="3 2"/><text x="620" y="128" text-anchor="middle" class="dgm-sub" font-size="8">duration → lặp</text>
+            <text x="360" y="150" text-anchor="middle" class="dgm-sub" font-size="9.5">Quan hệ thời gian giữa A, E, B cố định &amp; chứng minh được · single-shot hoặc repeating · có thể đồng bộ (sync) với global time</text>
+          </svg>
+          <div class="figure__cap"><b>Schedule Table.</b> Các expiry point ở offset cố định kích action (ActivateTask/SetEvent). Khác nhiều Alarm rời: <b>đảm bảo &amp; chứng minh được quan hệ thời gian</b> giữa các action.</div>
+        </div>
+
+        <dl class="kv">
+          <dt>Expiry point</dt><dd>Một điểm tại <em>offset</em> cố định trong bảng; khi Counter chạm tới, thực hiện action gắn vào (ActivateTask/SetEvent). Nhiều expiry point trong một bảng ⇒ một chuỗi hành động đồng bộ.</dd>
+          <dt>Tại sao &gt; nhiều Alarm</dt><dd>Nhiều Alarm độc lập có thể trôi pha so với nhau (khó đảm bảo A luôn trước B đúng X tick). Schedule Table <strong>khoá mọi expiry point vào một time base duy nhất</strong> → quan hệ thời gian <em>tất định &amp; chứng minh được</em> (quan trọng cho safety &amp; timing analysis).</dd>
+          <dt>Single-shot vs repeating</dt><dd><strong>Single-shot</strong>: chạy hết bảng rồi dừng. <strong>Repeating</strong>: tới cuối (final delay) thì quay lại đầu → lịch tuần hoàn.</dd>
+          <dt>Synchronization</dt><dd>Bảng có thể <strong>đồng bộ</strong> với một nguồn thời gian toàn cục (vd global time/FlexRay/Time Sync) — <code>SyncScheduleTable</code> chỉnh pha để các ECU chạy lịch khớp nhau.</dd>
+          <dt>API</dt><dd><code>StartScheduleTableRel</code>/<code>StartScheduleTableAbs</code>, <code>StopScheduleTable</code>, <code>NextScheduleTable</code> (chuyển sang bảng khác tại điểm an toàn), <code>SyncScheduleTable</code>, <code>GetScheduleTableStatus</code>.</dd>
+        </dl>
+
+        <!-- ================= INTERRUPTS ================= -->
+        <h2>6. Interrupts — ISR category 1 vs 2</h2>
+        <dl class="kv">
+          <dt>ISR Category 1</dt><dd><strong>Không gọi OS API</strong>, không qua scheduler — nhanh nhất, overhead thấp nhất. Dùng cho ngắt cực gấp/đơn giản (vd đọc 1 thanh ghi). Không thể kích hoạt rescheduling.</dd>
+          <dt>ISR Category 2</dt><dd>Được <strong>gọi một số OS API</strong> (ActivateTask, SetEvent…), có “OS frame” bao quanh → có thể <em>kích rescheduling</em> khi thoát (một task ưu tiên cao vừa được activate sẽ chạy). Overhead cao hơn cat 1.</dd>
+          <dt>Khoá ngắt</dt><dd><code>DisableAllInterrupts</code>/<code>EnableAllInterrupts</code> (không lồng được), <code>SuspendAllInterrupts</code>/<code>ResumeAllInterrupts</code> (lồng được), <code>SuspendOSInterrupts</code>/<code>ResumeOSInterrupts</code> (chỉ chặn ngắt cat 2 — giữ critical section ngắn mà vẫn cho cat 1 chạy).</dd>
+        </dl>
+
+        <!-- ================= HOOKS ================= -->
+        <h2>7. Hooks</h2>
+        <dl class="kv">
+          <dt>Startup / Shutdown Hook</dt><dd>Chạy lúc OS khởi động (sau init OS, trước task đầu) / lúc <code>ShutdownOS</code> — để init/cleanup mức hệ thống.</dd>
+          <dt>Error Hook</dt><dd>Gọi khi một OS service trả lỗi (vd ActivateTask thất bại) — chỗ tập trung log/xử lý lỗi OS.</dd>
+          <dt>PreTask / PostTask Hook</dt><dd>Gọi trước/sau mỗi lần chuyển task — dùng cho <em>tracing/đo thời gian</em> (debug, không nên có ở production vì overhead).</dd>
+          <dt>Protection Hook</dt><dd>Gọi khi vi phạm <strong>protection</strong> (memory/timing). Trả về quyết định: terminate task, terminate cả OS-Application, hoặc shutdown OS — là điểm xử lý <em>safe reaction</em> khi phát hiện lỗi cách ly.</dd>
+        </dl>
+
+        <!-- ================= PROTECTION & OS-APPLICATION ================= -->
+        <h2>8. Protection &amp; OS-Application (safety)</h2>
+        <p><strong>Vai trò:</strong> đảm bảo <strong>freedom from interference</strong> cho hệ trộn ASIL — phần ASIL thấp/QM không được phá phần ASIL cao (ISO 26262, bài <a href="H-iso26262.html">H</a>).</p>
+        <dl class="kv">
+          <dt>Scalability Class (SC1–SC4)</dt><dd><strong>SC1</strong>: OS cơ bản (OSEK + Schedule Table). <strong>SC2</strong>: + <em>Timing Protection</em>. <strong>SC3</strong>: + <em>Memory Protection</em> (OS-Applications). <strong>SC4</strong>: + cả hai. Chọn class theo yêu cầu an toàn.</dd>
+          <dt>OS-Application</dt><dd>Nhóm các đối tượng OS (task, ISR, alarm, schedule table, counter) cùng <strong>mức tin cậy</strong>: <em>trusted</em> (chạy đặc quyền) hoặc <em>non-trusted</em> (bị giới hạn quyền &amp; vùng nhớ). Là đơn vị cách ly &amp; có thể bị <em>terminate/restart cả cụm</em> khi lỗi.</dd>
+          <dt>Memory Protection (MPU)</dt><dd>Dùng <strong>MPU</strong> phân vùng bộ nhớ: mỗi OS-Application/task chỉ truy cập được vùng của mình (stack, data); truy cập trái phép → protection fault → Protection Hook. Đây là cơ chế HW bảo đảm freedom from interference về <em>bộ nhớ</em>.</dd>
+          <dt>Timing Protection</dt><dd>Giám sát <em>thời gian</em>: <strong>execution budget</strong> (task/ISR không được chạy quá ngân sách CPU), <strong>resource/interrupt lock time</strong> (không giữ resource/khoá ngắt quá lâu), <strong>inter-arrival time</strong> (không kích hoạt quá thường xuyên). Vượt → protection fault → bảo đảm freedom from interference về <em>thời gian</em> (một task lỗi không “đói CPU” task khác).</dd>
+          <dt>Service Protection</dt><dd>OS kiểm tra lời gọi API hợp lệ theo context/quyền của caller (vd non-trusted không gọi API đặc quyền) → chặn lỗi lan.</dd>
+          <dt>IOC (Inter-OS-Application Communication)</dt><dd>Kênh truyền dữ liệu <strong>có bảo vệ</strong> giữa các OS-Application (và giữa các lõi) — qua hàng đợi/biến do OS quản lý, giữ cách ly bộ nhớ. RTE dùng IOC cho giao tiếp xuyên partition/core.</dd>
+          <dt>Multicore</dt><dd><strong>Spinlock</strong> (<code>GetSpinlock</code>/<code>ReleaseSpinlock</code>) = mutex xuyên lõi (busy-wait, dùng cho critical section ngắn giữa các core); <strong>cross-core ActivateTask</strong> (activate task ở lõi khác); scheduler <em>core-local</em> (mỗi lõi lập lịch riêng các task gán cho nó).</dd>
+        </dl>
+        <div class="callout callout--tip"><div class="callout__icon">🔗</div><div class="callout__body"><p class="mb-0"><strong>RTE ↔ OS:</strong> RTE map mỗi <strong>Runnable</strong> của SWC vào một <strong>OS Task</strong>, kích bằng RTE event (gắn vào Alarm/Schedule Table/Event). Hiểu OS = hiểu Runnable thực sự chạy thế nào (bài <a href="B-autosar.html">B</a>).</p></div></div>
+
+        <!-- ================= Trước -> Nay ================= -->
+        <h2>9. Trước (~2020) → Nay</h2>
+        <div class="evo">
+          <div class="evo__head">🧵 <span>OS: multicore, safety, vs Adaptive POSIX</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>OSEK lõi đơn, SC1/SC2 phổ biến; schedule table cho timing chặt.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p><strong>Multicore</strong> (spinlock, core-local scheduling) + <strong>SC3/SC4</strong> (MPU + timing protection) cho mixed-ASIL trên một chip (gắn lockstep/virtualization, bài <a href="F-mcu-peripherals.html">F</a>). Đối lập: Adaptive dùng <strong>POSIX</strong> (process/thread, không OSEK) — nhớ phân biệt khi so Classic vs Adaptive.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> nói được “SC4 = MPU + timing protection cho freedom from interference, còn Adaptive là POSIX” thể hiện hiểu cả OS lẫn kiến trúc.</div>
+        </div>
+
+        <!-- ================= Q&A ================= -->
+        <h2>10. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">Basic vs Extended task khác gì? 4 trạng thái? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>Basic</strong> không <code>WaitEvent</code> (không vào WAITING), chạy tới terminate/preempt, tiết kiệm stack. <strong>Extended</strong> có thể WaitEvent → WAITING (chờ event). 4 trạng thái: SUSPENDED/READY/RUNNING/WAITING (WAITING chỉ extended). Scheduler chọn task READY priority cao nhất.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Conformance class BCC1/2 vs ECC1/2?</li><li>Full vs non-preemptive scheduling?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Priority inversion là gì? Priority Ceiling giải quyết ra sao? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>Inversion</strong>: task cao H chờ resource do task thấp L giữ; task trung gian M chen vào trước L → H chờ <em>không giới hạn</em>. <strong>Priority Ceiling</strong>: khi L <code>GetResource</code>, priority L nâng lên <em>ceiling</em> (= cao nhất trong các task dùng R) → M không chen được; H bị chặn tối đa <em>một</em> critical section (bounded); và <strong>không deadlock</strong>. <code>RES_SCHEDULER</code> nâng lên cao nhất = tạm khoá scheduler nhẹ.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Vì sao ceiling chống được deadlock?</li><li>RES_SCHEDULER khác disable interrupt?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Schedule Table hơn nhiều Alarm ở điểm gì? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Nhiều Alarm độc lập có thể trôi pha so nhau → khó đảm bảo quan hệ thời gian. Schedule Table khoá mọi <strong>expiry point</strong> vào <em>một</em> time base → quan hệ thời gian giữa các action <strong>tất định &amp; chứng minh được</strong> (cho timing analysis/safety); hỗ trợ single-shot/repeating &amp; <strong>đồng bộ global time</strong>.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>SyncScheduleTable để làm gì?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">ISR cat 1 vs cat 2? Khoá ngắt có mấy kiểu? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>Cat 1</strong>: không gọi OS API, nhanh nhất, không rescheduling. <strong>Cat 2</strong>: gọi được OS API (ActivateTask/SetEvent), có thể kích rescheduling khi thoát. Khoá: <code>Disable/EnableAllInterrupts</code> (không lồng), <code>Suspend/ResumeAllInterrupts</code> (lồng được), <code>Suspend/ResumeOSInterrupts</code> (chỉ chặn cat 2).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Khi nào dùng SuspendOSInterrupts thay vì DisableAll?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Làm sao OS đảm bảo freedom from interference (mixed-ASIL)? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Qua <strong>OS-Application</strong> (nhóm trusted/non-trusted) + <strong>Memory Protection</strong> (MPU phân vùng nhớ — chặn truy cập trái phép) + <strong>Timing Protection</strong> (execution budget/lock time/inter-arrival — chặn task lỗi đói CPU) + Service Protection. Vi phạm → Protection Hook quyết định terminate task/OS-App/shutdown. Là yêu cầu SC3/SC4 cho ISO 26262 (bài <a href="H-iso26262.html">H</a>).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>IOC dùng để làm gì?</li><li>Multicore: spinlock vs resource?</li></ul></div>
+          </div></div>
+        </div>
+
+        <!-- ================= Cheat-sheet ================= -->
+        <h2>11. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>Task</h4><ul>
+            <li>Basic (no wait) vs Extended (WaitEvent)</li>
+            <li>States: SUSPENDED/READY/RUNNING/WAITING</li>
+            <li>Full/non/mixed preemptive · priority cố định</li>
+            <li>BCC1/2 · ECC1/2</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Counter/Alarm/Event</h4><ul>
+            <li>Counter = tick base</li>
+            <li>Alarm → ActivateTask/SetEvent/callback (single/cyclic)</li>
+            <li>Event: Set/Wait/Clear (extended)</li>
+            <li>SetRel/AbsAlarm</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Resource</h4><ul>
+            <li>Priority Ceiling chống inversion + deadlock</li>
+            <li>GetResource → priority = ceiling</li>
+            <li>Blocking bounded (1 critical section)</li>
+            <li>RES_SCHEDULER = khoá scheduler nhẹ</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Schedule Table</h4><ul>
+            <li>Expiry point trên 1 time base</li>
+            <li>Tất định &amp; chứng minh được</li>
+            <li>Single-shot / repeating</li>
+            <li>Sync global time</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>ISR / Hooks</h4><ul>
+            <li>Cat1 (no OS API) vs Cat2 (OS API)</li>
+            <li>Disable/Suspend All/OS Interrupts</li>
+            <li>Startup/Shutdown/Error/Pre-Post/Protection Hook</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Protection (SC)</h4><ul>
+            <li>SC1 base · SC2 timing · SC3 memory · SC4 cả hai</li>
+            <li>OS-Application trusted/non-trusted</li>
+            <li>MPU (memory) + budget/lock/inter-arrival (timing)</li>
+            <li>IOC · spinlock (multicore) · RTE Runnable→Task</li>
+          </ul></div>
+        </div>
+
+        <!-- ================= Sources ================= -->
+        <h2>12. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li><strong>OSEK/VDX OS</strong> Specification (task, resource, alarm, conformance class, ISR cat 1/2, hooks).</li>
+          <li>AUTOSAR Classic SWS — <strong>OS</strong> (Schedule Table, Scalability Class SC1–SC4, Memory/Timing Protection, OS-Application, IOC, multicore spinlock).</li>
+          <li>Wikipedia — <a href="https://en.wikipedia.org/wiki/Priority_ceiling_protocol" target="_blank" rel="noopener">Priority ceiling protocol</a>, <a href="https://en.wikipedia.org/wiki/Priority_inversion" target="_blank" rel="noopener">Priority inversion</a> (Mars Pathfinder).</li>
+        </ul>
+
+
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi giải thích được basic/extended task, priority ceiling, schedule table và protection (MPU/timing).</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">
+        Chủ đề B5 · AUTOSAR OS — Interview Prep
+      </footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../assets/js/app.js?v=4"></script>
+</body>
+</html>

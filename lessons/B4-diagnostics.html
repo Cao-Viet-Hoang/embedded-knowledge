@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>B4 · Diagnostics — Dcm/Dem/UDS/DTC — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/style.css?v=4" />
+</head>
+<body data-page="B4" data-root="../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">B4</span>
+            <span class="badge badge--core">Core</span>
+            <span class="chip">AUTOSAR — Module (đào sâu)</span>
+          </div>
+          <h1>Diagnostics — Dcm / Dem / UDS / DTC</h1>
+          <p class="lead">Chẩn đoán theo <strong>UDS (ISO 14229)</strong>: <strong>Dcm</strong> (dispatcher: session, security, route service) và <strong>Dem</strong> (quản lý event lỗi &amp; DTC: debounce, aging, freeze frame). Cộng <strong>FiM</strong> (vô hiệu hoá chức năng khi lỗi). Trọng tâm: DTC status byte &amp; vòng đời DTC.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> 🟠 Core</span>
+            <span><b>Gắn:</b> UDS/SID (bài <a href="E-protocols.html">E</a>), CanTp (<a href="B3-communication.html">B3</a>)</span>
+            <span><b>Tổng quan:</b> bài <a href="B-autosar.html">B</a></span>
+          </div>
+        </div>
+
+        <div class="callout callout--note">
+          <div class="callout__icon">📌</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Nguồn:</strong> Dcm/Dem đối chiếu <strong>AUTOSAR Classic SWS</strong>; dịch vụ &amp; DTC status byte theo <strong>ISO 14229 (UDS)</strong> — xem cuối bài. Danh sách SID/NRC đầy đủ ở bài <a href="E-protocols.html">E</a>.</p>
+          </div>
+        </div>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 200" role="img" aria-label="Luồng chẩn đoán Dcm Dem" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="dg1" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="16" y="80" width="100" height="44" rx="8" fill="var(--brand-800)"/><text x="66" y="100" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Tester</text><text x="66" y="115" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">(off-board)</text>
+            <line x1="116" y1="102" x2="146" y2="102" class="dgm-arrow" stroke-width="1.4" marker-end="url(#dg1)"/>
+            <rect x="148" y="80" width="90" height="44" rx="8" fill="var(--brand-600)"/><text x="193" y="106" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">CanTp/DoIP</text>
+            <line x1="238" y1="102" x2="268" y2="102" class="dgm-arrow" stroke-width="1.4" marker-end="url(#dg1)"/>
+            <rect x="270" y="40" width="240" height="124" rx="9" fill="var(--surface-2)" class="dgm-layer"/><text x="390" y="60" text-anchor="middle" class="dgm-label" font-size="11.5" font-weight="800">Dcm</text>
+            <rect x="284" y="68" width="212" height="26" rx="5" fill="var(--brand-400)"/><text x="390" y="85" text-anchor="middle" class="dgm-inv" font-size="9.5">DSL — session · security · P2 timing</text>
+            <rect x="284" y="98" width="212" height="26" rx="5" fill="var(--brand-600)"/><text x="390" y="115" text-anchor="middle" class="dgm-inv" font-size="9.5">DSD — dispatch SID</text>
+            <rect x="284" y="128" width="212" height="26" rx="5" fill="var(--brand-800)"/><text x="390" y="145" text-anchor="middle" class="dgm-inv" font-size="9.5">DSP — xử lý service</text>
+            <line x1="510" y1="141" x2="556" y2="141" class="dgm-arrow" stroke-width="1.4" marker-end="url(#dg1)"/>
+            <rect x="558" y="120" width="146" height="44" rx="8" fill="var(--core)"/><text x="631" y="140" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Dem</text><text x="631" y="155" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">DTC · event memory</text>
+            <line x1="510" y1="81" x2="556" y2="81" class="dgm-arrow" stroke-width="1.3" marker-end="url(#dg1)"/>
+            <rect x="558" y="60" width="146" height="44" rx="8" fill="var(--surface)" class="dgm-layer"/><text x="631" y="80" text-anchor="middle" class="dgm-text" font-size="10">App / Routine / DID</text><text x="631" y="95" text-anchor="middle" class="dgm-sub" font-size="8.5">(0x22/0x2E/0x31)</text>
+          </svg>
+          <div class="figure__cap"><b>Luồng chẩn đoán.</b> Tester → transport (CanTp/DoIP) → Dcm (DSL kiểm session/security/timing → DSD route SID → DSP xử lý). DSP gọi app (đọc/ghi DID, routine) hoặc Dem (đọc DTC 0x19).</div>
+        </div>
+
+        <!-- ================= Dcm ================= -->
+        <h2>1. Dcm (Diagnostic Communication Manager)</h2>
+        <p><strong>Vai trò:</strong> <em>dispatcher UDS</em> — nhận request từ tester, kiểm điều kiện (session/security/timing), route tới đúng service handler, trả response. Gồm 3 sub-module.</p>
+        <h3>1.1 Khái niệm cốt lõi</h3>
+        <dl class="kv">
+          <dt>DSL / DSD / DSP</dt><dd><strong>DSL</strong> (Diagnostic Session Layer): quản lý session, security, protocol, timing &amp; TesterPresent. <strong>DSD</strong> (Diagnostic Service Dispatcher): kiểm SID có được phép ở session/security hiện tại không rồi <em>route</em>. <strong>DSP</strong> (Diagnostic Service Processing): xử lý từng service (đọc/ghi DID, routine, đọc DTC…).</dd>
+          <dt>Diagnostic session (0x10)</dt><dd>Server luôn ở <em>một</em> session: <strong>default</strong> (01), <strong>programming</strong> (02 — để flash/lập trình), <strong>extended</strong> (03 — mở thêm service). Nhiều service chỉ chạy ở extended/programming. Hết hoạt động → tự về default.</dd>
+          <dt>Security access (0x27)</dt><dd>Mở khoá service nhạy bằng <strong>seed → key</strong>: tester xin seed (27 01) → ECU trả seed (67 01) → tester tính key=f(seed) (thuật toán bí mật OEM) → gửi key (27 02) → đúng thì mở. Chống brute-force bằng <strong>attempt counter</strong> (sai nhiều lần → khoá) &amp; <strong>delay timer</strong> (phải chờ sau số lần sai, hoặc sau power-on).</dd>
+          <dt>P2 / P2* timing &amp; response pending</dt><dd><strong>P2</strong> = thời gian tối đa ECU phải trả response sau request. Nếu cần xử lý lâu hơn, ECU gửi <strong>negative response 0x78</strong> (responsePending) để gia hạn tới <strong>P2*</strong> (lớn hơn) — giữ tester chờ thay vì timeout. Cơ chế quan trọng cho routine/flash chậm.</dd>
+          <dt>Service table</dt><dd>Bảng cấu hình: mỗi SID + sub-function ↔ điều kiện (session/security cho phép) + handler. Dcm dùng bảng này để DSD kiểm &amp; route; service không hỗ trợ → NRC 0x11.</dd>
+          <dt>TesterPresent (0x3E) &amp; S3 timeout</dt><dd>Tester gửi <strong>3E</strong> định kỳ để giữ session khác default sống; nếu im lặng quá <strong>S3</strong> (~5 s) → ECU tự về default session (an toàn).</dd>
+        </dl>
+        <h3>1.2 Dịch vụ UDS chính (Dcm route)</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>SID</th><th>Dịch vụ</th><th>Ý nghĩa</th></tr></thead>
+          <tbody>
+            <tr><td><code>0x10</code></td><td>SessionControl</td><td>Đổi session (default/programming/extended)</td></tr>
+            <tr><td><code>0x27</code></td><td>SecurityAccess</td><td>Seed→key mở khoá</td></tr>
+            <tr><td><code>0x22</code> / <code>0x2E</code></td><td>Read/WriteDataByIdentifier</td><td>Đọc/ghi theo DID</td></tr>
+            <tr><td><code>0x31</code></td><td>RoutineControl</td><td>start/stop/requestResults routine</td></tr>
+            <tr><td><code>0x19</code></td><td>ReadDTCInformation</td><td>Đọc DTC (từ Dem)</td></tr>
+            <tr><td><code>0x14</code> / <code>0x85</code></td><td>Clear / ControlDTCSetting</td><td>Xoá DTC / bật-tắt ghi DTC</td></tr>
+            <tr><td><code>0x34/36/37</code></td><td>Request/Transfer/Exit Download</td><td>Nạp firmware (programming)</td></tr>
+            <tr><td><code>0x3E</code></td><td>TesterPresent</td><td>Giữ session sống</td></tr>
+          </tbody>
+        </table></div>
+        <p class="small text-mute">Positive response = SID|0x40; negative = <code>7F &lt;SID&gt; &lt;NRC&gt;</code>. Danh sách SID/NRC đầy đủ ở bài <a href="E-protocols.html">E</a>. <strong>API Dcm:</strong> <code>Dcm_GetSesCtrlType</code>, <code>Dcm_GetSecurityLevel</code>; handler do app/RTE cung cấp. <strong>Bẫy:</strong> service ở sai session/security → NRC 0x7F (0x33 securityAccessDenied, 0x22 conditionsNotCorrect); quên 0x78 cho routine chậm → tester timeout.</p>
+
+        <!-- ================= Dem ================= -->
+        <h2>2. Dem (Diagnostic Event Manager)</h2>
+        <p><strong>Vai trò:</strong> nhận <em>event lỗi</em> từ BSW/SWC (monitor), quyết định khi nào thành <strong>DTC</strong> (confirmed), lưu vào event memory kèm dữ liệu chụp. Dcm đọc DTC từ Dem khi tester yêu cầu (0x19).</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 130" role="img" aria-label="DTC status byte 8 bit" xmlns="http://www.w3.org/2000/svg">
+            <text x="360" y="20" text-anchor="middle" class="dgm-label" font-size="11.5" font-weight="800">DTC status byte (8 bit — ISO 14229)</text>
+            <rect x="16" y="34" width="86" height="44" rx="5" fill="var(--brand-800)"/><text x="59" y="52" text-anchor="middle" class="dgm-inv" font-size="9" font-weight="700">bit0</text><text x="59" y="66" text-anchor="middle" class="dgm-inv-sub" font-size="7.5">testFailed</text>
+            <rect x="104" y="34" width="86" height="44" rx="5" fill="var(--brand-600)"/><text x="147" y="52" text-anchor="middle" class="dgm-inv" font-size="9" font-weight="700">bit1</text><text x="147" y="66" text-anchor="middle" class="dgm-inv-sub" font-size="7">tFThisOpCycle</text>
+            <rect x="192" y="34" width="86" height="44" rx="5" fill="var(--brand-400)"/><text x="235" y="52" text-anchor="middle" class="dgm-inv" font-size="9" font-weight="700">bit2</text><text x="235" y="66" text-anchor="middle" class="dgm-inv-sub" font-size="7.5">pending</text>
+            <rect x="280" y="34" width="86" height="44" rx="5" fill="var(--core)"/><text x="323" y="52" text-anchor="middle" class="dgm-inv" font-size="9" font-weight="700">bit3</text><text x="323" y="66" text-anchor="middle" class="dgm-inv-sub" font-size="7.5">confirmed</text>
+            <rect x="368" y="34" width="86" height="44" rx="5" fill="var(--brand-400)"/><text x="411" y="52" text-anchor="middle" class="dgm-inv" font-size="9" font-weight="700">bit4</text><text x="411" y="66" text-anchor="middle" class="dgm-inv-sub" font-size="6.5">tNotCompl/Clear</text>
+            <rect x="456" y="34" width="86" height="44" rx="5" fill="var(--brand-600)"/><text x="499" y="52" text-anchor="middle" class="dgm-inv" font-size="9" font-weight="700">bit5</text><text x="499" y="66" text-anchor="middle" class="dgm-inv-sub" font-size="6.5">tFailed/Clear</text>
+            <rect x="544" y="34" width="86" height="44" rx="5" fill="var(--brand-800)"/><text x="587" y="52" text-anchor="middle" class="dgm-inv" font-size="9" font-weight="700">bit6</text><text x="587" y="66" text-anchor="middle" class="dgm-inv-sub" font-size="6.5">tNotCompl/Cyc</text>
+            <rect x="632" y="34" width="72" height="44" rx="5" fill="var(--must)"/><text x="668" y="52" text-anchor="middle" class="dgm-inv" font-size="9" font-weight="700">bit7</text><text x="668" y="66" text-anchor="middle" class="dgm-inv-sub" font-size="7">warnInd</text>
+            <text x="360" y="100" text-anchor="middle" class="dgm-sub" font-size="10">bit3 confirmed = đã đủ tin để báo · bit7 = bật đèn cảnh báo (MIL) · tester đọc qua 0x19</text>
+          </svg>
+          <div class="figure__cap"><b>DTC status byte.</b> 8 bit mô tả trạng thái mỗi DTC (testFailed, pending, confirmed, …, warningIndicator). Tester đọc bằng 0x19; mask khả dụng qua sub-function 0x01.</div>
+        </div>
+
+        <h3>2.1 Khái niệm cốt lõi</h3>
+        <dl class="kv">
+          <dt>Event ↔ DTC</dt><dd>Một <strong>monitor</strong> (BSW/SWC) báo trạng thái event (PASSED/FAILED) qua <code>Dem_SetEventStatus</code>. Dem ánh xạ event → <strong>DTC</strong> (Diagnostic Trouble Code, vd P0123) hiển thị cho tester. Nhiều event có thể map một DTC.</dd>
+          <dt>DTC status byte (8 bit)</dt><dd>Mỗi DTC có byte trạng thái (xem sơ đồ): testFailed, testFailedThisOperationCycle, pendingDTC, <strong>confirmedDTC</strong>, testNotCompletedSinceLastClear, testFailedSinceLastClear, testNotCompletedThisOperationCycle, <strong>warningIndicatorRequested</strong> (bật đèn MIL). Tester lọc DTC theo các bit này.</dd>
+          <dt>Debouncing</dt><dd>Lỗi phải “đủ độ tin” mới chuyển trạng thái — chống báo nhầm do nhiễu thoáng qua. <strong>Counter-based</strong>: mỗi lần FAILED +N, PASSED −M; vượt ngưỡng → failed. <strong>Time-based</strong>: phải FAILED liên tục trong một khoảng thời gian.</dd>
+          <dt>Operation cycle &amp; confirmation</dt><dd><strong>Operation cycle</strong> (vd một chu kỳ lái/ignition cycle) là đơn vị đếm. DTC chỉ <strong>confirmed</strong> sau khi failed đủ số operation cycle (confirmation threshold) → tránh confirm vội.</dd>
+          <dt>Aging &amp; aged</dt><dd>Khi DTC không còn failed qua đủ số operation cycle “tốt” liên tiếp → <strong>healing</strong>; tiếp tục → <strong>aged</strong> → bị xoá khỏi memory. Tự dọn DTC cũ không còn lỗi.</dd>
+          <dt>Event memory</dt><dd><strong>Primary</strong> (chính, cho emission/OBD) &amp; <strong>secondary</strong> (phụ). Khi đầy → áp <em>displacement</em> (đẩy DTC ưu tiên thấp ra cho DTC quan trọng hơn).</dd>
+          <dt>Freeze frame / snapshot &amp; extended data</dt><dd>Khi DTC xảy ra, Dem <strong>chụp</strong> điều kiện môi trường tại thời điểm lỗi (<em>snapshot/freeze frame</em>: tốc độ, nhiệt độ, RPM…) &amp; <strong>extended data</strong> (số lần lỗi, aging counter…) → tester đọc để chẩn đoán nguyên nhân.</dd>
+          <dt>Enable conditions</dt><dd>DTC chỉ được đánh giá khi điều kiện cho phép (vd điện áp/nhiệt độ trong dải) — tránh báo lỗi giả khi điều kiện bất thường. Dùng cả <code>ControlDTCSetting</code> (0x85) để tạm tắt ghi DTC khi đang test.</dd>
+        </dl>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 160" role="img" aria-label="Vòng đời DTC" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="dl1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="14" y="58" width="120" height="44" rx="8" fill="var(--surface)" class="dgm-layer"/><text x="74" y="78" text-anchor="middle" class="dgm-text" font-size="10" font-weight="700">FAILED (lặp)</text><text x="74" y="93" text-anchor="middle" class="dgm-sub" font-size="8">monitor báo</text>
+            <line x1="134" y1="80" x2="170" y2="80" class="dgm-arrow" stroke-width="1.4" marker-end="url(#dl1)"/><text x="152" y="72" text-anchor="middle" class="dgm-sub" font-size="8">debounce</text>
+            <rect x="172" y="58" width="120" height="44" rx="8" fill="var(--brand-400)"/><text x="232" y="80" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">pending</text>
+            <line x1="292" y1="80" x2="328" y2="80" class="dgm-arrow" stroke-width="1.4" marker-end="url(#dl1)"/><text x="310" y="72" text-anchor="middle" class="dgm-sub" font-size="8">đủ op-cycle</text>
+            <rect x="330" y="58" width="130" height="44" rx="8" fill="var(--core)"/><text x="395" y="78" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">confirmed</text><text x="395" y="93" text-anchor="middle" class="dgm-inv-sub" font-size="8">+ freeze frame + MIL</text>
+            <line x1="460" y1="80" x2="496" y2="80" class="dgm-arrow" stroke-width="1.4" marker-end="url(#dl1)"/><text x="478" y="72" text-anchor="middle" class="dgm-sub" font-size="8">PASSED</text>
+            <rect x="498" y="58" width="100" height="44" rx="8" fill="var(--ok)"/><text x="548" y="80" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">healing</text>
+            <line x1="598" y1="80" x2="634" y2="80" class="dgm-arrow" stroke-width="1.4" marker-end="url(#dl1)"/>
+            <rect x="636" y="58" width="70" height="44" rx="8" fill="var(--surface-2)" class="dgm-layer"/><text x="671" y="84" text-anchor="middle" class="dgm-text" font-size="10" font-weight="700">aged</text>
+            <text x="360" y="138" text-anchor="middle" class="dgm-sub" font-size="9.5">Debounce (counter/time) chống báo nhầm · confirmed sau đủ operation cycle · aged = xoá khi hết lỗi đủ lâu</text>
+          </svg>
+          <div class="figure__cap"><b>Vòng đời DTC.</b> FAILED (debounce) → pending → confirmed (lưu + freeze frame + đèn) → khi PASSED đủ lâu → healing → aged (xoá). Đây là cơ chế tránh báo nhầm &amp; tự dọn.</div>
+        </div>
+        <p class="small text-mute"><strong>API Dem:</strong> <code>Dem_SetEventStatus</code>, <code>Dem_GetEventStatus</code>, <code>Dem_GetDTCStatusAvailabilityMask</code>, <code>Dem_GetDTCOfEvent</code>. <strong>Cấu hình:</strong> <code>DemEventParameter</code> (event↔DTC, debounce algorithm, operation cycle, confirmation threshold), <code>DemDTCAttributes</code> (memory, snapshot, extended data). <strong>Bẫy:</strong> debounce sai (báo nhầm/bỏ sót); confirmation threshold không khớp OEM; freeze frame thiếu trường tester cần.</p>
+
+        <!-- ================= FiM ================= -->
+        <h2>3. FiM (Function Inhibition Manager)</h2>
+        <p><strong>Vai trò:</strong> <em>vô hiệu hoá</em> (inhibit) một chức năng phần mềm khi có event lỗi liên quan — để chức năng không chạy với dữ liệu/điều kiện không tin cậy.</p>
+        <dl class="kv">
+          <dt>Function inhibition</dt><dd>Một <strong>FID</strong> (Function Identifier) gắn với các event của Dem qua điều kiện (permission). Khi event lỗi → FiM cập nhật permission → function hỏi <code>FiM_GetFunctionPermission</code> trước khi chạy; không cho phép thì bỏ qua (vd tắt một tính năng điều khiển khi cảm biến lỗi).</dd>
+          <dt>Quan hệ Dem ↔ FiM</dt><dd>Dem báo trạng thái event → FiM dịch thành permission. Đây là cách lỗi chẩn đoán <em>tác động</em> tới hành vi chức năng một cách có kiểm soát (degradation/limp-home).</dd>
+        </dl>
+
+        <!-- ================= Trước -> Nay ================= -->
+        <h2>4. Trước (~2020) → Nay</h2>
+        <div class="evo">
+          <div class="evo__head">🩺 <span>Diagnostics: DoIP, OTA, security</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>UDS-on-CAN (CanTp); Dcm/Dem theo OBD/emission là chính.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p><strong>UDS-on-IP (DoIP)</strong> qua Ethernet (chẩn đoán &amp; flash OTA nhanh); security access mạnh hơn (gắn 21434, có thể certificate-based thay seed-key cố định); diagnostics phối hợp UCM cho cập nhật phần mềm.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> nói được “UDS chạy trên cả CanTp lẫn DoIP, security access đang chuyển sang cơ chế mạnh hơn theo ISO 21434” cho thấy bạn cập nhật.</div>
+        </div>
+
+        <!-- ================= Q&A ================= -->
+        <h2>5. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">Dcm gồm những sub-module nào? Một request UDS được xử lý ra sao? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>DSL</strong> (session/security/timing/TesterPresent) → <strong>DSD</strong> (kiểm SID có được phép ở session/security hiện tại rồi route) → <strong>DSP</strong> (xử lý: đọc/ghi DID, routine, hoặc gọi Dem đọc DTC). Trả positive (SID|0x40) hoặc negative (7F SID NRC). Nếu xử lý lâu → 0x78 responsePending (gia hạn P2→P2*).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>P2 vs P2* &amp; 0x78 để làm gì?</li><li>S3 timeout của TesterPresent?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Security access 0x27 chống brute-force thế nào? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Seed→key (key=f(seed) bí mật OEM). Chống brute-force bằng <strong>attempt counter</strong> (sai N lần → khoá) + <strong>delay timer</strong> (phải chờ sau số lần sai hoặc sau power-on mới được thử lại). Sai key → NRC 0x35 (invalidKey); vượt số lần → 0x36 (exceedNumberOfAttempts); đang khoá → 0x37 (requiredTimeDelayNotExpired).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Vì sao tách requestSeed/sendKey thành 2 sub-function?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">DTC status byte gồm gì? Debounce &amp; aging để làm gì? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">8 bit: testFailed, testFailedThisOpCycle, <strong>pending</strong>, <strong>confirmed</strong>, testNotCompletedSinceClear, testFailedSinceClear, testNotCompletedThisCycle, <strong>warningIndicator</strong> (MIL). <strong>Debounce</strong> (counter/time-based) chống báo nhầm do nhiễu — lỗi phải đủ tin mới đổi trạng thái. <strong>Aging</strong> tự xoá DTC khi hết lỗi qua đủ operation cycle tốt.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Confirmed cần điều kiện gì? (đủ operation cycle)</li><li>Freeze frame chứa gì?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Dcm khác Dem thế nào? FiM làm gì? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>Dcm</strong> = giao tiếp chẩn đoán (dispatch UDS: session/security/route). <strong>Dem</strong> = quản lý event lỗi &amp; DTC (debounce/aging/freeze frame/event memory). Dcm đọc DTC từ Dem khi tester gửi 0x19. <strong>FiM</strong> vô hiệu hoá chức năng khi có event lỗi (degradation), qua FID + permission từ Dem.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>0x14 ClearDTC xoá gì? (DTC + freeze frame + extended data)</li></ul></div>
+          </div></div>
+        </div>
+
+        <!-- ================= Cheat-sheet ================= -->
+        <h2>6. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>Dcm</h4><ul>
+            <li>DSL (session/security/timing) → DSD (route) → DSP (xử lý)</li>
+            <li>Session: default/programming/extended</li>
+            <li>0x27 seed→key + attempt/delay</li>
+            <li>0x78 responsePending (P2→P2*)</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>UDS SID</h4><ul>
+            <li>10 session · 27 security · 22/2E DID</li>
+            <li>31 routine · 19 DTC · 14 clear · 85 control</li>
+            <li>34/36/37 download · 3E present</li>
+            <li>Pos = SID|0x40 · Neg = 7F SID NRC</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Dem — DTC</h4><ul>
+            <li>Event ↔ DTC (Dem_SetEventStatus)</li>
+            <li>Status byte 8-bit (confirmed, warnInd…)</li>
+            <li>Debounce counter/time-based</li>
+            <li>Confirmed sau đủ operation cycle</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Dem — lưu trữ</h4><ul>
+            <li>Event memory primary/secondary + displacement</li>
+            <li>Freeze frame/snapshot + extended data</li>
+            <li>Aging → aged (tự xoá)</li>
+            <li>Enable conditions + 0x85</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>FiM</h4><ul>
+            <li>FID + permission</li>
+            <li>Inhibit function khi event lỗi</li>
+            <li>Dem → FiM → degradation/limp-home</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Nay</h4><ul>
+            <li>UDS-on-IP (DoIP) qua Ethernet</li>
+            <li>Security access mạnh hơn (21434)</li>
+            <li>Diag phối hợp UCM/OTA</li>
+          </ul></div>
+        </div>
+
+        <!-- ================= Sources ================= -->
+        <h2>7. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li><strong>ISO 14229 (UDS)</strong> — services, NRC, DTC status byte; <strong>ISO 14229-2/ISO 15765-3</strong> (session/timing).</li>
+          <li>AUTOSAR Classic SWS — <strong>Dcm</strong>, <strong>Dem</strong>, <strong>FiM</strong>.</li>
+          <li>uds.readthedocs.io — <a href="https://uds.readthedocs.io/en/latest/pages/knowledge_base/service.html" target="_blank" rel="noopener">UDS services</a> (đối chiếu SID/NRC, xem thêm bài <a href="E-protocols.html">E</a>).</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi giải thích được DSL/DSD/DSP, seed-key chống brute-force, DTC status byte &amp; debounce/aging.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">
+        Chủ đề B4 · Diagnostics — Dcm/Dem/UDS/DTC — Interview Prep
+      </footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../assets/js/app.js?v=4"></script>
+</body>
+</html>

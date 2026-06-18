@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interview Prep · Cao Viet Hoang — Embedded + AI</title>
+  <meta name="description" content="Bộ ôn tập phỏng vấn Embedded + AI cho Cao Viet Hoang." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/style.css?v=4" />
+</head>
+<body data-page="index" data-root="">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar" data-title="Trang chủ — Ôn tập phỏng vấn"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <section class="hero">
+          <h1>Ôn tập phỏng vấn — Embedded + AI</h1>
+          <p>Bộ tài liệu học tương tác, soạn theo <strong style="color:#fff">Interview_Study_Plan.md</strong>. Mỗi chủ đề là một bài học riêng: lý thuyết, ví dụ code, sơ đồ, và bộ câu hỏi mô phỏng interviewer để bạn tự luyện.</p>
+          <div class="hero__stats">
+            <div class="hero__stat"><b>10</b><span>chủ đề (A–J)</span></div>
+            <div class="hero__stat"><b>4</b><span>vòng ôn tập</span></div>
+            <div class="hero__stat"><b id="doneCount">0</b><span>đã hoàn thành</span></div>
+          </div>
+        </section>
+
+        <div class="card" style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+          <div class="ring" id="overallRing"><div class="ring__hole">0%</div></div>
+          <div style="flex:1;min-width:220px">
+            <h3 style="margin:0 0 4px">Tiến độ tổng thể</h3>
+            <p class="text-soft mb-0">Tiến độ được lưu ngay trên trình duyệt này (localStorage). Mỗi bài có nút <em>“Đánh dấu đã học xong”</em> ở cuối trang. Bấm vào ô bên dưới để mở bài học.</p>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <span class="badge badge--must">Must-tell</span>
+            <span class="badge badge--core">Core</span>
+            <span class="badge badge--defend">Defend</span>
+          </div>
+        </div>
+
+        <h2>Bắt đầu từ đâu?</h2>
+        <div class="callout callout--tip">
+          <div class="callout__icon">🧭</div>
+          <div class="callout__body">
+            <div class="callout__title">Gợi ý lộ trình</div>
+            <p class="mb-0">Đi theo thứ tự <strong>Vòng 1 → 4</strong>. Ưu tiên cao nhất là 2 câu chuyện “phải kể được”: <a href="lessons/A-career-star.html">A — Câu chuyện sự nghiệp</a> và <a href="lessons/D-sent-automation.html">D — SENT Automation</a>. Đây là phần định hình ấn tượng và là thành tựu khác biệt nhất của bạn.</p>
+          </div>
+        </div>
+
+        <h2>Tất cả bài học</h2>
+        <div class="lesson-grid" id="lessonGrid"></div>
+
+        <h2>Cách dùng bộ tài liệu này</h2>
+        <div class="grid grid-3">
+          <div class="card">
+            <h4 class="mt-0">🎴 Flashcard & Q&A</h4>
+            <p class="text-soft mb-0 small">Bấm vào thẻ để lật đáp án; bấm câu hỏi “Q” để mở câu trả lời mẫu. Luyện trả lời <em>trước</em> khi mở.</p>
+          </div>
+          <div class="card">
+            <h4 class="mt-0">🌙 Sáng / Tối</h4>
+            <p class="text-soft mb-0 small">Nút mặt trăng trên thanh trên cùng để đổi giao diện. Nhấn phím <code>/</code> để tìm nhanh bài học.</p>
+          </div>
+          <div class="card">
+            <h4 class="mt-0">✅ Tự kiểm tra</h4>
+            <p class="text-soft mb-0 small">Mỗi bài có mục “Tự kiểm tra” theo 3 cấp: Định nghĩa → Áp dụng → Kinh nghiệm. Trả lời trôi cả 3 mới coi là vững.</p>
+          </div>
+        </div>
+
+        <div class="callout callout--note" style="margin-top:24px">
+          <div class="callout__icon">📌</div>
+          <div class="callout__body">
+            <div class="callout__title">Nguyên tắc vàng</div>
+            <p class="mb-0">Interviewer đào sâu vào <strong>chính những gì bạn viết trong CV</strong>. Mọi dòng đều là “fair game”. Ưu tiên ôn: 🔴 must-tell → 🔵 defend → 🟠 core → 🟡 background.</p>
+          </div>
+        </div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">
+        Soạn cho Cao Viet Hoang · Cập nhật theo <em>Interview_Study_Plan.md</em>
+      </footer>
+    </div>
+  </div>
+  <script src="assets/js/app.js?v=4"></script>
+</body>
+</html>

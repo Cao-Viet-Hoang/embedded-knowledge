@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>B1a · MCAL I/O — PORT/DIO/ADC — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/style.css?v=4" />
+</head>
+<body data-page="B1a" data-root="../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">B1a</span>
+            <span class="badge badge--core">Core</span>
+            <span class="chip">AUTOSAR — Module (đào sâu)</span>
+          </div>
+          <h1>MCAL I/O — PORT / DIO / ADC</h1>
+          <p class="lead">Nhóm I/O driver — phần bạn <strong>test thật</strong>. Mỗi module đi theo khung: <strong>vai trò → khái niệm cốt lõi (giải thích đầy đủ) → cấu hình ARXML → API &amp; luồng dùng → ngắt/DMA → bẫy &amp; điểm test</strong>. ADC được đào sâu nhất.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> 🟠 Core</span>
+            <span><b>Gắn:</b> test MCAL trên RH850 (bài <a href="F-mcu-peripherals.html">F</a>)</span>
+            <span><b>Tổng quan:</b> bài <a href="B-autosar.html">B</a> · <a href="B1b-mcal-timer.html">B1b</a> · <a href="B1c-mcal-system.html">B1c</a></span>
+          </div>
+        </div>
+
+        <div class="callout callout--note">
+          <div class="callout__icon">📌</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Nguồn:</strong> tên container/tham số/API đối chiếu <strong>AUTOSAR Classic SWS</strong> (Port/Dio/Adc Driver) và tài liệu MCAL nhà sản xuất (TI, Vector, Renesas) — xem cuối bài. API là chuẩn AUTOSAR, không phụ thuộc vendor.</p>
+          </div>
+        </div>
+
+        <p>Nhóm <strong>I/O Drivers</strong> của MCAL gồm PORT, DIO, ADC, PWM, ICU. Bài này: <strong>PORT</strong> (cấu hình chân), <strong>DIO</strong> (đọc/ghi số), <strong>ADC</strong> (analog→số). PWM/ICU ở <a href="B1b-mcal-timer.html">B1b</a>.</p>
+
+        <!-- ================= PORT ================= -->
+        <h2>1. PORT Driver</h2>
+        <p><strong>Vai trò:</strong> khởi tạo &amp; cấu hình <em>toàn bộ cấu trúc chân</em> của MCU (chức năng/mux, hướng, điện trở kéo, kiểu output, mức nghỉ), thường chạy <strong>một lần</strong> lúc init. PORT là “người gác cổng” quyết định mỗi chân làm gì — các driver khác (DIO/ADC/PWM…) chỉ dùng được chân sau khi PORT đã đặt đúng mode.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 210" role="img" aria-label="PORT cấu hình mux cho chân" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="pa1" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="20" y="78" width="180" height="54" rx="9" fill="var(--brand-800)"/><text x="110" y="102" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">PORT driver</text><text x="110" y="120" text-anchor="middle" class="dgm-inv-sub" font-size="9">Port_Init() · SetPinMode()</text>
+            <line x1="200" y1="105" x2="246" y2="105" class="dgm-arrow" stroke-width="1.6" marker-end="url(#pa1)"/><text x="223" y="98" text-anchor="middle" class="dgm-sub" font-size="9">mux+dir+pull</text>
+            <rect x="248" y="74" width="120" height="62" rx="9" fill="var(--brand-600)"/><text x="308" y="100" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">Chân (Pin)</text><text x="308" y="118" text-anchor="middle" class="dgm-inv-sub" font-size="9">mode mux</text>
+            <line x1="368" y1="86" x2="470" y2="34" class="dgm-arrow" stroke-width="1.3" marker-end="url(#pa1)"/>
+            <line x1="368" y1="98" x2="470" y2="80" class="dgm-arrow" stroke-width="1.3" marker-end="url(#pa1)"/>
+            <line x1="368" y1="110" x2="470" y2="126" class="dgm-arrow" stroke-width="1.3" marker-end="url(#pa1)"/>
+            <line x1="368" y1="122" x2="470" y2="172" class="dgm-arrow" stroke-width="1.3" marker-end="url(#pa1)"/>
+            <rect x="472" y="18" width="220" height="32" rx="6" fill="var(--surface)" class="dgm-layer"/><text x="582" y="38" text-anchor="middle" class="dgm-text" font-size="10.5">DIO — mức logic số</text>
+            <rect x="472" y="64" width="220" height="32" rx="6" fill="var(--surface)" class="dgm-layer"/><text x="582" y="84" text-anchor="middle" class="dgm-text" font-size="10.5">ADC — kênh analog</text>
+            <rect x="472" y="110" width="220" height="32" rx="6" fill="var(--surface)" class="dgm-layer"/><text x="582" y="130" text-anchor="middle" class="dgm-text" font-size="10.5">PWM / ICU — timer</text>
+            <rect x="472" y="156" width="220" height="32" rx="6" fill="var(--surface)" class="dgm-layer"/><text x="582" y="176" text-anchor="middle" class="dgm-text" font-size="10.5">SPI / CAN / LIN — giao tiếp</text>
+          </svg>
+          <div class="figure__cap"><b>PORT quyết định chân làm gì.</b> <code>Port_Init()</code> ghi thanh ghi mux/function-select để gán mode cho từng chân; chỉ sau đó driver tương ứng mới hoạt động. Sai PORT mode → ngoại vi “im lặng”.</div>
+        </div>
+
+        <h3>1.1 Khái niệm cốt lõi</h3>
+        <dl class="kv">
+          <dt>Pin / Port / Pad</dt><dd><strong>Pin</strong> = một chân logic (AUTOSAR đánh số bằng <em>symbolic name</em> sinh từ cấu hình, kiểu <code>Port_PinType</code>). <strong>Port</strong> = một nhóm chân ánh xạ vào một thanh ghi (vd PORT0 = 16 chân). <strong>Pad</strong> = miếng tiếp xúc vật lý + mạch đệm I/O. Một chân vật lý có thể nối nhiều chức năng nội bộ qua mux.</dd>
+          <dt>Pin Mode (mux / alternate function)</dt><dd>Cơ chế <strong>multiplexer</strong>: mỗi chân nối tới nhiều ngoại vi (DIO, ADC, SPI, CAN, PWM, ICU, LIN, MEM…), PORT chọn chức năng bằng cách ghi thanh ghi <em>pin-function-select</em>. Mỗi thời điểm chỉ <em>một</em> mode active. Danh sách mode đến từ HW; vd một chân có thể là DIO <em>hoặc</em> kênh ADC <em>hoặc</em> chân SPI.</dd>
+          <dt>Direction (input/output)</dt><dd>Ghi <em>data direction register</em>. Cấu hình tĩnh lúc init; có thể cho phép đổi runtime nếu container bật <code>PortPinDirectionChangeable</code> (vd chân half-duplex). Đổi khi không cho phép → Det error.</dd>
+          <dt>Pull resistor</dt><dd>Pull-up / pull-down / none cho chân input. Khi input <em>floating</em> (không nối nguồn rõ), mức điện trôi theo nhiễu → đọc sai; pull đặt mức mặc định an toàn. Open-drain output cũng cần pull-up ngoài/nội.</dd>
+          <dt>Output drive mode</dt><dd><strong>Push-pull</strong>: chân chủ động kéo cả mức cao (transistor trên) lẫn thấp (transistor dưới), trở kháng thấp hai chiều, đổi mức nhanh. <strong>Open-drain</strong>: chỉ kéo được mức thấp (chỉ có transistor dưới), mức cao do pull-up ngoài → cho phép nhiều chân nối chung dây kiểu <em>wired-AND</em> (ai cũng kéo thấp được) — đó là lý do I2C/1-Wire dùng open-drain.</dd>
+          <dt>Drive strength / slew rate</dt><dd>Dòng ra tối đa &amp; tốc độ chuyển mức. Drive mạnh/slew nhanh → cạnh sắc nhưng <strong>nhiễu EMC &amp; overshoot</strong> cao; drive yếu/slew chậm → sạch hơn nhưng giới hạn tần số. Phải cân bằng theo tải &amp; tốc độ tín hiệu.</dd>
+          <dt>Initial level / mode</dt><dd>Mức/giá trị output mặc định nạp ngay trong <code>Port_Init</code> (<code>PortPinLevelValue</code>). Quan trọng để <strong>tránh xung sai (glitch)</strong> ở khoảnh khắc khởi động trước khi app điều khiển — vd giữ relay/driver ở mức an toàn lúc reset.</dd>
+          <dt>Port_RefreshPortDirection</dt><dd>Đặt lại hướng các chân <em>không</em> changeable về đúng giá trị cấu hình. Mục đích an toàn: nếu nhiễu/sự cố HW làm lệch thanh ghi direction, hàm này khôi phục — một <em>safety countermeasure</em> chạy định kỳ (liên hệ ISO 26262, bài <a href="H-iso26262.html">H</a>).</dd>
+        </dl>
+
+        <h3>1.2 Cấu hình (ARXML)</h3>
+        <dl class="kv">
+          <dt>PortConfigSet</dt><dd>Container gốc, chứa các <code>PortContainer</code> → danh sách <code>PortPin</code>.</dd>
+          <dt>PortPin — tham số chính</dt><dd><code>PortPinId</code> (symbolic), <code>PortPinDirection</code> (IN/OUT), <code>PortPinDirectionChangeable</code> (bool), <code>PortPinInitialMode</code> + <code>PortPinMode</code> (mode list), <code>PortPinModeChangeable</code> (bool), <code>PortPinLevelValue</code> (HIGH/LOW khi output), <code>PortPinInputPull</code> (UP/DOWN/NONE).</dd>
+        </dl>
+
+        <h3>1.3 API &amp; luồng dùng</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>API</th><th>Ý nghĩa</th></tr></thead>
+          <tbody>
+            <tr><td><code>Port_Init(ConfigPtr)</code></td><td>Cấu hình toàn bộ chân theo container. <strong>Gọi đầu tiên</strong>, trước mọi driver dùng chân.</td></tr>
+            <tr><td><code>Port_SetPinDirection(Pin, Dir)</code></td><td>Đổi hướng một chân runtime (nếu changeable).</td></tr>
+            <tr><td><code>Port_SetPinMode(Pin, Mode)</code></td><td>Đổi chức năng một chân runtime (nếu changeable; vd DIO↔SPI).</td></tr>
+            <tr><td><code>Port_RefreshPortDirection()</code></td><td>Khôi phục hướng các chân không-changeable về cấu hình (safety).</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout callout--danger"><div class="callout__icon">🐞</div><div class="callout__body">
+          <div class="callout__title">Bẫy &amp; điểm test</div>
+          <p class="mb-0"><strong>Det errors:</strong> <code>PORT_E_UNINIT</code> (dùng trước Init), <code>PORT_E_PARAM_PIN</code> (pin sai), <code>PORT_E_DIRECTION_UNCHANGEABLE</code>, <code>PORT_E_PARAM_INVALID_MODE</code>, <code>PORT_E_MODE_UNCHANGEABLE</code>. <strong>Bẫy:</strong> quên <code>Port_Init</code>; đặt sai mode (chân DIO nhưng cấu hình mode SPI); quên cho phép changeable rồi gọi SetPinMode/Direction. <strong>Test:</strong> stub thanh ghi PORT, verify giá trị mux/dir/pull ghi đúng; fault injection: gọi API sai trạng thái → kỳ vọng Det.</p>
+        </div></div>
+
+        <!-- ================= DIO ================= -->
+        <h2>2. DIO Driver</h2>
+        <p><strong>Vai trò:</strong> đọc/ghi <em>mức logic</em> runtime trên các chân đã được PORT đặt mode DIO. DIO <strong>không cấu hình phần cứng</strong> (không đổi hướng/pull — đó là việc PORT); nó là driver “mỏng &amp; nhanh”, thường đồng bộ, không ngắt.</p>
+        <h3>2.1 Khái niệm cốt lõi</h3>
+        <dl class="kv">
+          <dt>Channel</dt><dd>Một chân DIO đơn (1 bit), kiểu <code>Dio_ChannelType</code>. Đọc/ghi một bit.</dd>
+          <dt>Port</dt><dd>Nhóm chân DIO trong một thanh ghi; <code>Dio_ReadPort</code>/<code>WritePort</code> truy cập <em>cả port một lần</em> (một lệnh) — nhanh hơn ghi từng chân khi cần đổi nhiều chân đồng thời/đồng bộ.</dd>
+          <dt>Channel Group</dt><dd>Một <em>dải bit liền kề</em> trong một port, định nghĩa bằng <strong>mask + offset</strong> (<code>Dio_ChannelGroupType</code>). Cho phép thao tác nhiều bit như một đơn vị — vd 3 bit chọn kênh mux ngoài: ghi giá trị vào group mà không đụng bit khác (driver tự shift theo offset &amp; mask).</dd>
+          <dt>Level</dt><dd><code>STD_HIGH</code> / <code>STD_LOW</code> — mức <em>logic</em>, không phải điện áp tuyệt đối (mức cao có thể là 5V, 3.3V… tuỳ chân). Port level type là một word chứa mức của mọi chân trong port.</dd>
+          <dt>Read-modify-write hazard</dt><dd>Ghi một channel thực chất = <em>đọc port → sửa 1 bit → ghi lại port</em>. Nếu một ISR ghi <em>bit khác</em> của cùng port chen vào giữa, cập nhật của ISR có thể bị đè mất (lost update). → Khi chia sẻ port giữa main &amp; ISR phải bảo vệ bằng critical section, hoặc dùng thanh ghi set/clear atomic của HW nếu có.</dd>
+          <dt>Phụ thuộc PORT</dt><dd>DIO chỉ hoạt động nếu PORT đã đặt chân ở mode DIO &amp; đúng hướng. DIO không kiểm tra điều này → cấu hình lệch là lỗi “thầm lặng”.</dd>
+        </dl>
+        <h3>2.2 API &amp; cấu hình</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>API</th><th>Ý nghĩa</th></tr></thead>
+          <tbody>
+            <tr><td><code>Dio_ReadChannel(Ch)</code> / <code>Dio_WriteChannel(Ch, Lvl)</code></td><td>Đọc/ghi một chân.</td></tr>
+            <tr><td><code>Dio_ReadPort(Port)</code> / <code>Dio_WritePort(Port, Lvl)</code></td><td>Đọc/ghi cả port (nhiều chân 1 lệnh).</td></tr>
+            <tr><td><code>Dio_ReadChannelGroup</code> / <code>Dio_WriteChannelGroup</code></td><td>Đọc/ghi một nhóm bit (mask+offset).</td></tr>
+            <tr><td><code>Dio_FlipChannel(Ch)</code></td><td>Đảo mức một chân &amp; trả mức mới.</td></tr>
+          </tbody>
+        </table></div>
+        <p class="small text-mute"><strong>Cấu hình:</strong> <code>DioPort</code> → <code>DioChannel</code>; <code>DioChannelGroup</code> (<code>DioPortMask</code>, <code>DioPortOffset</code>). <strong>Test:</strong> stub thanh ghi port; verify mức ghi đúng; test read-modify-write với ISR mô phỏng (đảm bảo critical section).</p>
+
+        <!-- ================= ADC ================= -->
+        <h2>3. ADC Driver (đào sâu)</h2>
+        <p><strong>Vai trò:</strong> điều khiển ADC on-chip chuyển <em>analog → số</em>, làm việc theo <strong>conversion group</strong> (đơn vị: một nhóm channel chuyển đổi cùng nhau theo một cấu hình), không phải từng kênh rời.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 222" role="img" aria-label="ADC conversion group và result buffer" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="aa1" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="20" y="40" width="150" height="60" rx="8" fill="var(--brand-800)"/><text x="95" y="64" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Trigger</text><text x="95" y="82" text-anchor="middle" class="dgm-inv-sub" font-size="9">SW / HW (timer, PWM)</text>
+            <line x1="170" y1="70" x2="206" y2="70" class="dgm-arrow" stroke-width="1.5" marker-end="url(#aa1)"/>
+            <rect x="208" y="26" width="226" height="124" rx="9" fill="var(--surface-2)" class="dgm-layer"/><text x="321" y="46" text-anchor="middle" class="dgm-label" font-size="11.5" font-weight="800">ADC Group</text>
+            <rect x="224" y="56" width="194" height="24" rx="5" fill="var(--brand-400)"/><text x="321" y="72" text-anchor="middle" class="dgm-inv" font-size="10">Channel 0 (SAR 12-bit) + S/H</text>
+            <rect x="224" y="84" width="194" height="24" rx="5" fill="var(--brand-400)"/><text x="321" y="100" text-anchor="middle" class="dgm-inv" font-size="10">Channel 1</text>
+            <rect x="224" y="112" width="194" height="24" rx="5" fill="var(--brand-400)"/><text x="321" y="128" text-anchor="middle" class="dgm-inv" font-size="10">Channel n …</text>
+            <line x1="434" y1="88" x2="468" y2="88" class="dgm-arrow" stroke-width="1.5" marker-end="url(#aa1)"/>
+            <rect x="470" y="56" width="150" height="64" rx="8" fill="var(--brand-600)"/><text x="545" y="82" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Result Buffer</text><text x="545" y="100" text-anchor="middle" class="dgm-inv-sub" font-size="9">SetupResultBuffer trước</text>
+            <line x1="620" y1="88" x2="650" y2="88" class="dgm-arrow" stroke-width="1.5" marker-end="url(#aa1)"/>
+            <rect x="644" y="56" width="70" height="64" rx="8" fill="var(--brand-900)"/><text x="679" y="82" text-anchor="middle" class="dgm-inv" font-size="9.5" font-weight="700">App đọc</text><text x="679" y="98" text-anchor="middle" class="dgm-inv-sub" font-size="8">poll/IRQ/DMA</text>
+            <text x="360" y="178" text-anchor="middle" class="dgm-sub" font-size="10.5">Mode: One-shot vs Continuous · Access: Single vs Streaming · Trigger: SW/HW · Priority/preemption</text>
+            <text x="360" y="198" text-anchor="middle" class="dgm-sub" font-size="10">Sampling time quá ngắn (trở kháng nguồn cao) → tụ S/H chưa nạp đủ ½ LSB → sai số</text>
+          </svg>
+          <div class="figure__cap"><b>ADC group.</b> Trigger → chuyển đổi các channel trong group (mỗi channel qua S/H + SAR) → ghi result buffer → app đọc. (Cơ chế SAR binary-search chi tiết ở bài <a href="F-mcu-peripherals.html">F</a>.)</div>
+        </div>
+
+        <h3>3.1 Khái niệm cốt lõi — cơ bản</h3>
+        <dl class="kv">
+          <dt>Kiến trúc SAR</dt><dd>RH850 dùng ADC <strong>SAR 12-bit</strong>: tìm nhị phân từng bit MSB→LSB bằng so sánh với DAC nội, <strong>N-bit cần N chu kỳ</strong>, một mẫu/lần, <em>độ trễ thấp &amp; tất định</em> → hợp vòng điều khiển. (So với sigma-delta: độ phân giải cao nhưng chậm; pipeline: rất nhanh nhưng có latency.)</dd>
+          <dt>Resolution / Vref / LSB</dt><dd>n-bit → 2ⁿ mức (12-bit = 4096). <strong>1 LSB = Vref / 2ⁿ</strong> (Vref=5V, 12-bit → ≈1.22 mV) = bước lượng tử nhỏ nhất phân biệt được. Giá trị số ≈ round(Vin/Vref × 2ⁿ). Vref có thể nội hoặc ngoài (ngoài chính xác hơn).</dd>
+          <dt>Độ chính xác (accuracy)</dt><dd>Ngoài resolution còn: <strong>offset error</strong> (lệch gốc), <strong>gain error</strong> (lệch độ dốc), <strong>INL</strong> (sai lệch phi tuyến tích luỹ so với đường lý tưởng), <strong>DNL</strong> (sai lệch độ rộng giữa các bước kề nhau — DNL &lt; −1 LSB gây “missing code”), <strong>ENOB</strong> (số bit hiệu dụng thực, nhỏ hơn resolution danh nghĩa do nhiễu). Quan trọng khi đọc cảm biến chính xác.</dd>
+          <dt>Sample &amp; Hold + sampling time</dt><dd>Trước khi chuyển đổi, tụ <strong>S/H</strong> phải nạp tới Vin. <strong>Sampling/acquisition time</strong> phải đủ để tụ nạp tới trong ½ LSB; phụ thuộc <em>trở kháng nguồn</em> (nguồn trở kháng cao → cần thời gian lâu hơn). Quá ngắn → đọc thiếu → sai số. <em>Charge sharing</em>: tụ S/H còn điện từ kênh trước có thể nhiễu sang kênh sau nếu sampling ngắn.</dd>
+        </dl>
+
+        <h3>3.2 Khái niệm cốt lõi — group, mode, access, trigger</h3>
+        <dl class="kv">
+          <dt>Conversion Group</dt><dd>Đơn vị làm việc: một <em>tập channel</em> chuyển đổi cùng nhau dưới một cấu hình (mode/trigger/buffer/priority). App thao tác trên <strong>group</strong>, không trên channel rời. Group định nghĩa thứ tự channel (<code>AdcGroupDefinition</code>).</dd>
+          <dt>Conversion Mode</dt><dd><strong>ONE_SHOT</strong>: chuyển một vòng (mỗi channel 1 lần) mỗi trigger rồi dừng. <strong>CONTINUOUS</strong>: tự lặp vòng liên tục — <em>chỉ dùng với SW trigger</em>.</dd>
+          <dt>Access Mode</dt><dd><strong>SINGLE</strong>: buffer giữ <em>một</em> mẫu/channel. <strong>STREAMING</strong>: giữ <em>nhiều</em> mẫu/channel (một loạt N mẫu) — dùng khi cần lấy mẫu theo chuỗi (vd dạng sóng, lọc).</dd>
+          <dt>Streaming buffer: linear vs circular</dt><dd><strong>LINEAR</strong>: khi buffer đầy (đủ N mẫu) thì <em>dừng</em> conversion. <strong>CIRCULAR</strong>: khi đầy thì <em>cuộn vòng</em> (ghi đè từ đầu) &amp; <em>chạy tiếp</em> — stream tuần hoàn tự động (hợp motor control, lấy mẫu liên tục). <strong>Buffer size</strong> = số_channel × (1 với single | số_streaming_sample với streaming).</dd>
+          <dt>Trigger source</dt><dd><strong>SW</strong>: <code>Adc_StartGroupConversion</code> gọi từ code. <strong>HW</strong>: <code>Adc_EnableHardwareTrigger</code> cho timer/PWM/sự kiện ngoài kích — đo <strong>đồng bộ</strong> với pha điều khiển (vd lấy mẫu dòng motor đúng giữa chu kỳ PWM). One-shot có thể SW hoặc HW; continuous chỉ SW.</dd>
+          <dt>Group priority &amp; preemption</dt><dd>Mỗi group có thể có <strong>priority</strong>. Group ưu tiên cao có thể <em>chen</em> group thấp đang chạy (preemption). Khi bị chen, group thấp xử lý theo <code>AdcGroupReplacement</code>: <strong>suspend-resume</strong> (tạm dừng rồi chạy tiếp) hoặc <strong>abort-restart</strong> (huỷ &amp; làm lại từ đầu). Cấu hình sai priority → mất mẫu/đo lệch.</dd>
+        </dl>
+
+        <h3>3.3 Khái niệm cốt lõi — kết quả &amp; trạng thái</h3>
+        <dl class="kv">
+          <dt>Result buffer</dt><dd><code>Adc_SetupResultBuffer(Group, ptr)</code> <strong>bắt buộc</strong> trước khi start (nếu không → <code>ADC_E_BUFFER_UNINIT</code>). <code>Adc_ReadGroup</code> copy kết quả mới nhất ra buffer ứng dụng. Streaming: <code>Adc_GetStreamLastPointer</code> trả vị trí &amp; số mẫu hợp lệ của vòng mới nhất.</dd>
+          <dt>Group states</dt><dd><code>ADC_IDLE</code> → <code>ADC_BUSY</code> → <code>ADC_COMPLETED</code> (single) / <code>ADC_STREAM_COMPLETED</code> (streaming đủ N). Đọc bằng <code>Adc_GetGroupStatus</code>.</dd>
+          <dt>Khi nào group inactive</dt><dd>Tự về inactive khi: <strong>SW one-shot + single</strong> (xong là dừng) hoặc <strong>linear streaming</strong> (đầy là dừng). <strong>Vẫn active</strong> khi: <strong>SW continuous</strong>, <strong>HW one-shot + single</strong> (chờ trigger kế), hoặc <strong>circular streaming</strong> (chạy mãi). Đây là câu hỏi phỏng vấn hay gặp.</dd>
+          <dt>Result alignment</dt><dd>Kết quả căn <strong>trái</strong> hay <strong>phải</strong> trong word (vd 12-bit trong 16-bit). Đọc sai alignment → giá trị lệch (×16). Cấu hình theo HW.</dd>
+          <dt>Notification / DMA</dt><dd><code>Adc_EnableGroupNotification</code> → callback khi xong (ISR). Sampling cao → dùng <strong>DMA</strong> chuyển mẫu vào RAM không bận CPU.</dd>
+          <dt>Limit checking</dt><dd>ADC có thể tự kiểm tra kết quả nằm trong/ngoài dải cấu hình (<code>AdcChannelLimitCheck</code> + High/Low limit) → cờ/ngắt — phục vụ plausibility/safety.</dd>
+        </dl>
+
+        <h3>3.4 Access mode trực quan</h3>
+        <div class="figure">
+          <svg viewBox="0 0 720 226" role="img" aria-label="ADC access mode single vs streaming" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="ab1" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <text x="16" y="28" class="dgm-label" font-size="11.5" font-weight="800">SINGLE — 1 mẫu / channel</text>
+            <rect x="200" y="14" width="100" height="26" rx="5" fill="var(--brand-400)"/><text x="250" y="31" text-anchor="middle" class="dgm-inv" font-size="10">Ch0</text>
+            <rect x="306" y="14" width="100" height="26" rx="5" fill="var(--brand-400)"/><text x="356" y="31" text-anchor="middle" class="dgm-inv" font-size="10">Ch1</text>
+            <rect x="412" y="14" width="100" height="26" rx="5" fill="var(--brand-400)"/><text x="462" y="31" text-anchor="middle" class="dgm-inv" font-size="10">Ch2</text>
+            <text x="16" y="100" class="dgm-label" font-size="11.5" font-weight="800">STREAMING LINEAR</text>
+            <text x="16" y="116" class="dgm-sub" font-size="9.5">(của 1 channel)</text>
+            <rect x="200" y="86" width="78" height="26" rx="5" fill="var(--brand-600)"/><text x="239" y="103" text-anchor="middle" class="dgm-inv" font-size="9.5">s0</text>
+            <rect x="284" y="86" width="78" height="26" rx="5" fill="var(--brand-600)"/><text x="323" y="103" text-anchor="middle" class="dgm-inv" font-size="9.5">s1</text>
+            <rect x="368" y="86" width="78" height="26" rx="5" fill="var(--brand-600)"/><text x="407" y="103" text-anchor="middle" class="dgm-inv" font-size="9.5">s2</text>
+            <rect x="452" y="86" width="78" height="26" rx="5" fill="var(--brand-600)"/><text x="491" y="103" text-anchor="middle" class="dgm-inv" font-size="9.5">s3</text>
+            <text x="544" y="103" class="dgm-sub" font-size="10">đầy → DỪNG</text>
+            <text x="16" y="180" class="dgm-label" font-size="11.5" font-weight="800">STREAMING CIRCULAR</text>
+            <rect x="200" y="166" width="78" height="26" rx="5" fill="var(--core)"/><text x="239" y="183" text-anchor="middle" class="dgm-inv" font-size="9.5">s0</text>
+            <rect x="284" y="166" width="78" height="26" rx="5" fill="var(--core)"/><text x="323" y="183" text-anchor="middle" class="dgm-inv" font-size="9.5">s1</text>
+            <rect x="368" y="166" width="78" height="26" rx="5" fill="var(--core)"/><text x="407" y="183" text-anchor="middle" class="dgm-inv" font-size="9.5">s2</text>
+            <rect x="452" y="166" width="78" height="26" rx="5" fill="var(--core)"/><text x="491" y="183" text-anchor="middle" class="dgm-inv" font-size="9.5">s3</text>
+            <path d="M530,179 q34,0 34,-26 q0,-22 -30,-22" fill="none" class="dgm-arrow" stroke-width="1.4" marker-end="url(#ab1)"/>
+            <text x="585" y="166" class="dgm-sub" font-size="10">cuộn vòng,</text><text x="585" y="180" class="dgm-sub" font-size="10">chạy tiếp</text>
+          </svg>
+          <div class="figure__cap"><b>Single vs Streaming.</b> Single = 1 slot/channel. Streaming = N mẫu/channel; <b>linear</b> dừng khi đầy, <b>circular</b> cuộn vòng &amp; tiếp tục (group vẫn active).</div>
+        </div>
+
+        <h3>3.5 Cấu hình (ARXML) &amp; API</h3>
+        <dl class="kv">
+          <dt>AdcConfigSet / AdcHwUnit</dt><dd>Cấu hình bộ ADC vật lý (clock, prescaler, độ phân giải mặc định).</dd>
+          <dt>AdcChannel</dt><dd><code>AdcChannelConvTime</code> (sampling time), <code>AdcChannelResolution</code>, <code>AdcChannelRefVoltsrcHigh/Low</code>, <code>AdcChannelLimitCheck</code> + <code>High/LowLimit</code>.</dd>
+          <dt>AdcGroup</dt><dd><code>AdcGroupAccessMode</code> (SINGLE/STREAMING), <code>AdcGroupConversionMode</code> (ONESHOT/CONTINUOUS), <code>AdcGroupConversionType</code>, <code>AdcGroupTriggSrc</code> (SW/HW), <code>AdcGroupPriority</code>, <code>AdcGroupReplacement</code> (SUSPEND_RESUME/ABORT_RESTART), <code>AdcStreamingBufferMode</code> (LINEAR/CIRCULAR), <code>AdcStreamingNumSamples</code>, <code>AdcGroupDefinition</code> (danh sách channel).</dd>
+        </dl>
+        <div class="table-wrap"><table>
+          <thead><tr><th>API</th><th>Ý nghĩa</th></tr></thead>
+          <tbody>
+            <tr><td><code>Adc_Init</code> / <code>Adc_DeInit</code></td><td>Khởi tạo/huỷ.</td></tr>
+            <tr><td><code>Adc_SetupResultBuffer(Group, ptr)</code></td><td><strong>Bắt buộc</strong> trước start.</td></tr>
+            <tr><td><code>Adc_StartGroupConversion</code> / <code>StopGroupConversion</code></td><td>SW trigger.</td></tr>
+            <tr><td><code>Adc_ReadGroup</code> / <code>Adc_GetStreamLastPointer</code></td><td>Đọc kết quả / vị trí streaming.</td></tr>
+            <tr><td><code>Adc_EnableHardwareTrigger</code> / <code>DisableHardwareTrigger</code></td><td>HW trigger.</td></tr>
+            <tr><td><code>Adc_GetGroupStatus</code> / <code>Adc_EnableGroupNotification</code></td><td>Trạng thái / callback.</td></tr>
+          </tbody>
+        </table></div>
+<pre><code class="language-c">// Luồng dùng điển hình (SW trigger, single)
+uint16_t buf[N_CHANNELS];
+Adc_SetupResultBuffer(GROUP_A, buf);   // BẮT BUỘC trước start
+Adc_StartGroupConversion(GROUP_A);
+while (Adc_GetGroupStatus(GROUP_A) != ADC_STREAM_COMPLETED &amp;&amp;
+       Adc_GetGroupStatus(GROUP_A) != ADC_COMPLETED) { /* poll, hoặc dùng notification */ }
+Adc_ReadGroup(GROUP_A, buf);            // copy kết quả mới nhất</code></pre>
+        <div class="callout callout--danger"><div class="callout__icon">🐞</div><div class="callout__body">
+          <div class="callout__title">Bẫy &amp; điểm test</div>
+          <p class="mb-0"><strong>Det:</strong> <code>ADC_E_UNINIT</code>, <code>ADC_E_BUFFER_UNINIT</code> (quên SetupResultBuffer), <code>ADC_E_BUSY</code>/<code>ADC_E_IDLE</code> (sai trạng thái), <code>ADC_E_WRONG_CONV_MODE</code>, <code>ADC_E_WRONG_TRIGG_SRC</code>, <code>ADC_E_PARAM_GROUP</code>. <strong>Bẫy:</strong> sampling quá ngắn → sai số; quên SetupResultBuffer; cấu hình priority gây mất mẫu; đọc sai alignment; circular streaming không bao giờ COMPLETED (đọc qua GetStreamLastPointer). <strong>Test (bài <a href="C-testing.html">C</a>):</strong> stub thanh ghi ADC + ngắt conversion-complete; fault injection: buffer chưa setup, overrun, giá trị biên (0/full-scale), trigger lệch, streaming wrap; đo coverage tới MC/DC.</p>
+        </div></div>
+
+        <!-- ================= Trước -> Nay ================= -->
+        <h2>4. Trước (~2020) → Nay</h2>
+        <div class="evo">
+          <div class="evo__head">🔩 <span>I/O MCAL: đa lõi, Safety, đo đồng bộ</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>ADC SW-trigger + polling là chính; MCAL lõi đơn; test trên target.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p><strong>HW-trigger đồng bộ PWM</strong> + DMA + limit-check cho điều khiển motor/ADAS; <strong>Safety MCAL</strong> (ASIL, có safety manual, dùng <code>Port_RefreshPortDirection</code>/ADC limit-check như safety mechanism); test sớm trên <strong>VECU</strong>.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> nói được “ADC HW-trigger từ PWM để lấy mẫu đúng pha, kèm limit-check như plausibility” cho thấy bạn hiểu I/O trong điều khiển thật.</div>
+        </div>
+
+        <!-- ================= Q&A ================= -->
+        <h2>5. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">PORT vs DIO? Push-pull vs open-drain? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">PORT <strong>cấu hình</strong> chân (mux/hướng/pull/drive) một lần lúc init; DIO <strong>truy cập</strong> mức logic runtime, không cấu hình HW. <strong>Push-pull</strong> kéo cả cao &amp; thấp (mạnh, nhanh); <strong>open-drain</strong> chỉ kéo thấp + cần pull-up → nối chung dây wired-AND (I2C/1-Wire).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Port_RefreshPortDirection để làm gì? (khôi phục hướng — safety)</li><li>Read-modify-write hazard khi ghi 1 chân chia sẻ port?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">ADC: phân biệt access mode single/streaming, linear/circular; khi nào group inactive? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>Single</strong> = 1 mẫu/channel; <strong>streaming</strong> = N mẫu/channel. Streaming <strong>linear</strong> đầy thì dừng; <strong>circular</strong> đầy thì cuộn vòng &amp; chạy tiếp. Group <em>tự inactive</em> khi SW one-shot+single hoặc linear streaming đầy; <em>vẫn active</em> khi SW continuous, HW one-shot+single, hoặc circular streaming. Luôn <code>Adc_SetupResultBuffer</code> trước start.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>HW trigger từ PWM để làm gì? (đo đồng bộ pha điều khiển)</li><li>Buffer size streaming tính thế nào?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Sampling time ảnh hưởng gì? Resolution khác accuracy chỗ nào? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Sampling time phải đủ để tụ S/H nạp tới Vin trong ½ LSB; <strong>nguồn trở kháng cao → cần lâu hơn</strong>, quá ngắn → đọc thiếu → sai số. <strong>Resolution</strong> = số bước lượng tử (2ⁿ); <strong>accuracy</strong> = sai lệch thực (offset/gain/INL/DNL), và <strong>ENOB</strong> mới là số bit hiệu dụng do nhiễu — ADC 12-bit có thể chỉ ~10 ENOB.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>DNL &lt; −1 LSB gây gì? (missing code)</li><li>1 LSB của 12-bit, Vref 5V ≈ ? (≈1.22 mV)</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Group priority &amp; preemption hoạt động ra sao? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Group ưu tiên cao chen group thấp đang chạy. Group bị chen xử lý theo <code>AdcGroupReplacement</code>: <strong>suspend-resume</strong> (chạy tiếp chỗ dở) hoặc <strong>abort-restart</strong> (làm lại từ đầu). Cấu hình sai → mất mẫu hoặc đo lệch pha.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Priority implement bằng HW hay SW? (tuỳ vendor — hw/sw/mixed)</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Bạn test một driver ADC/DIO như thế nào? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Từ requirement → EP/BVA chọn input (kênh, dải giá trị, biên 0/full-scale) → <strong>stub thanh ghi</strong> để cô lập HW → <strong>mock</strong> verify driver ghi đúng register/đúng số lần → <strong>fault injection</strong> (buffer chưa setup → Det, overrun, sampling lỗi, trạng thái sai) → đo coverage tới MC/DC → map test↔requirement (ASPICE). Chạy VECU sớm + target xác nhận.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Làm sao test read-modify-write hazard của DIO?</li></ul></div>
+          </div></div>
+        </div>
+
+        <!-- ================= Cheat-sheet ================= -->
+        <h2>6. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>PORT</h4><ul>
+            <li>Cấu hình mux/dir/pull/drive — 1 lần</li>
+            <li>Push-pull vs open-drain (I2C)</li>
+            <li>Initial level chống glitch</li>
+            <li>RefreshPortDirection = safety</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>DIO</h4><ul>
+            <li>Channel · Port · ChannelGroup (mask+offset)</li>
+            <li>STD_HIGH/LOW (logic)</li>
+            <li>Read-modify-write hazard → critical section</li>
+            <li>Phụ thuộc PORT mode</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>ADC — group/mode</h4><ul>
+            <li>Conversion group (nhiều channel)</li>
+            <li>One-shot vs continuous (continuous = SW)</li>
+            <li>Access single vs streaming</li>
+            <li>Streaming linear (dừng) / circular (vòng)</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>ADC — trigger/state</h4><ul>
+            <li>SW vs HW trigger (HW = đồng bộ PWM)</li>
+            <li>Priority + preemption (suspend/abort)</li>
+            <li>States IDLE/BUSY/COMPLETED/STREAM_COMPLETED</li>
+            <li>SetupResultBuffer BẮT BUỘC trước start</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>ADC — chất lượng</h4><ul>
+            <li>1 LSB = Vref/2ⁿ (12-bit 5V ≈ 1.22mV)</li>
+            <li>Sampling time vs trở kháng nguồn</li>
+            <li>Accuracy: offset/gain/INL/DNL/ENOB</li>
+            <li>Limit check = plausibility/safety</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Test</h4><ul>
+            <li>Stub register + mock call</li>
+            <li>Fault injection (Det, biên, overrun)</li>
+            <li>Coverage MC/DC</li>
+            <li>VECU sớm + target xác nhận</li>
+          </ul></div>
+        </div>
+
+        <!-- ================= Sources ================= -->
+        <h2>7. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li>AUTOSAR Classic SWS — <strong>Port Driver</strong>, <strong>Dio Driver</strong>, <strong>ADC Driver</strong> (conversion group, access/streaming, trigger, priority, group state).</li>
+          <li>TI — <a href="https://software-dl.ti.com/mcu-plus-sdk/esd/PLATFORM_SW_MCAL/AM263x/11.00.00/src/Module_User_Guide_Icu.html" target="_blank" rel="noopener">Platform MCAL docs</a> (ADC/streaming, đối chiếu hành vi).</li>
+          <li>Embitel — <a href="https://www.embitel.com/blog/embedded-blog/what-is-autosar-mcal-software-architecture" target="_blank" rel="noopener">What is AUTOSAR MCAL</a>; AUTOSAR Compendium — <a href="https://www.ar-compendium.com/part-ii-basic-software-mcal/" target="_blank" rel="noopener">driver grouping</a>.</li>
+          <li>Wikipedia — <a href="https://en.wikipedia.org/wiki/Successive-approximation_ADC" target="_blank" rel="noopener">SAR ADC</a> (resolution, INL/DNL, S/H).</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi giải thích được PORT vs DIO, push-pull/open-drain, và ADC group/access-mode/trigger/state.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">
+        Chủ đề B1a · MCAL I/O — PORT/DIO/ADC — Interview Prep
+      </footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../assets/js/app.js?v=4"></script>
+</body>
+</html>

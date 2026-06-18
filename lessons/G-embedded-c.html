@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>G · Embedded C/C++ Fundamentals — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/style.css?v=4" />
+</head>
+<body data-page="G" data-root="../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">G</span>
+            <span class="badge badge--core">Core</span>
+            <span class="chip">Vòng 2 · Dễ bị hỏi nhanh đầu giờ</span>
+          </div>
+          <h1>Embedded C/C++ Fundamentals</h1>
+          <p class="lead">Nền tảng — hay bị hỏi “nhanh và bất ngờ” đầu giờ. Phải trả lời chắc về memory layout, <code>volatile</code>/<code>static</code>, ISR &amp; re-entrancy, bit manipulation, struct padding, endianness và C++ trong nhúng.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> 🟠 Core</span>
+            <span><b>Dạng:</b> Quick-fire + code</span>
+          </div>
+        </div>
+
+        <div class="callout callout--note">
+          <div class="callout__icon">📌</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Nguồn:</strong> memory layout, qualifier, padding/alignment, endianness, vtable đối chiếu tài liệu chuẩn (Barr Group, ESR “structure packing”, Wikipedia) — xem “Nguồn tham khảo” cuối bài.</p>
+          </div>
+        </div>
+
+        <!-- 1. Memory layout -->
+        <h2>1. Memory layout của chương trình</h2>
+        <div class="figure">
+          <svg viewBox="0 0 720 384" role="img" aria-label="Bố cục bộ nhớ chương trình C" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="arG" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <text x="120" y="20" class="dgm-sub" font-size="10.5">Địa chỉ cao</text>
+            <rect x="120" y="26" width="480" height="46" rx="7" fill="var(--brand-800)"/><text x="360" y="48" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">Stack</text><text x="360" y="64" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">biến cục bộ · return addr · tham số (LIFO)</text>
+            <line x1="636" y1="32" x2="636" y2="68" class="dgm-arrow" stroke-width="1.4" marker-end="url(#arG)"/><text x="648" y="52" class="dgm-sub" font-size="9">grows ↓</text>
+            <rect x="120" y="78" width="480" height="34" rx="7" fill="var(--surface-2)" class="dgm-layer" stroke-dasharray="4 3"/><text x="360" y="100" text-anchor="middle" class="dgm-sub" font-size="10.5">↕ vùng trống (stack &amp; heap gặp nhau = hết RAM)</text>
+            <rect x="120" y="118" width="480" height="44" rx="7" fill="var(--brand-600)"/><text x="360" y="140" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">Heap</text><text x="360" y="156" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">malloc / new — cấp phát động</text>
+            <line x1="636" y1="156" x2="636" y2="120" class="dgm-arrow" stroke-width="1.4" marker-end="url(#arG)"/><text x="648" y="142" class="dgm-sub" font-size="9">grows ↑</text>
+            <rect x="120" y="168" width="480" height="40" rx="7" fill="var(--brand-400)"/><text x="360" y="187" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">BSS</text><text x="360" y="201" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">global/static = 0 · zero-init lúc startup · KHÔNG nằm trong ảnh nhị phân</text>
+            <rect x="120" y="214" width="480" height="40" rx="7" fill="var(--core)"/><text x="360" y="233" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">Data</text><text x="360" y="247" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">global/static init ≠ 0 · copy flash→RAM lúc startup</text>
+            <rect x="120" y="260" width="480" height="38" rx="7" fill="var(--defend)"/><text x="360" y="278" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">.rodata</text><text x="360" y="292" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">hằng · string literal (read-only)</text>
+            <rect x="120" y="304" width="480" height="44" rx="7" fill="var(--brand-900)"/><text x="360" y="326" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">Text (.code)</text><text x="360" y="342" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">mã lệnh (read-only, thường ở flash)</text>
+            <text x="120" y="366" class="dgm-sub" font-size="10.5">Địa chỉ thấp</text>
+          </svg>
+          <div class="figure__cap"><b>Bố cục bộ nhớ.</b> Stack mọc xuống, heap mọc lên — gặp nhau là hết RAM. <b>BSS</b> không tốn dung lượng file nhị phân (chỉ zero-init lúc chạy); <b>Data</b> phải lưu giá trị trong flash rồi copy sang RAM.</div>
+        </div>
+        <div class="kv">
+          <dt>Text</dt><dd>Mã máy; thường nằm ở flash (read-only) trong nhúng, có thể chia sẻ.</dd>
+          <dt>.rodata</dt><dd>Hằng &amp; string literal — read-only, hay để ở flash.</dd>
+          <dt>Data</dt><dd>Global/static <em>đã khởi tạo ≠0</em>; copy từ flash → RAM lúc startup.</dd>
+          <dt>BSS</dt><dd>Global/static =0/không khởi tạo; startup code <em>zero-init</em>. “Block Started by Symbol”.</dd>
+          <dt>Heap</dt><dd>Cấp phát động; trong nhúng <strong>hạn chế dùng</strong> (phân mảnh, không tất định).</dd>
+          <dt>Stack</dt><dd>Biến cục bộ/khung hàm; tràn stack là lỗi nguy hiểm khó tìm.</dd>
+        </div>
+        <div class="callout callout--warn"><div class="callout__icon">⚠️</div><div class="callout__body"><p class="mb-0">Trong embedded an toàn, người ta thường <strong>cấm malloc/heap</strong> sau init: cấp phát động không tất định và có thể phân mảnh. Dùng static/memory pool thay thế (MISRA cũng khuyến nghị).</p></div></div>
+
+        <!-- 2. Qualifiers -->
+        <h2>2. <code>volatile</code>, <code>const</code>, <code>static</code>, <code>extern</code></h2>
+        <h3>2.1 volatile — bắt buộc trong nhúng</h3>
+        <p>Báo compiler “biến này <strong>có thể đổi ngoài luồng code</strong>” (thanh ghi HW, biến do ISR sửa) → <strong>không tối ưu/không cache trong thanh ghi</strong>, mỗi lần truy cập phải đọc/ghi thật từ bộ nhớ.</p>
+<pre><code class="language-c">// Thanh ghi phần cứng: PHẢI volatile, nếu không compiler có thể bỏ vòng lặp
+#define STATUS_REG (*(volatile uint32_t*)0x40001000)
+while ((STATUS_REG &amp; 0x1) == 0) { /* chờ cờ ready */ }
+
+// Biến chia sẻ với ISR: PHẢI volatile
+volatile uint8_t flag = 0;
+void ISR(void) { flag = 1; }          // ISR sửa
+void main_loop(void){ while(!flag){} } // không volatile -> có thể loop vô hạn
+
+// const + volatile (độc lập nhau): con trỏ HẰNG tới thanh ghi BIẾN ĐỘNG
+uint8_t volatile * const p_led = (uint8_t*)0x80000; // p cố định, *p do HW đổi</code></pre>
+        <div class="callout callout--danger"><div class="callout__icon">🐞</div><div class="callout__body"><p class="mb-0"><strong>Bẫy kinh điển:</strong> quên <code>volatile</code> cho cờ ISR/thanh ghi → ở mức tối ưu <code>-O2</code>, compiler giả định biến không đổi và <em>loại bỏ</em> vòng lặp chờ. Lỗi “chạy debug ổn, release treo”. Lưu ý: <code>const</code> và <code>volatile</code> <strong>độc lập</strong>, không phải đối nghịch.</p></div></div>
+
+        <h3>2.2 static, const, extern</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Từ khoá</th><th>Ở phạm vi file/hàm</th><th>Ý nghĩa</th></tr></thead>
+          <tbody>
+            <tr><td><code>static</code> (biến/hàm global)</td><td>File</td><td>Internal linkage — ẩn khỏi file khác, giảm coupling</td></tr>
+            <tr><td><code>static</code> (biến trong hàm)</td><td>Hàm</td><td>Giữ giá trị qua các lần gọi; khởi tạo 1 lần (nằm ở data/BSS, không stack)</td></tr>
+            <tr><td><code>const</code></td><td>—</td><td>Chỉ-đọc (compiler chặn ghi); có thể đặt ở flash</td></tr>
+            <tr><td><code>extern</code></td><td>—</td><td>Khai báo biến/hàm định nghĩa ở file khác (chia sẻ qua các unit)</td></tr>
+          </tbody>
+        </table></div>
+
+        <!-- 3. Pointers -->
+        <h2>3. Con trỏ nâng cao &amp; function pointer</h2>
+<pre><code class="language-c">// Con trỏ hàm: nền tảng của callback/HAL/jump table
+typedef void (*IsrHandler)(void);
+IsrHandler vector_table[32];
+void register_isr(uint8_t id, IsrHandler h) { vector_table[id] = h; }
+
+// Mảng con trỏ hàm = dispatch table (thay switch lớn)
+typedef int (*Cmd)(int);
+int do_read(int a){ return a; }
+int do_write(int a){ return a*2; }
+Cmd table[] = { do_read, do_write };
+int r = table[1](10);   // gọi do_write(10) -> 20
+
+// const và con trỏ — đọc từ phải qua trái
+const int *p;        // con trỏ tới int hằng (đổi p được, *p thì không)
+int * const q = &amp;x;  // con trỏ hằng (đổi *q được, q thì không)</code></pre>
+
+        <!-- 4. ISR & re-entrancy -->
+        <h2>4. ISR, re-entrancy &amp; critical section</h2>
+        <div class="grid grid-2">
+          <div class="card">
+            <h4 class="mt-0">Quy tắc viết ISR</h4>
+            <ul class="mb-0 small">
+              <li><strong>Ngắn &amp; nhanh</strong> — chỉ set cờ/đẩy data vào queue, xử lý nặng để main.</li>
+              <li>Không gọi hàm chặn/không re-entrant (vd <code>printf</code>, malloc).</li>
+              <li>Biến chia sẻ phải <code>volatile</code>; truy cập đa byte cần bảo vệ.</li>
+              <li>Xoá cờ ngắt đúng cách để không lặp.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 class="mt-0">Re-entrancy</h4>
+            <p class="mb-0 small">Hàm <strong>re-entrant</strong> có thể bị ngắt giữa chừng rồi gọi lại an toàn: không dùng biến static/global chia sẻ, không trạng thái ẩn. Quan trọng khi hàm dùng cả ở main &amp; ISR.</p>
+          </div>
+        </div>
+        <h3>4.1 Critical section — bảo vệ truy cập chia sẻ</h3>
+<pre><code class="language-c">// Đọc biến 32-bit chia sẻ với ISR trên MCU nhỏ có thể bị "xé" (torn read).
+// volatile KHÔNG đảm bảo nguyên tử -> cần critical section.
+volatile uint32_t g_ticks;
+
+uint32_t read_ticks(void) {
+    uint32_t t;
+    uint32_t s = __get_PRIMASK();  // lưu trạng thái ngắt
+    __disable_irq();               // vào critical section
+    t = g_ticks;                   // đọc nguyên tử so với ISR
+    __set_PRIMASK(s);              // khôi phục (tránh bật nhầm khi lồng nhau)
+    return t;
+}</code></pre>
+        <div class="callout callout--tip"><div class="callout__icon">💡</div><div class="callout__body"><p class="mb-0">Giữ critical section <strong>cực ngắn</strong> để không tăng interrupt latency. <strong>Lưu/khôi phục</strong> trạng thái ngắt thay vì enable cứng (tránh bật nhầm khi đang lồng critical section). Hoặc dùng <code>stdatomic.h</code> nếu nền tảng hỗ trợ.</p></div></div>
+
+        <!-- 5. Bit manipulation -->
+        <h2>5. Bit manipulation trên thanh ghi</h2>
+<pre><code class="language-c">#define BIT(n)   (1u &lt;&lt; (n))
+reg |=  BIT(3);              // set bit 3
+reg &amp;= ~BIT(3);             // clear bit 3
+reg ^=  BIT(3);              // toggle bit 3
+if (reg &amp; BIT(3)) { ... }    // test bit 3
+
+// Ghi một field nhiều bit (vd field [6:4]) mà không đụng bit khác:
+reg = (reg &amp; ~(0x7u &lt;&lt; 4)) | ((value &amp; 0x7u) &lt;&lt; 4);
+//      └ xoá field cũ ─┘   └ ghi giá trị mới vào đúng vị trí ┘</code></pre>
+        <div class="callout callout--warn"><div class="callout__icon">⚠️</div><div class="callout__body"><p class="mb-0">Luôn dùng hậu tố <code>u</code> (unsigned) khi dịch bit để tránh undefined behavior khi dịch vào bit dấu. Với thanh ghi → nhớ <code>volatile</code>.</p></div></div>
+
+        <!-- 6. Endianness & padding -->
+        <h2>6. Endianness &amp; struct padding</h2>
+        <h3>6.1 Endianness</h3>
+        <p>Thứ tự byte của số nhiều byte trong bộ nhớ. <strong>Little-endian</strong>: byte thấp (LSB) ở địa chỉ thấp (x86, đa số ARM, RISC-V); <strong>big-endian</strong>: MSB ở địa chỉ thấp (network byte order — TCP/IP).</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 188" role="img" aria-label="Big-endian vs little-endian cho 0x12345678" xmlns="http://www.w3.org/2000/svg">
+            <text x="360" y="22" text-anchor="middle" class="dgm-label" font-size="12" font-weight="700">uint32_t x = 0x12345678</text>
+            <text x="150" y="58" text-anchor="middle" class="dgm-sub" font-size="10.5">addr →</text>
+            <text x="250" y="58" text-anchor="middle" class="dgm-sub" font-size="10.5">0x00</text>
+            <text x="360" y="58" text-anchor="middle" class="dgm-sub" font-size="10.5">0x01</text>
+            <text x="470" y="58" text-anchor="middle" class="dgm-sub" font-size="10.5">0x02</text>
+            <text x="580" y="58" text-anchor="middle" class="dgm-sub" font-size="10.5">0x03</text>
+            <text x="90" y="92" class="dgm-label" font-size="11" font-weight="700">Big-endian</text>
+            <rect x="206" y="72" width="100" height="36" rx="6" fill="var(--brand-600)"/><text x="256" y="95" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">12</text>
+            <rect x="312" y="72" width="100" height="36" rx="6" fill="var(--brand-500)"/><text x="362" y="95" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">34</text>
+            <rect x="418" y="72" width="100" height="36" rx="6" fill="var(--brand-400)"/><text x="468" y="95" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">56</text>
+            <rect x="524" y="72" width="100" height="36" rx="6" fill="var(--brand-300)"/><text x="574" y="95" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">78</text>
+            <text x="640" y="95" class="dgm-sub" font-size="9.5">MSB trước</text>
+            <text x="90" y="146" class="dgm-label" font-size="11" font-weight="700">Little-endian</text>
+            <rect x="206" y="126" width="100" height="36" rx="6" fill="var(--brand-300)"/><text x="256" y="149" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">78</text>
+            <rect x="312" y="126" width="100" height="36" rx="6" fill="var(--brand-400)"/><text x="362" y="149" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">56</text>
+            <rect x="418" y="126" width="100" height="36" rx="6" fill="var(--brand-500)"/><text x="468" y="149" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">34</text>
+            <rect x="524" y="126" width="100" height="36" rx="6" fill="var(--brand-600)"/><text x="574" y="149" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">12</text>
+            <text x="640" y="149" class="dgm-sub" font-size="9.5">LSB trước</text>
+          </svg>
+          <div class="figure__cap"><b>Endianness của 0x12345678.</b> Cùng giá trị, khác thứ tự byte trong RAM. Quan trọng khi map struct lên khung giao thức (thường network = big-endian) hoặc đọc dữ liệu nhị phân chéo nền tảng.</div>
+        </div>
+<pre><code class="language-c">// Kiểm tra endianness lúc runtime:
+uint16_t t = 1;
+bool little = (*(uint8_t*)&amp;t == 1);   // true trên x86/ARM</code></pre>
+
+        <h3>6.2 Struct padding &amp; #pragma pack</h3>
+        <p>Compiler chèn <strong>padding</strong> để mỗi field tự căn lề (địa chỉ là bội của kích thước field); alignment của struct = alignment của field rộng nhất. <strong>Sắp xếp field giảm dần kích thước</strong> giúp giảm padding.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 196" role="img" aria-label="Struct padding" xmlns="http://www.w3.org/2000/svg">
+            <text x="20" y="22" class="dgm-label" font-size="11.5" font-weight="700">struct { char a; int b; char c; }  →  sizeof = 12 (có padding)</text>
+            <!-- 12 byte cells, each 54 wide starting x=20 -->
+            <rect x="20" y="34" width="54" height="40" rx="5" fill="var(--brand-600)"/><text x="47" y="58" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">a</text>
+            <rect x="76" y="34" width="54" height="40" rx="5" fill="var(--surface-2)" class="dgm-layer" stroke-dasharray="3 3"/><text x="103" y="58" text-anchor="middle" class="dgm-sub" font-size="9">pad</text>
+            <rect x="132" y="34" width="54" height="40" rx="5" fill="var(--surface-2)" class="dgm-layer" stroke-dasharray="3 3"/><text x="159" y="58" text-anchor="middle" class="dgm-sub" font-size="9">pad</text>
+            <rect x="188" y="34" width="54" height="40" rx="5" fill="var(--surface-2)" class="dgm-layer" stroke-dasharray="3 3"/><text x="215" y="58" text-anchor="middle" class="dgm-sub" font-size="9">pad</text>
+            <rect x="244" y="34" width="222" height="40" rx="5" fill="var(--brand-400)"/><text x="355" y="58" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">b (int, căn 4)</text>
+            <rect x="468" y="34" width="54" height="40" rx="5" fill="var(--brand-600)"/><text x="495" y="58" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">c</text>
+            <rect x="524" y="34" width="54" height="40" rx="5" fill="var(--surface-2)" class="dgm-layer" stroke-dasharray="3 3"/><text x="551" y="58" text-anchor="middle" class="dgm-sub" font-size="9">pad</text>
+            <rect x="580" y="34" width="54" height="40" rx="5" fill="var(--surface-2)" class="dgm-layer" stroke-dasharray="3 3"/><text x="607" y="58" text-anchor="middle" class="dgm-sub" font-size="9">pad</text>
+            <rect x="636" y="34" width="54" height="40" rx="5" fill="var(--surface-2)" class="dgm-layer" stroke-dasharray="3 3"/><text x="663" y="58" text-anchor="middle" class="dgm-sub" font-size="9">pad</text>
+            <text x="20" y="92" class="dgm-sub" font-size="9.5">offset: 0    1    2    3    4 ─────── 7    8    9   10   11</text>
+            <text x="20" y="126" class="dgm-label" font-size="11.5" font-weight="700">#pragma pack(1)  →  sizeof = 6 (ép sát, không padding)</text>
+            <rect x="20" y="138" width="54" height="40" rx="5" fill="var(--brand-600)"/><text x="47" y="162" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">a</text>
+            <rect x="76" y="138" width="222" height="40" rx="5" fill="var(--brand-400)"/><text x="187" y="162" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">b (int)</text>
+            <rect x="300" y="138" width="54" height="40" rx="5" fill="var(--brand-600)"/><text x="327" y="162" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">c</text>
+            <text x="372" y="162" class="dgm-sub" font-size="10">→ khớp byte khung giao thức, nhưng truy cập unaligned có thể chậm/fault</text>
+          </svg>
+          <div class="figure__cap"><b>Struct padding.</b> Mặc định 12 byte (b phải bắt đầu ở bội số 4). Pack(1) còn 6 byte để khớp khung protocol/thanh ghi. <b>Đừng <code>memcmp</code> struct</b> — byte padding có giá trị bất định.</div>
+        </div>
+
+        <!-- 7. Linker script -->
+        <h2>7. Linker script (cơ bản)</h2>
+        <p>Quyết định <strong>section nào đặt ở vùng nhớ nào</strong> (flash/RAM) và địa chỉ. Startup code dựa vào các symbol này để copy <code>.data</code> và zero <code>.bss</code>.</p>
+<pre><code class="language-text">MEMORY {
+  FLASH (rx)  : ORIGIN = 0x08000000, LENGTH = 512K
+  RAM   (rwx) : ORIGIN = 0x20000000, LENGTH = 128K
+}
+SECTIONS {
+  .text : { *(.text*) }   &gt; FLASH      /* code o flash */
+  .data : { *(.data*) }   &gt; RAM AT&gt; FLASH  /* gia tri nam flash, chay o RAM */
+  .bss  : { *(.bss*)  }   &gt; RAM           /* zero-init luc startup */
+}</code></pre>
+
+        <!-- 8. C++ in embedded -->
+        <h2>8. C++ trong embedded</h2>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 200" role="img" aria-label="vtable cơ chế virtual" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="arV" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="20" y="40" width="150" height="50" rx="8" fill="var(--brand-800)"/><text x="95" y="62" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">obj1 (Derived)</text><text x="95" y="80" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">vptr ●</text>
+            <rect x="20" y="110" width="150" height="50" rx="8" fill="var(--brand-600)"/><text x="95" y="132" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">obj2 (Derived)</text><text x="95" y="150" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">vptr ●</text>
+            <line x1="170" y1="75" x2="318" y2="92" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arV)"/>
+            <line x1="170" y1="145" x2="318" y2="108" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arV)"/>
+            <rect x="320" y="62" width="180" height="76" rx="8" fill="var(--surface-2)" class="dgm-layer"/>
+            <text x="410" y="82" text-anchor="middle" class="dgm-label" font-size="11" font-weight="800">vtable (1/class)</text>
+            <rect x="332" y="90" width="156" height="20" rx="4" fill="var(--surface)" class="dgm-layer"/><text x="410" y="105" text-anchor="middle" class="dgm-text" font-size="9.5">&amp;Derived::foo</text>
+            <rect x="332" y="112" width="156" height="20" rx="4" fill="var(--surface)" class="dgm-layer"/><text x="410" y="127" text-anchor="middle" class="dgm-text" font-size="9.5">&amp;Derived::bar</text>
+            <line x1="500" y1="100" x2="548" y2="100" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arV)"/>
+            <rect x="550" y="62" width="150" height="76" rx="8" fill="var(--brand-400)"/><text x="625" y="92" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">code hàm</text><text x="625" y="112" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">foo() / bar()</text>
+            <text x="360" y="180" text-anchor="middle" class="dgm-sub" font-size="10.5">Chi phí: 1 vptr/object · 1 vtable/class · 1 lần deref mỗi lời gọi · MẤT khả năng inline</text>
+          </svg>
+          <div class="figure__cap"><b>vtable.</b> Mỗi object đa hình có một <code>vptr</code> trỏ tới vtable dùng chung của class; gọi virtual = tra bảng lúc runtime. Chi phí nhỏ nhưng <b>cản inlining</b> và (trên Cortex-M) tốn một lần đọc flash.</div>
+        </div>
+
+        <div class="table-wrap"><table>
+          <thead><tr><th>Tính năng</th><th>Dùng tốt</th><th>Cẩn trọng / tránh</th></tr></thead>
+          <tbody>
+            <tr><td>Class/encapsulation</td><td>Tổ chức driver/HAL sạch</td><td>—</td></tr>
+            <tr><td><strong>RAII</strong></td><td>Quản lý tài nguyên (lock, peripheral) tự động — ctor lấy, dtor trả khi ra scope</td><td>Nhớ <strong>virtual destructor</strong> ở base đa hình</td></tr>
+            <tr><td><code>virtual</code></td><td>Trừu tượng HAL (đa hình)</td><td>Vtable tốn RAM/flash + gọi gián tiếp + cản inline; tránh ở hot path</td></tr>
+            <tr><td>Templates / CRTP</td><td>Đa hình tĩnh <em>zero-cost</em> compile-time</td><td>Code bloat nếu lạm dụng</td></tr>
+            <tr><td>Exceptions / RTTI</td><td>—</td><td>Thường <strong>tắt</strong> (-fno-exceptions): tốn flash, không tất định</td></tr>
+            <tr><td>STL động (vector...)</td><td>—</td><td>Cấp phát heap → tránh; dùng container tĩnh/etl</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout callout--key"><div class="callout__icon">⚖️</div><div class="callout__body"><p class="mb-0"><strong>Nguyên tắc:</strong> dùng phần C++ <em>“zero-cost”</em> (class, RAII, template, constexpr, <code>final</code>) nhưng tránh phần <em>không tất định</em> (heap, exception, RTTI) trong code real-time/safety. Đây cũng là tinh thần của Adaptive (C++14, có coding guideline).</p></div></div>
+
+        <!-- 9. Toolchain -->
+        <h2>9. Build toolchain &amp; debug vs release</h2>
+        <ul class="steps">
+          <li><h4>Preprocess → Compile → Assemble → Link</h4><p class="mb-0">.c → (macro) → .s → .o → ELF/HEX. Cross-compile: chạy trên PC, sinh mã cho target (vd RH850).</p></li>
+          <li><h4>Cross-compile</h4><p class="mb-0">Toolchain riêng cho kiến trúc target; cần đúng CPU flags, ABI, và linker script.</p></li>
+          <li><h4>Debug vs Release</h4><p class="mb-0">Debug: <code>-O0 -g</code>, dễ debug, chậm. Release: <code>-O2/-Os</code>, nhanh/nhỏ nhưng <strong>lộ bug volatile/timing/UB</strong> — luôn test cả hai.</p></li>
+        </ul>
+
+        <!-- 10. Trước -> Nay -->
+        <h2>10. Trước (~2020) → Nay — C++ trong nhúng</h2>
+        <div class="evo">
+          <div class="evo__head">➕ <span>C++ hiện đại vào automotive</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>Classic chủ yếu <strong>C + MISRA C</strong>; C++ bị dè dặt (sợ vtable/heap/exception); template ít dùng.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p>Adaptive dùng <strong>C++14</strong> với <strong>AUTOSAR C++14 / MISRA C++</strong> guideline; xu hướng <code>constexpr</code>, CRTP, <code>final</code>, <code>std::array</code>/etl để đạt zero-cost mà vẫn an toàn. C++17/20 dần xuất hiện ở tooling.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> trả lời được “dùng C++ nào trong nhúng an toàn và vì sao” cho thấy bạn hiểu trade-off, không chỉ cú pháp.</div>
+        </div>
+
+        <!-- Self test -->
+        <h2>11. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">Vì sao biến chia sẻ với ISR phải <code>volatile</code>? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Không có <code>volatile</code>, compiler có thể giữ biến trong thanh ghi/giả định không đổi và tối ưu bỏ lần đọc lại → main không thấy ISR đã đổi giá trị. <code>volatile</code> buộc đọc/ghi thật mỗi lần.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>volatile có làm atomic không? (Không!)</li><li>Cho ví dụ bug khi quên volatile.</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q"><code>volatile</code> có làm truy cập nguyên tử (atomic) không? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>Không.</strong> volatile chỉ chống tối ưu (đảm bảo đọc/ghi thật), <em>không</em> đảm bảo nguyên tử. Truy cập đa byte trên CPU nhỏ vẫn có thể bị “xé” (torn) khi ISR chen vào giữa → cần critical section (disable/restore IRQ) hoặc <code>stdatomic</code>.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Vì sao nên lưu/khôi phục PRIMASK thay vì enable cứng?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Biến nằm ở BSS hay Data? <code>static int x=0;</code> vs <code>static int y=5;</code> <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><code>x=0</code> → <strong>BSS</strong> (zero-init lúc startup, không chiếm chỗ trong ảnh nhị phân). <code>y=5</code> → <strong>Data</strong> (giá trị lưu trong flash, copy sang RAM lúc startup).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Startup code (crt0) làm gì với .data và .bss?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Một struct {char,int,char} sizeof bằng mấy? Giảm padding sao? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Thường <strong>12</strong> (int phải căn 4 → padding sau char đầu, và padding cuối để struct là bội alignment rộng nhất). Giảm bằng cách <strong>sắp field giảm dần kích thước</strong> (int, char, char → 8) hoặc <code>#pragma pack(1)</code>/<code>__attribute__((packed))</code> (6, nhưng chấp nhận unaligned). Không <code>memcmp</code> struct vì byte padding bất định.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Pack có rủi ro gì trên ARM? (unaligned access fault/chậm)</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Khi nào tránh <code>virtual</code>? vtable hoạt động ra sao? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Mỗi object đa hình có <code>vptr</code> → vtable (bảng con trỏ hàm dùng chung/class); gọi virtual tra bảng lúc runtime. Tránh ở <strong>hot path/real-time</strong> và khi RAM/flash khan: tốn bộ nhớ, gọi gián tiếp, và <strong>cản inlining</strong>. Thay bằng template/CRTP (đa hình tĩnh) hoặc <code>final</code>.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Vì sao luôn cần virtual destructor ở base đa hình?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Tại sao “chạy ở Debug ổn nhưng Release lỗi”? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Thường do thiếu <code>volatile</code>, phụ thuộc timing, hoặc undefined behavior. Ở <code>-O0</code> compiler không tối ưu nên “may mà chạy”; <code>-O2</code> phơi bày lỗi. Cũng có thể do biến chưa khởi tạo hoặc race với ISR.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Bạn cô lập kiểu lỗi này thế nào? (so sánh asm, bật cảnh báo, sanitizer/MISRA)</li></ul></div>
+          </div></div>
+        </div>
+
+        <!-- 12. Cheat-sheet -->
+        <h2>12. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>Memory layout</h4><ul>
+            <li>Text/.rodata (flash, RO) · Data (init≠0) · BSS (=0)</li>
+            <li>Heap ↑ · Stack ↓ (gặp nhau = hết RAM)</li>
+            <li>BSS không tốn dung lượng file</li>
+            <li>Embedded safety: cấm malloc sau init</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Qualifiers</h4><ul>
+            <li>volatile = đọc/ghi thật (KHÔNG atomic)</li>
+            <li>static = internal linkage / giữ giá trị</li>
+            <li>const &amp; volatile độc lập</li>
+            <li>const ptr to volatile reg: <code>T volatile * const</code></li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>ISR</h4><ul>
+            <li>Ngắn, nhanh, set cờ/queue</li>
+            <li>Shared = volatile + critical section</li>
+            <li>Re-entrant: không static/global shared</li>
+            <li>Lưu/khôi phục PRIMASK</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Bit / padding / endian</h4><ul>
+            <li>set <code>|=BIT</code> · clear <code>&amp;=~BIT</code> · toggle <code>^=</code></li>
+            <li>Struct align = field rộng nhất; sắp giảm dần</li>
+            <li>pack(1) khớp protocol, rủi ro unaligned</li>
+            <li>BE = MSB trước (network) · LE = x86/ARM</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>C++ nhúng</h4><ul>
+            <li>Dùng: class, RAII, template/CRTP, constexpr</li>
+            <li>Tránh: heap, exception, RTTI ở real-time</li>
+            <li>virtual = vptr+vtable, cản inline</li>
+            <li>Base đa hình → virtual destructor</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Toolchain</h4><ul>
+            <li>Preprocess→Compile→Assemble→Link</li>
+            <li>Cross-compile: flags/ABI/linker script đúng</li>
+            <li>Debug -O0 -g · Release -O2/-Os</li>
+            <li>Test CẢ HAI để bắt bug volatile/UB</li>
+          </ul></div>
+        </div>
+
+        <!-- 13. Sources -->
+        <h2>13. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li>Barr Group — <a href="https://barrgroup.com/embedded-systems/books/embedded-c-coding-standard/general-rules/keywords-static-volatile-const" target="_blank" rel="noopener">static / volatile / const</a>.</li>
+          <li>Eric S. Raymond — <a href="http://www.catb.org/esr/structure-packing/" target="_blank" rel="noopener">The Lost Art of Structure Packing</a>.</li>
+          <li>Wikipedia — <a href="https://en.wikipedia.org/wiki/Endianness" target="_blank" rel="noopener">Endianness</a>, <a href="https://en.wikipedia.org/wiki/Data_structure_alignment" target="_blank" rel="noopener">Data structure alignment</a>.</li>
+          <li>GeeksforGeeks — <a href="https://www.geeksforgeeks.org/c/memory-layout-of-c-program/" target="_blank" rel="noopener">Memory Layout of C Programs</a>.</li>
+          <li>Feabhas / Embedded Artistry — C++ trên embedded (vtable, RAII, <code>final</code>); <strong>AUTOSAR C++14</strong> &amp; <strong>MISRA</strong> coding guidelines.</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi viết được set/clear bit, giải thích volatile (≠atomic) &amp; padding mà không nhìn.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">
+        Chủ đề G · Embedded C/C++ Fundamentals — Interview Prep
+      </footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../assets/js/app.js?v=4"></script>
+</body>
+</html>

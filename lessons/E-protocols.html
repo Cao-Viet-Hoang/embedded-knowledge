@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E · Communication Protocols — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/style.css?v=4" />
+</head>
+<body data-page="E" data-root="../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">E</span>
+            <span class="badge badge--core">Core</span>
+            <span class="badge badge--defend">SENT · Defend</span>
+            <span class="chip">Vòng 2 · Core embedded</span>
+          </div>
+          <h1>Communication Protocols</h1>
+          <p class="lead">UART, SPI, I2C, CAN, SENT, UDS, LIN — đều có trong CV. Nắm <strong>tham số, khung dữ liệu, ưu/nhược, khi nào dùng</strong> và <strong>cơ chế thật</strong> (arbitration, ACK, clock stretching, seed-key). SENT cần sâu vì gắn project; UDS cần vì gắn diagnostics.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> 🟠 Core (SENT 🔵 Defend)</span>
+            <span><b>Mẹo:</b> So sánh chéo theo bảng</span>
+          </div>
+        </div>
+
+        <div class="callout callout--note">
+          <div class="callout__icon">📌</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Nguồn:</strong> tham số SPI mode, I2C, CAN/CAN FD, UDS (ISO 14229) đối chiếu tài liệu chuẩn &amp; nhà sản xuất — xem mục “Nguồn tham khảo” cuối bài. SENT chi tiết ở bài <a href="D-sent-automation.html">D</a>.</p>
+          </div>
+        </div>
+
+        <!-- Bảng tổng quan -->
+        <h2>1. Bảng so sánh nhanh</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Giao thức</th><th>Dây</th><th>Đồng bộ?</th><th>Số node</th><th>Duplex</th><th>ACK?</th><th>Tốc độ điển hình</th></tr></thead>
+            <tbody>
+              <tr><td><strong>UART</strong></td><td>2 (TX/RX)</td><td>Bất đồng bộ</td><td>2 (P2P)</td><td>Full</td><td>Parity (tùy)</td><td>9.6k–921.6k baud</td></tr>
+              <tr><td><strong>SPI</strong></td><td>4 (MOSI/MISO/SCLK/CS)</td><td>Đồng bộ</td><td>1 master, n slave</td><td>Full</td><td>Không</td><td>10–50+ MHz</td></tr>
+              <tr><td><strong>I2C</strong></td><td>2 (SDA/SCL)</td><td>Đồng bộ</td><td>Multi-master, n slave</td><td>Half</td><td>Per-byte ACK</td><td>100k/400k/1M/3.4M</td></tr>
+              <tr><td><strong>CAN</strong></td><td>2 (CAN_H/CAN_L)</td><td>Đồng bộ bit (NRZ)</td><td>Multi-master bus</td><td>Half</td><td>ACK slot</td><td>≤1M (FD: data 2–8×)</td></tr>
+              <tr><td><strong>LIN</strong></td><td>1 (+GND)</td><td>Bất đồng bộ</td><td>1 master, ≤16 slave</td><td>Half</td><td>Checksum</td><td>≤20k</td></tr>
+              <tr><td><strong>SENT</strong></td><td>1 (signal)</td><td>Một chiều, timing</td><td>P2P sensor→ECU</td><td>Một chiều</td><td>CRC-4</td><td>tick 3–90µs</td></tr>
+              <tr><td><strong>1-Wire</strong></td><td>1 (data)</td><td>Bất đồng bộ, timing</td><td>1 master, n slave</td><td>Half</td><td>Presence pulse</td><td>~15.4k</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- UART -->
+        <h2>2. UART</h2>
+        <p>Truyền nối tiếp <strong>bất đồng bộ</strong> — không có clock chung; hai bên thoả thuận <strong>baud rate</strong>. Line idle = <strong>high</strong>; mỗi byte đóng khung bằng start(0)/stop(1). Bên thu thường <strong>oversampling 16×</strong> để bắt đúng giữa bit và chịu được lệch clock nhỏ.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 150" role="img" aria-label="Khung UART 8N1" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="44" width="58" height="44" rx="5" fill="var(--surface-2)" class="dgm-layer"/><text x="39" y="70" text-anchor="middle" class="dgm-sub" font-size="10.5">Idle 1</text>
+            <rect x="70" y="44" width="56" height="44" rx="5" fill="var(--brand-800)"/><text x="98" y="68" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Start</text><text x="98" y="82" text-anchor="middle" class="dgm-inv-sub" font-size="9">0</text>
+            <rect x="128" y="44" width="50" height="44" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="153" y="70" text-anchor="middle" class="dgm-text" font-size="11">D0</text>
+            <rect x="180" y="44" width="50" height="44" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="205" y="70" text-anchor="middle" class="dgm-text" font-size="11">D1</text>
+            <rect x="232" y="44" width="50" height="44" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="257" y="70" text-anchor="middle" class="dgm-text" font-size="11">D2</text>
+            <rect x="284" y="44" width="50" height="44" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="309" y="70" text-anchor="middle" class="dgm-text" font-size="11">D3</text>
+            <rect x="336" y="44" width="50" height="44" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="361" y="70" text-anchor="middle" class="dgm-text" font-size="11">D4</text>
+            <rect x="388" y="44" width="50" height="44" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="413" y="70" text-anchor="middle" class="dgm-text" font-size="11">D5</text>
+            <rect x="440" y="44" width="50" height="44" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="465" y="70" text-anchor="middle" class="dgm-text" font-size="11">D6</text>
+            <rect x="492" y="44" width="50" height="44" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="517" y="70" text-anchor="middle" class="dgm-text" font-size="11">D7</text>
+            <rect x="544" y="44" width="56" height="44" rx="5" fill="var(--core)"/><text x="572" y="70" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Parity</text>
+            <rect x="602" y="44" width="50" height="44" rx="5" fill="var(--brand-600)"/><text x="627" y="70" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Stop 1</text>
+            <rect x="654" y="44" width="56" height="44" rx="5" fill="var(--surface-2)" class="dgm-layer"/><text x="682" y="70" text-anchor="middle" class="dgm-sub" font-size="10.5">Idle</text>
+            <text x="330" y="30" text-anchor="middle" class="dgm-sub" font-size="11">⟵ LSB first (D0 trước) ⟶</text>
+            <text x="360" y="116" text-anchor="middle" class="dgm-sub" font-size="11">8N1 = 1 start + 8 data + 1 stop = 10 bit · không clock chung → hai bên cùng baud (lệch ≤ ~2%)</text>
+          </svg>
+          <div class="figure__cap"><b>Khung UART 8N1.</b> Cạnh xuống của start bit đồng bộ phía thu; parity là tùy chọn (even/odd). Throughput thực = 8/10 do overhead khung.</div>
+        </div>
+        <div class="kv">
+          <dt>Baud rate</dt><dd>Số symbol/giây. Hai bên phải khớp (vd 115200 → mỗi bit ~8.68µs). Lệch &gt;~2% → lỗi khung.</dd>
+          <dt>Parity</dt><dd>Even/Odd/None/Mark/Space — phát hiện lỗi 1 bit (đếm số bit 1).</dd>
+          <dt>Stop bit</dt><dd>1 hoặc 2 bit (mức high) kết khung.</dd>
+          <dt>Flow control</dt><dd>Phần cứng (RTS/CTS) hoặc phần mềm (XON/XOFF) chống tràn buffer.</dd>
+        </div>
+        <div class="callout callout--note"><div class="callout__icon">❓</div><div class="callout__body"><p class="mb-0"><strong>Hay hỏi:</strong> “Hai thiết bị UART nói chuyện được cần khớp gì?” → <strong>baud, số data bit, parity, stop bit</strong> (và mức điện áp/logic). Sai baud → đọc rác (garbage).</p></div></div>
+
+        <!-- SPI -->
+        <h2>3. SPI</h2>
+        <p><strong>Đồng bộ</strong>, full-duplex, thường 1 master nhiều slave; mỗi slave một chân <strong>CS</strong> (chip select, active-low). 4 dây dùng chung MOSI/MISO/SCLK + CS riêng → <em>tốn chân khi nhiều slave</em>. <strong>Không có ACK</strong> (master không biết slave nhận đúng hay chưa).</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 200" role="img" aria-label="Topology SPI một master nhiều slave" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="60" width="140" height="80" rx="9" fill="var(--brand-800)"/><text x="90" y="96" text-anchor="middle" class="dgm-inv" font-size="13" font-weight="800">Master</text><text x="90" y="116" text-anchor="middle" class="dgm-inv-sub" font-size="10">sinh SCLK + CS</text>
+            <line x1="160" y1="78" x2="540" y2="78" stroke="var(--brand-400)" stroke-width="2"/><text x="350" y="72" text-anchor="middle" class="dgm-sub" font-size="10">SCLK · MOSI · MISO (dùng chung)</text>
+            <line x1="160" y1="100" x2="300" y2="40" stroke="var(--core)" stroke-width="1.5"/><text x="250" y="56" class="dgm-sub" font-size="9.5">CS1</text>
+            <line x1="160" y1="110" x2="300" y2="120" stroke="var(--core)" stroke-width="1.5"/><text x="250" y="124" class="dgm-sub" font-size="9.5">CS2</text>
+            <line x1="160" y1="120" x2="300" y2="180" stroke="var(--core)" stroke-width="1.5"/><text x="250" y="172" class="dgm-sub" font-size="9.5">CS3</text>
+            <rect x="540" y="20" width="150" height="44" rx="8" fill="var(--surface)" class="dgm-layer"/><text x="615" y="47" text-anchor="middle" class="dgm-text" font-size="11.5">Slave 1 (vd Flash)</text>
+            <rect x="540" y="78" width="150" height="44" rx="8" fill="var(--surface)" class="dgm-layer"/><text x="615" y="105" text-anchor="middle" class="dgm-text" font-size="11.5">Slave 2 (vd ADC)</text>
+            <rect x="540" y="136" width="150" height="44" rx="8" fill="var(--surface)" class="dgm-layer"/><text x="615" y="163" text-anchor="middle" class="dgm-text" font-size="11.5">Slave 3 (vd sensor)</text>
+            <line x1="300" y1="42" x2="540" y2="42" stroke="var(--core)" stroke-width="1.2" stroke-dasharray="3 3"/>
+            <line x1="300" y1="100" x2="540" y2="100" stroke="var(--core)" stroke-width="1.2" stroke-dasharray="3 3"/>
+            <line x1="300" y1="158" x2="540" y2="158" stroke="var(--core)" stroke-width="1.2" stroke-dasharray="3 3"/>
+          </svg>
+          <div class="figure__cap"><b>SPI bus.</b> SCLK/MOSI/MISO dùng chung; mỗi slave một đường <b>CS</b> riêng (master kéo xuống để chọn). Nhanh, full-duplex, nhưng <b>tốn chân</b> và <b>không có ACK</b>.</div>
+        </div>
+
+        <h3>3.1 CPOL / CPHA — 4 mode</h3>
+        <p><strong>CPOL</strong> = mức nghỉ (idle) của clock; <strong>CPHA</strong> = lấy mẫu ở cạnh <em>đầu</em> (leading, CPHA=0) hay cạnh <em>thứ hai</em> (trailing, CPHA=1) của chu kỳ clock. Quy ước mode: CPOL là bit cao, CPHA là bit thấp.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Mode</th><th>CPOL</th><th>CPHA</th><th>Clock idle</th><th>Lấy mẫu (sample)</th></tr></thead>
+            <tbody>
+              <tr><td><strong>0</strong></td><td>0</td><td>0</td><td>Thấp</td><td>Cạnh lên (leading)</td></tr>
+              <tr><td><strong>1</strong></td><td>0</td><td>1</td><td>Thấp</td><td>Cạnh xuống (trailing)</td></tr>
+              <tr><td><strong>2</strong></td><td>1</td><td>0</td><td>Cao</td><td>Cạnh xuống (leading)</td></tr>
+              <tr><td><strong>3</strong></td><td>1</td><td>1</td><td>Cao</td><td>Cạnh lên (trailing)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small text-mute">Mode 0 là mặc định phổ biến nhất. Master &amp; slave phải <strong>cùng mode</strong>, nếu không sẽ lấy mẫu sai cạnh → lệch bit, đọc rác.</p>
+        <div class="callout callout--key"><div class="callout__icon">⚖️</div><div class="callout__body"><p class="mb-0"><strong>SPI vs I2C:</strong> SPI nhanh hơn (10–50 MHz), full-duplex, nhưng tốn dây (mỗi slave 1 CS) và không ACK. I2C ít dây (2), địa chỉ hoá, multi-master, có ACK per-byte, nhưng chậm hơn &amp; half-duplex.</p></div></div>
+
+        <!-- I2C -->
+        <h2>4. I2C</h2>
+        <p>2 dây (<strong>SDA</strong> dữ liệu, <strong>SCL</strong> clock), <strong>open-drain + điện trở kéo lên</strong> (wired-AND: ai cũng kéo được xuống 0). Mỗi slave có <strong>địa chỉ 7-bit</strong> (hoặc 10-bit). Do NXP/Philips phát minh (1980).</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 140" role="img" aria-label="Giao dịch I2C" xmlns="http://www.w3.org/2000/svg">
+            <rect x="14" y="40" width="48" height="44" rx="6" fill="var(--brand-800)"/><text x="38" y="62" text-anchor="middle" class="dgm-inv" font-size="13" font-weight="800">S</text><text x="38" y="78" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">START</text>
+            <rect x="66" y="40" width="150" height="44" rx="6" fill="var(--brand-600)"/><text x="141" y="62" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Address (7-bit)</text><text x="141" y="78" text-anchor="middle" class="dgm-inv-sub" font-size="9">chọn slave</text>
+            <rect x="220" y="40" width="54" height="44" rx="6" fill="var(--brand-400)"/><text x="247" y="62" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">R/W</text>
+            <rect x="278" y="40" width="50" height="44" rx="6" fill="var(--ok)"/><text x="303" y="65" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">ACK</text>
+            <rect x="332" y="40" width="150" height="44" rx="6" fill="var(--surface)" class="dgm-layer"/><text x="407" y="62" text-anchor="middle" class="dgm-text" font-size="11">Data (8-bit)</text>
+            <rect x="486" y="40" width="50" height="44" rx="6" fill="var(--ok)"/><text x="511" y="65" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">ACK</text>
+            <text x="560" y="66" class="dgm-sub" font-size="12">…</text>
+            <rect x="586" y="40" width="48" height="44" rx="6" fill="var(--brand-800)"/><text x="610" y="62" text-anchor="middle" class="dgm-inv" font-size="13" font-weight="800">P</text><text x="610" y="78" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">STOP</text>
+            <text x="360" y="26" text-anchor="middle" class="dgm-sub" font-size="11">START = SDA xuống khi SCL cao · STOP = SDA lên khi SCL cao · ACK = bên nhận kéo SDA xuống</text>
+            <text x="360" y="112" text-anchor="middle" class="dgm-sub" font-size="11">Clock stretching: slave giữ SCL ở mức thấp để buộc master chờ khi chưa sẵn sàng</text>
+          </svg>
+          <div class="figure__cap"><b>Giao dịch I2C.</b> START → địa chỉ + R/W → ACK → các byte data mỗi byte 1 ACK → STOP. Mỗi byte có bit ACK/NACK nên throughput thực thấp hơn tốc độ bus.</div>
+        </div>
+
+        <div class="kv">
+          <dt>ACK/NACK</dt><dd>Bên nhận kéo SDA xuống = <strong>ACK</strong>. Không kéo (SDA cao) = <strong>NACK</strong> (không có slave / slave bận / kết thúc đọc). Slave có quyền NACK địa chỉ nếu đang bận real-time.</dd>
+          <dt>Clock stretching</dt><dd>Slave giữ SCL ở mức thấp để “xin thêm thời gian” xử lý — master phải chờ tới khi SCL được nhả.</dd>
+          <dt>Multi-master &amp; arbitration</dt><dd>Open-drain wired-AND: master ghi “1” nhưng đọc bus thấy “0” → <strong>thua arbitration</strong>, tự nhường, <em>không phá dữ liệu</em>.</dd>
+          <dt>Repeated START</dt><dd>Phát START mới mà không STOP — giữ quyền bus (vd set thanh ghi rồi đọc ngay).</dd>
+          <dt>Speed modes</dt><dd>Standard 100k · Fast 400k · Fast+ 1M · High-speed 3.4M · Ultra-fast 5M.</dd>
+        </div>
+
+        <!-- CAN -->
+        <h2>5. CAN — quan trọng trong ô tô</h2>
+        <p>Bus đa master, <strong>message-based</strong> (không địa chỉ node, mà ưu tiên theo <strong>ID thông điệp</strong>). Vi sai CAN_H/CAN_L chống nhiễu. Bit <strong>dominant (0)</strong> đè <strong>recessive (1)</strong> (wired-AND).</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 230" role="img" aria-label="Khung CAN và arbitration" xmlns="http://www.w3.org/2000/svg">
+            <rect x="12" y="20" width="40" height="40" rx="5" fill="var(--brand-800)"/><text x="32" y="44" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">SOF</text>
+            <rect x="54" y="20" width="150" height="40" rx="5" fill="var(--brand-600)"/><text x="129" y="40" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Arbitration</text><text x="129" y="53" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">ID 11-bit + RTR</text>
+            <rect x="206" y="20" width="96" height="40" rx="5" fill="var(--brand-400)"/><text x="254" y="40" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Control</text><text x="254" y="53" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">IDE + DLC(4)</text>
+            <rect x="304" y="20" width="150" height="40" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="379" y="40" text-anchor="middle" class="dgm-text" font-size="10.5">Data</text><text x="379" y="53" text-anchor="middle" class="dgm-sub" font-size="8.5">0–8 byte (FD: ≤64)</text>
+            <rect x="456" y="20" width="110" height="40" rx="5" fill="var(--core)"/><text x="511" y="40" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">CRC</text><text x="511" y="53" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">15-bit + delim</text>
+            <rect x="568" y="20" width="56" height="40" rx="5" fill="var(--ok)"/><text x="596" y="44" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">ACK</text>
+            <rect x="626" y="20" width="80" height="40" rx="5" fill="var(--brand-800)"/><text x="666" y="40" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">EOF</text><text x="666" y="53" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">7 recessive</text>
+            <!-- arbitration -->
+            <rect x="40" y="100" width="640" height="112" rx="9" fill="var(--surface-2)" class="dgm-layer"/>
+            <text x="60" y="122" class="dgm-label" font-size="11.5" font-weight="700">Arbitration (non-destructive): ID nhỏ hơn = ưu tiên cao = thắng</text>
+            <text x="70" y="150" class="dgm-mono" font-size="13">Node A  0x100 :  0 0 1 0 0 0 0 0 0 0 0</text>
+            <text x="70" y="178" class="dgm-mono" font-size="13">Node B  0x101 :  0 0 1 0 0 0 0 0 0 0 1</text>
+            <line x1="556" y1="134" x2="556" y2="190" stroke="var(--must)" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <text x="556" y="204" text-anchor="middle" class="dgm-sub" font-size="10">bit khác biệt: A=0 (dominant) thắng, B nghe lại &amp; thử sau</text>
+          </svg>
+          <div class="figure__cap"><b>Khung data CAN + arbitration.</b> Phân xử <b>bit-wise, non-destructive</b> (CSMA/CR): thua arbitration không phải là lỗi, node thua chỉ lùi lại — không node nào mất băng thông.</div>
+        </div>
+
+        <h3>5.1 Loại khung &amp; cơ chế lỗi</h3>
+        <div class="kv">
+          <dt>Data / Remote</dt><dd>Data frame mang dữ liệu; Remote frame yêu cầu node khác gửi (CAN FD bỏ remote frame, thay RTR bằng RRS).</dd>
+          <dt>Error / Overload</dt><dd>Error frame báo lỗi (active = cờ dominant, passive = cờ recessive); Overload frame trì hoãn khung kế.</dd>
+          <dt>Bit stuffing</dt><dd>Sau <strong>5 bit cùng mức</strong>, chèn 1 bit ngược để đồng bộ đồng hồ thu; thấy bit thứ 6 cùng mức (trong vùng biến) = <strong>stuff error</strong>. Không áp dụng cho CRC delimiter/ACK/EOF (fixed-form).</dd>
+          <dt>5 cơ chế phát hiện lỗi</dt><dd>CRC (15-bit), ACK (receiver đặt dominant), Form (sai trường cố định), Bit-monitoring (gửi gì nghe nấy), Stuff error.</dd>
+          <dt>Error confinement</dt><dd>TEC/REC → Error-active → Error-passive → <strong>Bus-off</strong> (TEC&gt;255), phục hồi sau 128×11 bit recessive (xem bài <a href="B-autosar.html">B</a> — CanSM).</dd>
+        </div>
+
+        <h3>5.2 CAN FD (Flexible Data-rate)</h3>
+        <p>Ba khác biệt chính so với CAN cổ điển:</p>
+        <ul>
+          <li><strong>Bit Rate Switching (BRS):</strong> dùng <em>hai tốc độ trong một khung</em> — pha arbitration ở tốc độ thường, pha data nhanh hơn <strong>2–8×</strong> (chuyển sau bit BRS recessive, đổi lại tại CRC delimiter).</li>
+          <li><strong>Payload tới 64 byte</strong> (CAN cổ điển tối đa 8).</li>
+          <li><strong>CRC mạnh hơn theo kích thước:</strong> CRC-17 (≤16 byte) hoặc CRC-21 (&gt;16 byte); thêm <strong>stuff-bit counter</strong> để giữ độ tin cậy phát hiện lỗi.</li>
+        </ul>
+        <p class="small text-mute">Bit nhận diện: <strong>FDF</strong> recessive = khung FD. Thêm <strong>ESI</strong> (Error State Indicator) báo node đang Error-active/passive — tốt cho chẩn đoán. Trong AUTOSAR, CAN đi qua <code>CanIf</code>/<code>CanSM</code>/<code>CanNm</code> (bài <a href="B-autosar.html">B</a>).</p>
+
+        <!-- SENT -->
+        <h2>6. SENT (SAE J2716) — 🔵 cần sâu</h2>
+        <p>Giao thức <strong>một chiều</strong> sensor→ECU, mã hoá bằng <strong>thời gian giữa các cạnh xuống</strong> (số tick), không clock, không địa chỉ. Vì có project nên phải bảo vệ được — chi tiết khung &amp; sơ đồ ở bài <a href="D-sent-automation.html">D</a>.</p>
+        <div class="grid grid-2">
+          <div class="card">
+            <h4 class="mt-0">Tham số lõi (J2716)</h4>
+            <dl class="kv mb-0">
+              <dt>Tick</dt><dd>3–90 µs (sender chọn), clock ±20%.</dd>
+              <dt>Calibration</dt><dd>Xung 56 tick để hiệu chuẩn tick time mỗi khung.</dd>
+              <dt>Nibble</dt><dd>4 bit, 12–27 tick → giá trị = tick − 12.</dd>
+              <dt>Fast / Slow</dt><dd>Fast = data chính (status + ≤6 data + CRC-4); Slow ghép qua nhiều khung.</dd>
+            </dl>
+          </div>
+          <div class="card">
+            <h4 class="mt-0">Vì sao nhạy &amp; hay lỗi</h4>
+            <ul class="mb-0 small">
+              <li>Giá trị nằm ở <strong>timing</strong> → jitter/đồng hồ lệch trực tiếp gây sai nibble.</li>
+              <li>Calibration sai → toàn khung lệch.</li>
+              <li>Phải debug ở mức xung bằng <strong>UDE</strong>/oscilloscope, không “đoán”.</li>
+              <li><strong>SPC</strong> (Short PWM Code) là biến thể có yêu cầu/đồng bộ từ ECU (2 chiều một phần).</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- UDS -->
+        <h2>7. UDS (ISO 14229) — chẩn đoán</h2>
+        <p><strong>Unified Diagnostic Services</strong>: giao thức request/response giữa tester và ECU (qua CAN-TP/DoIP). Trong AUTOSAR do <code>Dcm</code> xử lý. Mỗi dịch vụ có một <strong>SID</strong>. <strong>Positive response = SID | 0x40</strong>; <strong>negative = 7F &lt;SID&gt; &lt;NRC&gt;</strong>.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 180" role="img" aria-label="UDS request và response" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="arU" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="20" y="20" width="150" height="40" rx="8" fill="var(--brand-800)"/><text x="95" y="44" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">Tester</text>
+            <rect x="550" y="20" width="150" height="40" rx="8" fill="var(--brand-600)"/><text x="625" y="44" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">ECU (Dcm)</text>
+            <line x1="95" y1="60" x2="95" y2="170" stroke="var(--border-strong)" stroke-width="1.5"/>
+            <line x1="625" y1="60" x2="625" y2="170" stroke="var(--border-strong)" stroke-width="1.5"/>
+            <line x1="95" y1="86" x2="621" y2="86" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arU)"/><text x="360" y="80" text-anchor="middle" class="dgm-mono" font-size="11">Request:  22 F1 90   (ReadDataByIdentifier, DID F190)</text>
+            <line x1="625" y1="118" x2="99" y2="118" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arU)"/><text x="360" y="112" text-anchor="middle" class="dgm-mono" font-size="11">Positive: 62 F1 90 [data]   (SID | 0x40 = 0x62)</text>
+            <line x1="625" y1="152" x2="99" y2="152" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arU)" stroke-dasharray="4 3"/><text x="360" y="146" text-anchor="middle" class="dgm-mono" font-size="11">Negative: 7F 22 31   (NRC 0x31 = requestOutOfRange)</text>
+          </svg>
+          <div class="figure__cap"><b>UDS request/response.</b> Positive = SID OR 0x40; Negative = <code>7F</code> + SID + NRC. Tester giữ session bằng <code>3E</code> (TesterPresent) định kỳ.</div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>SID</th><th>Dịch vụ</th><th>Ý nghĩa</th><th>Pos. resp</th></tr></thead>
+            <tbody>
+              <tr><td><code>0x10</code></td><td>DiagnosticSessionControl</td><td>Chuyển session (01 default / 02 programming / 03 extended)</td><td>0x50</td></tr>
+              <tr><td><code>0x22</code></td><td>ReadDataByIdentifier</td><td>Đọc dữ liệu theo DID</td><td>0x62</td></tr>
+              <tr><td><code>0x2E</code></td><td>WriteDataByIdentifier</td><td>Ghi dữ liệu theo DID</td><td>0x6E</td></tr>
+              <tr><td><code>0x27</code></td><td>SecurityAccess</td><td>Seed &amp; Key — mở khoá dịch vụ bảo mật</td><td>0x67</td></tr>
+              <tr><td><code>0x31</code></td><td>RoutineControl</td><td>Chạy routine (start/stop/result)</td><td>0x71</td></tr>
+              <tr><td><code>0x19</code></td><td>ReadDTCInformation</td><td>Đọc mã lỗi (từ Dem)</td><td>0x59</td></tr>
+              <tr><td><code>0x14</code></td><td>ClearDiagnosticInformation</td><td>Xoá DTC &amp; dữ liệu liên quan</td><td>0x54</td></tr>
+              <tr><td><code>0x85</code></td><td>ControlDTCSetting</td><td>Bật/tắt ghi DTC</td><td>0xC5</td></tr>
+              <tr><td><code>0x3E</code></td><td>TesterPresent</td><td>Giữ session sống</td><td>0x7E</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>7.1 Security Access (0x27) — seed &amp; key</h3>
+<pre><code class="language-text">Tester -> ECU : 27 01            (requestSeed)
+ECU -> Tester : 67 01 [seed]     (positive response, tra seed)
+Tester tinh key = f(seed)         (thuat toan bi mat cua OEM)
+Tester -> ECU : 27 02 [key]      (sendKey)
+ECU -> Tester : 67 02            (mo khoa neu key dung)
+* Loi -> negative response: 7F 27 [NRC], vd 0x35 invalidKey</code></pre>
+        <p class="small text-mute"><strong>NRC hay gặp:</strong> 0x11 serviceNotSupported · 0x12 subFunctionNotSupported · 0x13 incorrectMessageLength · 0x22 conditionsNotCorrect · 0x31 requestOutOfRange · 0x33 securityAccessDenied · 0x35 invalidKey · 0x36 exceedNumberOfAttempts. (NRC 0x80–0xFF thường là điều kiện xe: RPM, nhiệt độ, điện áp…)</p>
+
+        <!-- LIN -->
+        <h2>8. LIN — bổ trợ CAN (rẻ)</h2>
+        <p>1 dây + GND, <strong>master–slave</strong>: master phát <strong>header</strong> (break + sync + PID), slave tương ứng phản hồi <strong>response</strong> (data + checksum). Dùng cho chức năng chậm/rẻ (gương, khoá cửa, cảm biến mưa). Slave đồng bộ baud theo trường <strong>sync</strong> nên không cần thạch anh chính xác. Thường là sub-bus dưới một CAN node (gateway).</p>
+
+        <!-- 9. Trước -> Nay -->
+        <h2>9. Trước (~2020) → Nay — mạng trong xe</h2>
+        <div class="evo">
+          <div class="evo__head">🌐 <span>Từ CAN sang Automotive Ethernet &amp; CAN FD/XL</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>Xương sống là <strong>CAN (≤1M)</strong> + LIN cho chức năng rẻ; CAN FD bắt đầu phổ biến. Chẩn đoán chủ yếu UDS-on-CAN.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p><strong>Automotive Ethernet</strong> (100/1000BASE-T1) + <strong>SOME/IP</strong> cho HPC/zonal; <strong>CAN FD</strong> chuẩn cho điều khiển; <strong>CAN XL</strong> (tới 2048 byte) đang tới; chẩn đoán dịch sang <strong>UDS-on-IP (DoIP)</strong>.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> nói được “mạng xe đang phân tầng: Ethernet/SOME/IP backbone + CAN FD vùng + LIN actuator, UDS chạy trên cả CAN-TP lẫn DoIP” cho thấy bạn cập nhật kiến trúc SDV.</div>
+        </div>
+
+        <!-- Self test -->
+        <h2>10. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">CAN phân xử quyền gửi thế nào mà không mất băng thông? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Bit dominant (0) đè recessive (1) trên bus wired-AND. Khi nhiều node gửi, tại bit khác biệt đầu tiên node nào ghi recessive nhưng đọc dominant sẽ thua và lùi lại; node ID nhỏ hơn (ưu tiên cao) thắng. <strong>Thua arbitration không phải lỗi</strong> và <strong>không phá khung</strong> đang truyền → không lãng phí bus (non-destructive, CSMA/CR).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Vì sao ID nhỏ = ưu tiên cao? (nhiều bit 0 = dominant ở đầu)</li><li>Bus-off xảy ra khi nào &amp; phục hồi ra sao?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Vì sao SPI cần khớp CPOL/CPHA? Mode 0 là gì? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">CPOL/CPHA quyết định clock idle ở đâu và cạnh nào lấy mẫu. Khác mode → lấy mẫu sai cạnh → lệch bit, đọc rác. <strong>Mode 0</strong> (CPOL=0, CPHA=0): clock idle thấp, lấy mẫu ở cạnh lên — mặc định của đa số thiết bị.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>SPI có ACK không? (không — đó là điểm yếu so với I2C)</li><li>Nhiều slave thì tốn gì? (mỗi slave 1 CS → tốn chân)</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Clock stretching &amp; arbitration trong I2C? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>Clock stretching</strong>: slave giữ SCL mức thấp để buộc master chờ khi chưa sẵn sàng. <strong>Arbitration</strong>: nhờ open-drain wired-AND, master ghi “1” mà đọc thấy “0” thì biết mình thua và nhường — không phá dữ liệu.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>NACK xuất hiện khi nào? (không slave / slave bận / kết thúc đọc)</li><li>Repeated START để làm gì?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">UDS 0x27 hoạt động ra sao và vì sao cần? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Seed-key: tester gửi <code>27 01</code> (requestSeed), ECU trả <code>67 01 [seed]</code>; tester tính <code>key=f(seed)</code> bằng thuật toán bí mật, gửi <code>27 02 [key]</code>; đúng thì <code>67 02</code> (mở khoá). Bảo vệ dịch vụ nhạy cảm (ghi bộ nhớ, lập trình) khỏi truy cập trái phép. Sai key → <code>7F 27 35</code> (invalidKey).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Positive response của 0x22 là gì? (0x62)</li><li>0x3E TesterPresent để làm gì?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">SENT khác CAN ở điểm cốt lõi nào? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">SENT một chiều, point-to-point, <strong>không clock/không địa chỉ</strong>, mã hoá bằng timing (tick/nibble), cần calibration mỗi khung. CAN là bus đa master, message-based, có arbitration &amp; cơ chế lỗi phong phú (CRC/ACK/stuff/form/bit-monitor).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Vì sao SENT rẻ mà vẫn độ phân giải cao? (mã hoá timing, ít dây)</li></ul></div>
+          </div></div>
+        </div>
+
+        <!-- 11. Cheat-sheet -->
+        <h2>11. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>UART</h4><ul>
+            <li>Bất đồng bộ, idle = high</li>
+            <li>8N1 = start + 8 data + stop = 10 bit</li>
+            <li>LSB first · oversampling 16×</li>
+            <li>Khớp: baud, data, parity, stop</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>SPI</h4><ul>
+            <li>4 dây, full-duplex, không ACK</li>
+            <li>4 mode = CPOL·CPHA; Mode0 mặc định</li>
+            <li>Mỗi slave 1 CS (active-low) → tốn chân</li>
+            <li>10–50+ MHz</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>I2C</h4><ul>
+            <li>2 dây SDA/SCL, open-drain + pull-up</li>
+            <li>Addr 7-bit, per-byte ACK/NACK</li>
+            <li>Clock stretching, multi-master arbitration</li>
+            <li>100k/400k/1M/3.4M</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>CAN / CAN FD</h4><ul>
+            <li>Dominant 0 đè recessive 1, arbitration non-destructive</li>
+            <li>Bit stuffing sau 5 bit; CRC/ACK/form/bit/stuff</li>
+            <li>Bus-off: TEC&gt;255 → 128×11 recessive</li>
+            <li>FD: BRS, ≤64 byte, CRC-17/21, FDF, ESI</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>UDS (ISO 14229)</h4><ul>
+            <li>Pos = SID|0x40 · Neg = 7F SID NRC</li>
+            <li>10 session · 22/2E DID · 27 seed-key</li>
+            <li>31 routine · 19 DTC · 14 clear · 3E present</li>
+            <li>NRC: 33 denied · 35 invalidKey · 31 outOfRange</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>SENT / LIN / 1-Wire</h4><ul>
+            <li>SENT: 1 chiều, timing, tick/nibble, CRC-4</li>
+            <li>LIN: master-slave, header+response, rẻ</li>
+            <li>1-Wire: 1 dây, presence pulse, ID/nhiệt</li>
+            <li>Nay: Automotive Ethernet + SOME/IP + DoIP</li>
+          </ul></div>
+        </div>
+
+        <!-- 12. Sources -->
+        <h2>12. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li>Wikipedia — <a href="https://en.wikipedia.org/wiki/Serial_Peripheral_Interface" target="_blank" rel="noopener">SPI</a>, <a href="https://en.wikipedia.org/wiki/I2C" target="_blank" rel="noopener">I2C</a>, <a href="https://en.wikipedia.org/wiki/CAN_FD" target="_blank" rel="noopener">CAN FD</a>, <a href="https://en.wikipedia.org/wiki/Unified_Diagnostic_Services" target="_blank" rel="noopener">UDS</a>.</li>
+          <li>Total Phase — <a href="https://www.totalphase.com/blog/2024/07/understanding-spi-clock-signals-polarity-phase-clock-edges-spi-modes/" target="_blank" rel="noopener">SPI CPOL/CPHA &amp; 4 modes</a>.</li>
+          <li>Kvaser — <a href="https://kvaser.com/can-fd-protocol-tutorial/" target="_blank" rel="noopener">CAN FD Protocol Tutorial</a> (BRS, CRC-17/21, FDF/ESI).</li>
+          <li>uds.readthedocs.io — <a href="https://uds.readthedocs.io/en/latest/pages/knowledge_base/service.html" target="_blank" rel="noopener">UDS Diagnostic Services</a> (SID, positive/negative, NRC).</li>
+          <li>Chuẩn gốc: <strong>ISO 14229</strong> (UDS), <strong>ISO 11898</strong> (CAN), <strong>SAE J2716</strong> (SENT), <strong>ISO 17987</strong> (LIN).</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi điền được bảng so sánh + giải thích arbitration CAN, CPOL/CPHA, và seed-key UDS.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">
+        Chủ đề E · Communication Protocols — Interview Prep
+      </footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../assets/js/app.js?v=4"></script>
+</body>
+</html>

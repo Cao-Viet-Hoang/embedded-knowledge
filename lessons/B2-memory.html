@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>B2 · Memory Stack — NvM/MemIf/Fee/Ea/Fls — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/style.css?v=4" />
+</head>
+<body data-page="B2" data-root="../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">B2</span>
+            <span class="badge badge--core">Core</span>
+            <span class="chip">AUTOSAR — Module (đào sâu)</span>
+          </div>
+          <h1>Memory Stack — NvM / MemIf / Fee / Ea / Fls / Eep</h1>
+          <p class="lead">Lưu dữ liệu không bay hơi (calibration, DTC, learned values…). Đi từ <strong>NvM</strong> (block/CRC/strategy) → <strong>MemIf</strong> (route) → <strong>Fee/Ea</strong> (giả lập EEPROM) → <strong>Fls/Eep</strong> (HW). Trọng tâm: vì sao cần Fee &amp; cơ chế garbage collection + wear-leveling.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> 🟠 Core</span>
+            <span><b>Gắn:</b> Fls (bài <a href="B1c-mcal-system.html">B1c</a>), DTC (<a href="B4-diagnostics.html">B4</a>)</span>
+            <span><b>Tổng quan:</b> bài <a href="B-autosar.html">B</a></span>
+          </div>
+        </div>
+
+        <div class="callout callout--note">
+          <div class="callout__icon">📌</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Nguồn:</strong> tên container/param/API đối chiếu <strong>AUTOSAR Classic SWS</strong> (NvM, MemIf, Fee, Ea, Fls, Eep) — xem cuối bài.</p>
+          </div>
+        </div>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 250" role="img" aria-label="Memory stack" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="mm1" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="200" y="14" width="320" height="40" rx="8" fill="var(--brand-800)"/><text x="360" y="32" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">Application (SWC) / Dem / …</text><text x="360" y="47" text-anchor="middle" class="dgm-inv-sub" font-size="9">đọc/ghi theo Block ID</text>
+            <line x1="360" y1="54" x2="360" y2="66" class="dgm-arrow" stroke-width="1.5" marker-end="url(#mm1)"/>
+            <rect x="160" y="68" width="400" height="40" rx="8" fill="var(--brand-600)"/><text x="360" y="86" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="800">NvM</text><text x="360" y="101" text-anchor="middle" class="dgm-inv-sub" font-size="9">block · CRC · write strategy · redundancy · queue</text>
+            <line x1="360" y1="108" x2="360" y2="120" class="dgm-arrow" stroke-width="1.5" marker-end="url(#mm1)"/>
+            <rect x="200" y="122" width="320" height="34" rx="7" fill="var(--brand-400)"/><text x="360" y="143" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">MemIf — route theo DeviceIndex</text>
+            <line x1="290" y1="156" x2="250" y2="170" class="dgm-arrow" stroke-width="1.3" marker-end="url(#mm1)"/>
+            <line x1="430" y1="156" x2="470" y2="170" class="dgm-arrow" stroke-width="1.3" marker-end="url(#mm1)"/>
+            <rect x="120" y="172" width="220" height="34" rx="6" fill="var(--surface)" class="dgm-layer"/><text x="230" y="193" text-anchor="middle" class="dgm-text" font-size="10.5">Fee (emulate EEPROM trên flash)</text>
+            <rect x="380" y="172" width="220" height="34" rx="6" fill="var(--surface)" class="dgm-layer"/><text x="490" y="193" text-anchor="middle" class="dgm-text" font-size="10.5">Ea (abstraction trên EEPROM)</text>
+            <line x1="230" y1="206" x2="230" y2="218" class="dgm-arrow" stroke-width="1.3" marker-end="url(#mm1)"/>
+            <line x1="490" y1="206" x2="490" y2="218" class="dgm-arrow" stroke-width="1.3" marker-end="url(#mm1)"/>
+            <rect x="120" y="220" width="220" height="28" rx="6" fill="var(--brand-900)"/><text x="230" y="238" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Fls (flash, MCAL)</text>
+            <rect x="380" y="220" width="220" height="28" rx="6" fill="var(--brand-900)"/><text x="490" y="238" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Eep (EEPROM, MCAL)</text>
+          </svg>
+          <div class="figure__cap"><b>Memory stack.</b> Mỗi tầng che chi tiết tầng dưới: NvM (logic block) → MemIf (route) → Fee/Ea (emulate/abstract) → Fls/Eep (HW). EcuM/BswM gọi <code>NvM_ReadAll</code> lúc startup, <code>NvM_WriteAll</code> lúc shutdown.</div>
+        </div>
+
+        <!-- ================= NvM ================= -->
+        <h2>1. NvM (NVRAM Manager)</h2>
+        <p><strong>Vai trò:</strong> quản lý dữ liệu không bay hơi cho ứng dụng theo <strong>block</strong> — lo CRC, redundancy, write strategy, queue. App chỉ làm việc với <em>Block ID</em>, không biết flash/EEPROM bên dưới.</p>
+        <h3>1.1 Khái niệm cốt lõi</h3>
+        <dl class="kv">
+          <dt>Block management type</dt><dd><strong>NATIVE</strong>: 1 bản, đơn giản. <strong>REDUNDANT</strong>: lưu <em>2 bản</em> (đọc bản kia nếu bản này hỏng CRC) → chịu lỗi tốt hơn, dùng cho dữ liệu quan trọng. <strong>DATASET</strong>: nhiều phiên bản/index của cùng block (vd nhiều bộ cấu hình), chọn bằng index — như một mảng block.</dd>
+          <dt>RAM / ROM / Administrative block</dt><dd>Mỗi NV block có: <strong>RAM block</strong> (bản làm việc trong RAM mà app đọc/ghi), <strong>ROM block</strong> (giá trị mặc định trong flash để <code>RestoreBlockDefaults</code> khi NV hỏng/lần đầu), <strong>Administrative block</strong> (metadata nội bộ NvM: trạng thái, attribute).</dd>
+          <dt>CRC</dt><dd>CRC 8/16/32 tính trên dữ liệu block để phát hiện hỏng (do flash lỗi/mất điện giữa chừng). Đọc thấy CRC sai → NvM báo lỗi → app dùng redundant copy hoặc default. Đánh đổi: CRC tốn chỗ &amp; thời gian.</dd>
+          <dt>Write strategy: immediate vs deferred</dt><dd><strong>Immediate</strong>: ghi ngay khi gọi (dữ liệu khẩn, vd crash data). <strong>Deferred</strong>: <code>NvM_WriteBlock</code>/<code>WriteAll</code> chỉ <em>đưa vào queue</em>, <code>NvM_MainFunction</code> xử lý dần (chia tải, không chặn). Đa số dùng deferred + WriteAll lúc shutdown.</dd>
+          <dt>Job queue &amp; priority</dt><dd>NvM xếp các yêu cầu read/write vào <strong>queue</strong> (immediate queue ưu tiên cao hơn standard queue); <code>NvM_MainFunction</code> rút từng job đẩy xuống MemIf. Block có thể có priority.</dd>
+          <dt>Explicit vs implicit synchronization</dt><dd><strong>Implicit</strong>: NvM tự copy giữa RAM block ↔ NV. <strong>Explicit</strong>: app cung cấp callback <code>NvMReadRamBlockFromNvM</code>/<code>WriteRamBlockToNvM</code> để NvM gọi khi cần đồng bộ — dùng khi dữ liệu RAM do app quản lý/đổi định dạng (tránh data đang đổi giữa chừng).</dd>
+          <dt>Error recovery</dt><dd>CRC sai/đọc lỗi → thử <em>redundant copy</em> → nếu vẫn hỏng → <code>RestoreBlockDefaults</code> (ROM block) + báo. <code>NvMWriteBlockOnce</code> chống ghi đè block chỉ-ghi-1-lần; <code>NvMResistantToChangedSw</code> giữ dữ liệu qua đổi phần mềm.</dd>
+          <dt>ReadAll / WriteAll</dt><dd><code>NvM_ReadAll</code> (EcuM gọi lúc startup, nạp các block đánh dấu vào RAM) &amp; <code>NvM_WriteAll</code> (lúc shutdown, lưu các block đã đổi) — xử lý hàng loạt qua MainFunction.</dd>
+        </dl>
+        <h3>1.2 API &amp; cấu hình</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>API</th><th>Ý nghĩa</th></tr></thead>
+          <tbody>
+            <tr><td><code>NvM_ReadBlock</code> / <code>NvM_WriteBlock</code></td><td>Đọc/ghi một block.</td></tr>
+            <tr><td><code>NvM_RestoreBlockDefaults</code></td><td>Nạp giá trị mặc định (ROM block).</td></tr>
+            <tr><td><code>NvM_ReadAll</code> / <code>NvM_WriteAll</code></td><td>Hàng loạt (startup/shutdown).</td></tr>
+            <tr><td><code>NvM_SetRamBlockStatus</code> / <code>NvM_GetErrorStatus</code></td><td>Đánh dấu RAM block đã đổi / đọc kết quả job.</td></tr>
+            <tr><td><code>NvM_MainFunction</code></td><td>Xử lý queue (deferred).</td></tr>
+          </tbody>
+        </table></div>
+        <p class="small text-mute"><strong>Cấu hình:</strong> <code>NvMBlockDescriptor</code> (<code>NvMBlockManagement</code> [NATIVE/REDUNDANT/DATASET], <code>NvMNvBlockNum</code>, <code>NvMBlockUseCrc</code> + <code>NvMBlockCrcType</code>, <code>NvMSelectBlockForReadAll/WriteAll</code>, <code>NvMRamBlockDataAddress</code>, <code>NvMRomBlockDataAddress</code>, <code>NvMWriteBlockOnce</code>, <code>NvMResistantToChangedSw</code>). <strong>Bẫy:</strong> mất điện giữa ghi → CRC sai (cần redundant); WriteAll quá nhiều block làm shutdown lâu; explicit sync sai gây dữ liệu lệch.</p>
+
+        <!-- ================= MemIf ================= -->
+        <h2>2. MemIf (Memory Abstraction Interface)</h2>
+        <p><strong>Vai trò:</strong> trừu tượng hoá <em>nhiều</em> memory abstraction module (Fee &amp; Ea) sau một API thống nhất, để NvM gọi mà không cần biết dữ liệu nằm trên flash hay EEPROM.</p>
+        <dl class="kv">
+          <dt>DeviceIndex</dt><dd>MemIf định tuyến lời gọi tới đúng module (Fee=device 0, Ea=device 1…) theo <strong>DeviceIndex</strong>. Cho phép một ECU dùng cả flash (Fee) lẫn EEPROM (Ea).</dd>
+          <dt>API thống nhất</dt><dd><code>MemIf_Read</code> / <code>Write</code> / <code>EraseImmediateBlock</code> / <code>InvalidateBlock</code> / <code>GetStatus</code> / <code>GetJobResult</code> — chỉ forward xuống Fee/Ea theo DeviceIndex.</dd>
+        </dl>
+
+        <!-- ================= Fee ================= -->
+        <h2>3. Fee (Flash EEPROM Emulation) — trọng tâm</h2>
+        <p><strong>Vai trò:</strong> biến FLASH thành “EEPROM logic” — cho phép đọc/ghi <em>block nhỏ</em> như EEPROM, dù flash không ghi đè byte tuỳ ý. Đây là module “khó” nhất của memory stack.</p>
+        <h3>3.1 Vì sao cần Fee</h3>
+        <p>Flash <strong>erase-before-write</strong> (bài <a href="B1c-mcal-system.html">B1c</a>): chỉ ghi 1→0 theo page, muốn 0→1 phải erase cả sector; chu kỳ erase hữu hạn (~10⁴–10⁵). Nếu mỗi lần cập nhật một biến nhỏ mà phải erase cả sector → vừa chậm vừa nhanh hỏng flash. Fee giải quyết bằng cơ chế ghi tuần tự + garbage collection.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 220" role="img" aria-label="Fee garbage collection và wear-leveling" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="fe1" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <text x="120" y="22" text-anchor="middle" class="dgm-label" font-size="11" font-weight="700">Sector A (gần đầy)</text>
+            <rect x="20" y="30" width="200" height="120" rx="8" fill="var(--surface-2)" class="dgm-layer"/>
+            <rect x="32" y="40" width="176" height="20" rx="4" fill="var(--brand-400)"/><text x="120" y="55" text-anchor="middle" class="dgm-inv" font-size="9">Blk1 v1 (cũ, invalid)</text>
+            <rect x="32" y="64" width="176" height="20" rx="4" fill="var(--brand-600)"/><text x="120" y="79" text-anchor="middle" class="dgm-inv" font-size="9">Blk1 v2 (valid)</text>
+            <rect x="32" y="88" width="176" height="20" rx="4" fill="var(--brand-400)"/><text x="120" y="103" text-anchor="middle" class="dgm-inv" font-size="9">Blk2 v1 (invalid)</text>
+            <rect x="32" y="112" width="176" height="20" rx="4" fill="var(--brand-600)"/><text x="120" y="127" text-anchor="middle" class="dgm-inv" font-size="9">Blk2 v2 (valid)</text>
+            <line x1="224" y1="90" x2="276" y2="90" class="dgm-arrow" stroke-width="1.6" marker-end="url(#fe1)"/><text x="250" y="82" text-anchor="middle" class="dgm-sub" font-size="9">copy valid</text>
+            <text x="400" y="22" text-anchor="middle" class="dgm-label" font-size="11" font-weight="700">Sector B (mới)</text>
+            <rect x="300" y="30" width="200" height="120" rx="8" fill="var(--surface-2)" class="dgm-layer"/>
+            <rect x="312" y="40" width="176" height="20" rx="4" fill="var(--brand-600)"/><text x="400" y="55" text-anchor="middle" class="dgm-inv" font-size="9">Blk1 v2</text>
+            <rect x="312" y="64" width="176" height="20" rx="4" fill="var(--brand-600)"/><text x="400" y="79" text-anchor="middle" class="dgm-inv" font-size="9">Blk2 v2</text>
+            <line x1="504" y1="90" x2="556" y2="90" class="dgm-arrow" stroke-width="1.6" marker-end="url(#fe1)"/><text x="530" y="82" text-anchor="middle" class="dgm-sub" font-size="9">erase A</text>
+            <rect x="560" y="60" width="140" height="60" rx="8" fill="var(--core)"/><text x="630" y="86" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Sector A → 0xFF</text><text x="630" y="102" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">sẵn cho lượt sau</text>
+            <text x="360" y="178" text-anchor="middle" class="dgm-sub" font-size="10.5">Ghi mới = APPEND block + đánh dấu bản cũ invalid (không erase ngay)</text>
+            <text x="360" y="198" text-anchor="middle" class="dgm-sub" font-size="10.5">Sector đầy → COPY block valid sang sector mới → ERASE sector cũ (garbage collection) · luân phiên sector = wear-leveling</text>
+          </svg>
+          <div class="figure__cap"><b>Fee: garbage collection + wear-leveling.</b> Ghi mới = append (tránh erase mỗi lần); sector đầy mới gom block valid sang sector khác rồi erase sector cũ. Luân phiên sector → rải hao mòn.</div>
+        </div>
+
+        <h3>3.2 Khái niệm cốt lõi</h3>
+        <dl class="kv">
+          <dt>Append / log-structured write</dt><dd>Mỗi lần ghi một block = <strong>ghi bản mới</strong> vào vùng trống kế tiếp + đánh dấu bản cũ <em>invalid</em> (không erase ngay). Đọc luôn lấy bản <em>valid mới nhất</em>. Nhờ vậy một lần ghi chỉ tốn vài page, không phải erase sector.</dd>
+          <dt>Garbage collection</dt><dd>Khi sector hiện tại gần đầy: <strong>copy các block valid</strong> sang sector dự phòng → <strong>erase</strong> sector cũ để tái dùng. Phải thiết kế để <em>chịu mất điện giữa chừng</em> (đánh dấu trạng thái sector active/erasable, ghi marker theo thứ tự an toàn) — nếu reset giữa GC vẫn khôi phục được bản valid.</dd>
+          <dt>Wear-leveling</dt><dd>Vì flash chỉ chịu ~10⁴–10⁵ chu kỳ erase/sector, Fee <strong>luân phiên</strong> sector (xoay vòng) để rải số lần erase đều → kéo dài tuổi thọ. Block ghi thường xuyên không “đốt” mãi một sector.</dd>
+          <dt>Logical block ↔ physical</dt><dd>App/NvM dùng <strong>logical block number</strong> ổn định; Fee ánh xạ tới vị trí <em>physical</em> thay đổi sau mỗi lần ghi/GC. Đây là điểm khác cốt lõi so với Ea (EEPROM ghi đè trực tiếp được).</dd>
+          <dt>Consistency khi mất điện</dt><dd>Cơ chế ghi marker/header theo trình tự (write block data trước, đánh dấu valid sau) để nếu mất điện thì hoặc thấy bản cũ nguyên vẹn, hoặc bản mới hoàn chỉnh — <em>không bao giờ nửa vời</em> (atomic logic + CRC ở NvM).</dd>
+        </dl>
+        <p class="small text-mute"><strong>API:</strong> <code>Fee_Read</code>/<code>Write</code>/<code>EraseImmediateBlock</code>/<code>InvalidateBlock</code>/<code>GetStatus</code>/<code>GetJobResult</code>/<code>SetMode</code>; <code>Fee_MainFunction</code> chạy GC nền. <strong>Cấu hình:</strong> <code>FeeBlockConfiguration</code> (<code>FeeBlockNumber</code>, <code>FeeBlockSize</code>, <code>FeeImmediateData</code>, <code>FeeNumberOfWriteCycles</code>, <code>FeeDeviceIndex</code>).</p>
+
+        <!-- ================= Ea + Fls/Eep ================= -->
+        <h2>4. Ea, Fls, Eep</h2>
+        <dl class="kv">
+          <dt>Ea (EEPROM Abstraction)</dt><dd>Tương tự Fee nhưng trên <strong>EEPROM thật</strong> (ghi đè byte được) → đơn giản hơn nhiều, ít/không cần garbage collection &amp; wear-leveling phức tạp. <code>Ea_Read/Write/EraseImmediateBlock/InvalidateBlock</code>.</dd>
+          <dt>Fls / Eep (MCAL)</dt><dd>Driver HW tầng thấp (bài <a href="B1c-mcal-system.html">B1c</a>): <strong>Fls</strong> cho flash on-chip, <strong>Eep</strong> cho EEPROM. Read/write/erase, async, sector/page. Fee dùng Fls; Ea dùng Eep.</dd>
+          <dt>Quan hệ với DTC (Dem)</dt><dd>Dem lưu DTC/freeze-frame vào NV thường qua NvM block → khi đọc DTC (UDS 0x19) vẫn còn sau khi tắt máy (bài <a href="B4-diagnostics.html">B4</a>).</dd>
+        </dl>
+
+        <!-- ================= Trước -> Nay ================= -->
+        <h2>5. Trước (~2020) → Nay</h2>
+        <div class="evo">
+          <div class="evo__head">💾 <span>Memory cho OTA &amp; security</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>NvM/Fee chủ yếu lưu calibration, DTC, learned values; EEPROM rời còn phổ biến.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p>Flash lớn, <strong>bank A/B cho OTA</strong> (ghi firmware mới ở bank rảnh, swap khi xong); KeyM/Csm dùng NV cho khoá; emulated EEPROM tích hợp; quản lý wear &amp; integrity chặt hơn cho xe phần mềm-định-nghĩa.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> nói được “Fee = log-structured + GC + wear-leveling, và bank A/B cho OTA” cho thấy bạn hiểu cả cơ chế lẫn xu hướng.</div>
+        </div>
+
+        <!-- ================= Q&A ================= -->
+        <h2>6. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">Mô tả memory stack từ app xuống HW &amp; vai trò mỗi tầng. <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>NvM</strong> (block/CRC/redundancy/write strategy/queue cho app) → <strong>MemIf</strong> (route theo DeviceIndex) → <strong>Fee</strong> (emulate EEPROM trên flash) / <strong>Ea</strong> (abstraction trên EEPROM) → <strong>Fls</strong>/<strong>Eep</strong> (driver HW). EcuM gọi NvM_ReadAll lúc startup, WriteAll lúc shutdown.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Block type NATIVE/REDUNDANT/DATASET khác gì?</li><li>RAM/ROM/Administrative block là gì?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Vì sao cần Fee? Garbage collection &amp; wear-leveling hoạt động ra sao? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Flash erase-before-write + chu kỳ erase hữu hạn → không ghi đè byte/biến nhỏ trực tiếp. Fee ghi <strong>append</strong> (bản mới + đánh dấu cũ invalid, không erase ngay); khi sector đầy mới <strong>copy block valid sang sector mới rồi erase sector cũ</strong> (GC). Luân phiên sector = <strong>wear-leveling</strong> (rải erase, kéo dài tuổi thọ flash ~10⁴–10⁵ chu kỳ).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>GC mà mất điện giữa chừng thì sao? (thiết kế chịu reset + CRC)</li><li>Fee khác Ea chỗ nào?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Write strategy immediate vs deferred? Mất điện giữa ghi xử lý sao? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>Immediate</strong> ghi ngay (khẩn); <strong>deferred</strong> đưa vào queue, <code>NvM_MainFunction</code> xử lý dần (không chặn). Mất điện giữa ghi → CRC bản đang ghi sai → NvM đọc <strong>redundant copy</strong> (block REDUNDANT) hoặc <code>RestoreBlockDefaults</code>; Fee đảm bảo không để lại block nửa vời (ghi data trước, đánh dấu valid sau).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Explicit vs implicit synchronization?</li><li>NvMWriteBlockOnce để làm gì?</li></ul></div>
+          </div></div>
+        </div>
+
+        <!-- ================= Cheat-sheet ================= -->
+        <h2>7. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>Stack</h4><ul>
+            <li>NvM → MemIf → Fee/Ea → Fls/Eep</li>
+            <li>App dùng Block ID; HW ẩn dưới</li>
+            <li>ReadAll startup · WriteAll shutdown</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>NvM</h4><ul>
+            <li>Block: NATIVE / REDUNDANT / DATASET</li>
+            <li>RAM + ROM (default) + Administrative block</li>
+            <li>CRC 8/16/32 · queue + priority</li>
+            <li>Strategy immediate vs deferred</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Fee (trọng tâm)</h4><ul>
+            <li>Vì sao: flash erase-before-write</li>
+            <li>Append + đánh dấu invalid</li>
+            <li>Garbage collection khi sector đầy</li>
+            <li>Wear-leveling (luân phiên sector)</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Robustness</h4><ul>
+            <li>Redundant copy + CRC → mất điện vẫn khôi phục</li>
+            <li>Logical↔physical block (Fee)</li>
+            <li>Ghi data trước, valid marker sau</li>
+            <li>RestoreBlockDefaults (ROM)</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Ea / Fls / Eep</h4><ul>
+            <li>Ea: trên EEPROM thật (đơn giản hơn Fee)</li>
+            <li>Fls/Eep: driver HW (bài B1c)</li>
+            <li>Fee→Fls · Ea→Eep</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Nay</h4><ul>
+            <li>Flash bank A/B cho OTA</li>
+            <li>NV cho khoá (KeyM/Csm)</li>
+            <li>DTC/freeze-frame lưu qua NvM (Dem)</li>
+          </ul></div>
+        </div>
+
+        <!-- ================= Sources ================= -->
+        <h2>8. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li>AUTOSAR Classic SWS — <strong>NvM</strong> (NVRAM Manager), <strong>MemIf</strong>, <strong>Fee</strong> (Flash EEPROM Emulation), <strong>Ea</strong> (EEPROM Abstraction), <strong>Fls</strong>, <strong>Eep</strong>.</li>
+          <li>AUTOSAR Compendium — <a href="https://www.ar-compendium.com/part-ii-basic-software-mcal/" target="_blank" rel="noopener">BSW &amp; memory stack</a>; Embitel/Vector — Fee garbage collection &amp; wear-leveling.</li>
+          <li>Wikipedia — <a href="https://en.wikipedia.org/wiki/Wear_leveling" target="_blank" rel="noopener">Wear leveling</a>, <a href="https://en.wikipedia.org/wiki/Flash_memory" target="_blank" rel="noopener">Flash memory</a> (erase-before-write, chu kỳ erase).</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi vẽ được stack, giải thích vì sao cần Fee, GC + wear-leveling, và block REDUNDANT/CRC chống mất điện.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">
+        Chủ đề B2 · Memory Stack — NvM/MemIf/Fee/Ea/Fls — Interview Prep
+      </footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../assets/js/app.js?v=4"></script>
+</body>
+</html>

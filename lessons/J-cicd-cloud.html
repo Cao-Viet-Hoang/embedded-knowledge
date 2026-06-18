@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>J · Automation / CI-CD / Cloud — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/style.css?v=4" />
+</head>
+<body data-page="J" data-root="../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">J</span>
+            <span class="badge badge--core">Core</span>
+            <span class="chip">Vòng 3 · Điểm khác biệt</span>
+          </div>
+          <h1>Automation / CI-CD / Cloud</h1>
+          <p class="lead">Điểm khác biệt của bạn, gắn với SENT automation. Nắm: Azure Pipelines, Conan, Docker, Kubernetes, Terraform, và các dịch vụ Azure/GCP bạn vận hành — kèm <strong>cơ chế thật</strong> (agent, layer cache, state, ConfigMap).</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> 🟠 Core</span>
+            <span><b>Gắn với:</b> SENT automation (bài D)</span>
+          </div>
+        </div>
+
+        <div class="callout callout--note">
+          <div class="callout__icon">📌</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Nguồn:</strong> Azure Pipelines, Conan, Docker, Kubernetes, Terraform đối chiếu tài liệu chính thức (Microsoft Learn, conan.io, docker docs, kubernetes.io, HashiCorp) — xem “Nguồn tham khảo” cuối bài.</p>
+          </div>
+        </div>
+
+        <!-- 1. CI/CD concept -->
+        <h2>1. CI/CD — khái niệm nền</h2>
+        <div class="kv">
+          <dt>CI</dt><dd>Continuous Integration — tự động build + test mỗi khi push code, bắt lỗi sớm.</dd>
+          <dt>CD</dt><dd>Continuous Delivery (sẵn sàng deploy, có cổng duyệt) / Deployment (tự động ra production).</dd>
+          <dt>Pipeline</dt><dd>Chuỗi bước tự động: build → test → package → publish/deploy.</dd>
+        </div>
+        <div class="callout callout--interview"><div class="callout__icon">🗣️</div><div class="callout__body"><p class="mb-0"><strong>Kể được:</strong> “Tôi tích hợp build/package/test bằng Azure Pipelines + Conan cho SENT automation — biến chu kỳ test thủ công thành pipeline chạy tự động, tái lập được, chạy song song trên nhiều agent.”</p></div></div>
+
+        <!-- 2. Azure Pipelines -->
+        <h2>2. Azure Pipelines</h2>
+        <p>CI/CD của Azure DevOps, định nghĩa bằng <strong>YAML</strong>. Phân cấp <strong>Pipeline → Stage → Job → Step</strong>; job chạy trên <strong>Agent</strong>, sinh <strong>Artifact</strong>.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 244" role="img" aria-label="Phân cấp Azure Pipelines" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="arJ" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="16" y="12" width="688" height="32" rx="7" fill="var(--brand-900)"/><text x="360" y="33" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="800">Pipeline (YAML · trigger: main)</text>
+            <!-- Stage Build -->
+            <rect x="20" y="56" width="360" height="172" rx="9" fill="var(--surface-2)" class="dgm-layer"/><text x="40" y="76" class="dgm-label" font-size="11.5" font-weight="800">Stage: Build</text>
+            <rect x="34" y="84" width="332" height="100" rx="7" fill="var(--brand-800)"/><text x="200" y="102" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Job: build_test (trên 1 Agent)</text>
+            <rect x="46" y="110" width="150" height="26" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="121" y="127" text-anchor="middle" class="dgm-text" font-size="9.5">step: conan install</text>
+            <rect x="204" y="110" width="150" height="26" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="279" y="127" text-anchor="middle" class="dgm-text" font-size="9.5">step: cmake build</text>
+            <rect x="46" y="142" width="150" height="26" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="121" y="159" text-anchor="middle" class="dgm-text" font-size="9.5">step: ctest</text>
+            <rect x="204" y="142" width="150" height="26" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="279" y="159" text-anchor="middle" class="dgm-text" font-size="9.5">step: publish</text>
+            <rect x="120" y="194" width="160" height="26" rx="6" fill="var(--core)"/><text x="200" y="211" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Artifact: app</text>
+            <line x1="380" y1="142" x2="416" y2="142" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arJ)"/><text x="398" y="134" text-anchor="middle" class="dgm-sub" font-size="8.5">dependsOn</text>
+            <!-- Stage Deploy -->
+            <rect x="418" y="56" width="286" height="172" rx="9" fill="var(--surface-2)" class="dgm-layer"/><text x="438" y="76" class="dgm-label" font-size="11.5" font-weight="800">Stage: Deploy</text>
+            <rect x="432" y="84" width="258" height="100" rx="7" fill="var(--brand-600)"/><text x="561" y="120" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Deployment job</text><text x="561" y="140" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">environment: production</text>
+            <text x="561" y="208" text-anchor="middle" class="dgm-sub" font-size="9.5">mỗi Agent chạy 1 job/lúc · song song cần nhiều agent</text>
+          </svg>
+          <div class="figure__cap"><b>Phân cấp Azure Pipelines.</b> Stage chạy tuần tự theo <code>dependsOn</code> (mặc định theo thứ tự khai báo); job trong stage chạy <b>song song</b> trừ khi có dependsOn; mỗi agent chạy <b>1 job tại một thời điểm</b>. Artifact truyền sản phẩm giữa stage.</div>
+        </div>
+
+<pre><code class="language-text">trigger: [ main ]                 # chay khi push vao main
+pool: { vmImage: ubuntu-latest }  # agent
+
+stages:
+- stage: Build
+  jobs:
+  - job: build_test
+    steps:
+    - script: conan install . --build=missing   # lay dependency
+    - script: cmake --build build               # build
+    - script: ctest --output-on-failure          # test
+    - publish: build/artifacts                    # luu artifact
+      artifact: app
+- stage: Deploy
+  dependsOn: Build
+  jobs:
+  - deployment: deploy_app
+    environment: production</code></pre>
+
+        <!-- 3. Conan -->
+        <h2>3. Conan — package manager C/C++</h2>
+        <p>Quản lý <strong>thư viện &amp; dependency C/C++</strong> theo version &amp; cấu hình build (OS/arch/compiler), build <strong>tái lập</strong>. Conan quản lý <em>binary</em> cho từng configuration; thiếu binary thì build từ source on-demand. Đây là chìa khoá để pipeline SENT không “flaky”.</p>
+        <div class="kv">
+          <dt>Recipe (conanfile)</dt><dd>Mô tả package: dependency, cách build, options.</dd>
+          <dt>Profile</dt><dd>Chứa settings/options/env/build_requires — cố định OS, arch, build_type, compiler (vd cross-compile cho target). Đổi target chỉ bằng đổi <code>--profile</code>.</dd>
+          <dt>Lockfile</dt><dd>Khoá chính xác version dependency (<code>conan.lock</code>) → reproducible build.</dd>
+          <dt>Remote</dt><dd>Kho package (vd JFrog Artifactory) để chia sẻ binary đã build.</dd>
+        </div>
+        <div class="callout callout--tip"><div class="callout__icon">💡</div><div class="callout__body"><p class="mb-0"><strong>Vì sao quan trọng cho bài D:</strong> SENT nhạy môi trường/toolchain. Conan cố định dependency + profile → “chạy trên CI giống hệt máy local”, loại bỏ lỗi “máy tôi thì chạy”.</p></div></div>
+
+        <!-- 4. Docker -->
+        <h2>4. Docker — container hoá</h2>
+        <p>Đóng gói app + dependency vào <strong>image</strong> bất biến (xếp chồng nhiều <strong>layer</strong>), chạy thành <strong>container</strong> cô lập. Mỗi lệnh Dockerfile sửa filesystem (RUN/COPY/ADD) tạo một layer mới; layer được <strong>cache &amp; chia sẻ</strong>.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 250" role="img" aria-label="Docker image layers" xmlns="http://www.w3.org/2000/svg">
+            <rect x="160" y="26" width="400" height="34" rx="6" fill="var(--core)" stroke-dasharray="4 3"/><text x="360" y="48" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Container R/W layer (thin, ghi lúc chạy)</text>
+            <rect x="160" y="66" width="400" height="34" rx="6" fill="var(--brand-400)"/><text x="360" y="88" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">COPY . .  (source — hay đổi)</text>
+            <rect x="160" y="106" width="400" height="34" rx="6" fill="var(--brand-600)"/><text x="360" y="128" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">RUN pip install (dependency)</text>
+            <rect x="160" y="146" width="400" height="34" rx="6" fill="var(--brand-800)"/><text x="360" y="168" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">COPY requirements.txt</text>
+            <rect x="160" y="186" width="400" height="34" rx="6" fill="var(--brand-900)"/><text x="360" y="208" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">FROM python:3.12-slim (base)</text>
+            <text x="585" y="46" class="dgm-sub" font-size="9.5">ghi runtime</text>
+            <text x="585" y="128" class="dgm-sub" font-size="9.5">read-only</text>
+            <text x="585" y="208" class="dgm-sub" font-size="9.5">cached/shared</text>
+            <text x="150" y="240" class="dgm-sub" font-size="10">Đổi một layer → layer đó &amp; mọi layer phía trên bị rebuild (cache invalidation) → đặt phần ít đổi xuống dưới</text>
+          </svg>
+          <div class="figure__cap"><b>Image layers.</b> Layer dưới (base, dependency) read-only &amp; được cache/chia sẻ; container thêm một layer <b>R/W mỏng</b> ở trên (đổi trong container không sửa image). Union filesystem (Overlay2) gộp các layer thành một view.</div>
+        </div>
+
+<pre><code class="language-text">FROM python:3.12-slim          # base layer
+WORKDIR /app
+COPY requirements.txt .         # layer rieng -> tan dung cache
+RUN pip install -r requirements.txt
+COPY . .                        # source thay doi nhieu -> de cuoi
+CMD ["python", "app.py"]</code></pre>
+        <div class="callout callout--note"><div class="callout__icon">📦</div><div class="callout__body"><p class="mb-0"><strong>Mẹo layer caching:</strong> đặt phần ít đổi (cài dependency) <em>trước</em> phần hay đổi (copy source) → build lại nhanh. <strong>Container vs VM:</strong> container chia sẻ kernel host → nhẹ &amp; nhanh hơn VM (mỗi VM có OS riêng).</p></div></div>
+
+        <!-- 5. Kubernetes -->
+        <h2>5. Kubernetes (tổng quan)</h2>
+        <p>Điều phối container ở quy mô lớn: tự scale, self-heal, rolling update. Các đối tượng cốt lõi:</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 250" role="img" aria-label="Kiến trúc Kubernetes" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="arKu" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="280" y="14" width="160" height="34" rx="7" fill="var(--brand-900)"/><text x="360" y="36" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Ingress (HTTP route)</text>
+            <line x1="360" y1="48" x2="360" y2="62" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arKu)"/>
+            <rect x="270" y="64" width="180" height="34" rx="7" fill="var(--brand-600)"/><text x="360" y="86" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Service (load balance)</text>
+            <line x1="320" y1="98" x2="190" y2="128" class="dgm-arrow" stroke-width="1.3" marker-end="url(#arKu)"/>
+            <line x1="360" y1="98" x2="360" y2="128" class="dgm-arrow" stroke-width="1.3" marker-end="url(#arKu)"/>
+            <line x1="400" y1="98" x2="530" y2="128" class="dgm-arrow" stroke-width="1.3" marker-end="url(#arKu)"/>
+            <rect x="120" y="130" width="500" height="74" rx="9" fill="var(--surface-2)" class="dgm-layer" stroke-dasharray="5 4"/><text x="138" y="148" class="dgm-label" font-size="10.5" font-weight="700">Deployment → ReplicaSet (giữ N bản sao, rolling update)</text>
+            <rect x="138" y="154" width="120" height="42" rx="6" fill="var(--brand-400)"/><text x="198" y="179" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Pod</text>
+            <rect x="300" y="154" width="120" height="42" rx="6" fill="var(--brand-400)"/><text x="360" y="179" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Pod</text>
+            <rect x="462" y="154" width="120" height="42" rx="6" fill="var(--brand-400)"/><text x="522" y="179" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Pod</text>
+            <rect x="120" y="214" width="240" height="28" rx="6" fill="var(--core)"/><text x="240" y="232" text-anchor="middle" class="dgm-inv" font-size="9.5" font-weight="700">ConfigMap (cấu hình, KHÔNG bí mật)</text>
+            <rect x="370" y="214" width="240" height="28" rx="6" fill="var(--must)"/><text x="490" y="232" text-anchor="middle" class="dgm-inv" font-size="9.5" font-weight="700">Secret (bí mật, mã hoá)</text>
+          </svg>
+          <div class="figure__cap"><b>Kubernetes.</b> Ingress → Service (load-balance) → Pods do Deployment/ReplicaSet quản lý. <b>ConfigMap</b> tách cấu hình khỏi image (không bảo mật — dữ liệu nhạy dùng <b>Secret</b>). Đổi ConfigMap mount dạng volume tự sync, nhưng <b>env var không đổi tới khi pod restart</b>.</div>
+        </div>
+
+        <div class="table-wrap"><table>
+          <thead><tr><th>Đối tượng</th><th>Vai trò</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Pod</strong></td><td>Đơn vị chạy nhỏ nhất (1+ container chia sẻ network/storage)</td></tr>
+            <tr><td><strong>Deployment</strong></td><td>Quản lý số bản sao Pod (qua ReplicaSet), rolling update, rollback</td></tr>
+            <tr><td><strong>Service</strong></td><td>Điểm truy cập ổn định (load-balance) tới tập Pod (ClusterIP/NodePort/LoadBalancer)</td></tr>
+            <tr><td><strong>ConfigMap / Secret</strong></td><td>Tách cấu hình/bí mật khỏi image (ConfigMap không mã hoá; Secret cho dữ liệu nhạy)</td></tr>
+            <tr><td><strong>Ingress</strong></td><td>Định tuyến HTTP/HTTPS từ ngoài vào Service</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout callout--key"><div class="callout__icon">⚖️</div><div class="callout__body"><p class="mb-0"><strong>Pod vs Container:</strong> container là process đóng gói; Pod là “vỏ” K8s bọc một/vài container cùng vòng đời, chia sẻ IP/volume. K8s scale theo <strong>Pod</strong>, không theo container lẻ. <strong>Lưu ý:</strong> sửa ConfigMap <em>không</em> tự restart pod đang chạy.</p></div></div>
+
+        <!-- 6. Terraform -->
+        <h2>6. Terraform — Infrastructure as Code</h2>
+        <p>Khai báo hạ tầng bằng code (<strong>HCL</strong>), Terraform tạo/sửa/xoá tài nguyên cho khớp. <strong>Declarative</strong>: mô tả “trạng thái mong muốn”, Terraform tự tính các bước. Hỗ trợ Azure/AWS/GCP và 100+ provider.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 184" role="img" aria-label="Terraform workflow" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="arTf" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="20" y="50" width="150" height="50" rx="8" fill="var(--brand-800)"/><text x="95" y="72" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">Write (.tf)</text><text x="95" y="88" text-anchor="middle" class="dgm-inv-sub" font-size="9">HCL — desired state</text>
+            <line x1="170" y1="75" x2="206" y2="75" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arTf)"/>
+            <rect x="208" y="50" width="150" height="50" rx="8" fill="var(--brand-600)"/><text x="283" y="72" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">Plan</text><text x="283" y="88" text-anchor="middle" class="dgm-inv-sub" font-size="9">diff: + ~ -</text>
+            <line x1="358" y1="75" x2="394" y2="75" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arTf)"/>
+            <rect x="396" y="50" width="150" height="50" rx="8" fill="var(--brand-400)"/><text x="471" y="72" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">Apply</text><text x="471" y="88" text-anchor="middle" class="dgm-inv-sub" font-size="9">tạo/sửa/xoá</text>
+            <line x1="546" y1="75" x2="582" y2="75" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arTf)"/>
+            <rect x="584" y="50" width="116" height="50" rx="8" fill="var(--brand-900)"/><text x="642" y="72" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Cloud</text><text x="642" y="88" text-anchor="middle" class="dgm-inv-sub" font-size="9">Azure/GCP…</text>
+            <rect x="208" y="124" width="150" height="40" rx="7" fill="var(--core)"/><text x="283" y="142" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">State (.tfstate)</text><text x="283" y="156" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">remote + lock + mã hoá</text>
+            <line x1="283" y1="124" x2="283" y2="102" class="dgm-arrow" stroke-width="1.3" marker-start="url(#arTf)" marker-end="url(#arTf)"/>
+          </svg>
+          <div class="figure__cap"><b>Terraform workflow.</b> <code>write → plan → apply</code>. <b>State</b> (.tfstate) ánh xạ HCL ↔ tài nguyên thật để tính diff — chứa dữ liệu nhạy nên phải <b>lưu remote, khoá, mã hoá</b>.</div>
+        </div>
+
+<pre><code class="language-text">resource "azurerm_resource_group" "rg" {
+  name     = "rg-ai-platform"
+  location = "southeastasia"
+}
+resource "azurerm_app_service" "app" {
+  name                = "ai-internal-app"
+  resource_group_name = azurerm_resource_group.rg.name
+}</code></pre>
+        <div class="kv">
+          <dt>Resource</dt><dd>Một tài nguyên cloud (VM, App Service, DNS…).</dd>
+          <dt>Module</dt><dd>Nhóm resource tái sử dụng, tham số hoá (DRY — tạo nhiều instance từ một module).</dd>
+          <dt>State</dt><dd>File ánh xạ HCL ↔ ID tài nguyên thật → so để ra <strong>plan</strong>. Lưu remote, khoá, mã hoá (chứa secret).</dd>
+          <dt>plan / apply</dt><dd><code>plan</code> xem trước (+/~/-); <code>apply</code> thực thi theo đúng thứ tự phụ thuộc.</dd>
+        </div>
+
+        <!-- 7. Cloud services -->
+        <h2>7. Dịch vụ cloud bạn vận hành</h2>
+        <div class="grid grid-2">
+          <div class="card">
+            <h4 class="mt-0">Azure</h4>
+            <dl class="kv mb-0">
+              <dt>App Service</dt><dd>Host web app/API có quản lý (PaaS).</dd>
+              <dt>Networking &amp; DNS</dt><dd>VNet, định tuyến, phân giải tên miền.</dd>
+              <dt>Entra ID</dt><dd>(Azure AD) xác thực &amp; phân quyền danh tính.</dd>
+              <dt>AI Foundry</dt><dd>Nền tảng xây/triển khai ứng dụng AI.</dd>
+            </dl>
+          </div>
+          <div class="card">
+            <h4 class="mt-0">GCP &amp; tinh thần chung</h4>
+            <p class="mb-0 small">Bạn cũng dùng Google Cloud Platform. Điểm chung cần nắm: compute (VM/serverless), networking, IAM (danh tính/quyền), managed services. Trọng tâm phỏng vấn là <strong>vì sao chọn dịch vụ nào</strong> và <strong>bảo mật danh tính/chi phí</strong> ra sao (gắn governance LLM của bạn).</p>
+          </div>
+        </div>
+
+        <!-- 8. Trước -> Nay -->
+        <h2>8. Trước (~2020) → Nay — DevOps &amp; Cloud</h2>
+        <div class="evo">
+          <div class="evo__head">☁️ <span>GitOps, IaC chuẩn hoá &amp; container security</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>CI/CD script hoá; deploy thủ công/kéo tay; Terraform &amp; K8s còn “mới” với nhiều team; Conan 1.x.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p><strong>GitOps</strong> (ArgoCD/Flux — git là nguồn sự thật cho deploy), <strong>IaC</strong> là chuẩn (Terraform/OpenTofu), <strong>Conan 2.0</strong>, và <strong>supply-chain/container security</strong> (SBOM, image scan, signing) trở thành bắt buộc.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> nói được “git là nguồn sự thật, hạ tầng &amp; deploy đều khai báo &amp; review như code” cho thấy bạn theo kịp practice hiện đại.</div>
+        </div>
+
+        <!-- Self test -->
+        <h2>9. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">Container khác VM thế nào? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Container chia sẻ <strong>kernel host</strong>, chỉ cô lập process/filesystem/network → nhẹ, khởi động nhanh, mật độ cao. VM ảo hoá cả phần cứng, mỗi VM có OS riêng → nặng hơn nhưng cách ly mạnh hơn.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Image layer là gì, vì sao cần? (cache + chia sẻ + transfer nhanh)</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Vì sao Conan giúp pipeline ổn định? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Cố định version dependency + profile toolchain (lockfile) → mọi máy/CI build với cùng đầu vào, loại bỏ khác biệt môi trường gây “flaky”/“máy tôi thì chạy”. Thiếu binary thì build từ source on-demand theo đúng profile.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Profile chứa gì? (OS/arch/build_type/compiler/options/env)</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Terraform state để làm gì? Vì sao phải cẩn thận? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">State ánh xạ HCL ↔ ID tài nguyên thật để so với thực tế &amp; mong muốn → ra <strong>plan</strong>. Phải <strong>lưu remote + khoá + mã hoá</strong> vì state có thể chứa <em>secret</em> (mật khẩu DB…) và nhiều người dùng chung dễ ghi đè nhau.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>plan vs apply khác gì? Declarative nghĩa là gì?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Phân biệt Stage / Job / Step; agent chạy mấy job cùng lúc? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Stage = giai đoạn lớn (Build/Deploy), tuần tự theo <code>dependsOn</code>; Job = tập step chạy trên <em>một</em> agent (job song song trừ khi có dependsOn); Step = một lệnh/task. <strong>Mỗi agent chạy 1 job tại một thời điểm</strong> → muốn song song cần nhiều agent. Artifact truyền sản phẩm giữa stage.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Microsoft-hosted vs self-hosted agent?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Tại sao đặt cài dependency trước COPY source trong Dockerfile? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Layer caching: dependency ít đổi → layer dưới, được cache; source hay đổi → layer trên. Đổi một layer làm <strong>invalid cache của layer đó &amp; tất cả layer phía trên</strong>, nên để phần ít đổi xuống dưới → khi chỉ sửa code, build nhanh hơn nhiều.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>ConfigMap khác Secret thế nào? Sửa ConfigMap có restart pod không?</li></ul></div>
+          </div></div>
+        </div>
+
+        <!-- 10. Cheat-sheet -->
+        <h2>10. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>CI/CD</h4><ul>
+            <li>CI: build+test mỗi push</li>
+            <li>CD: delivery (duyệt) / deployment (auto)</li>
+            <li>Pipeline: build→test→package→deploy</li>
+            <li>Shift-left + reproducible</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Azure Pipelines</h4><ul>
+            <li>Pipeline→Stage→Job→Step</li>
+            <li>Job chạy trên Agent (1 job/agent/lúc)</li>
+            <li>dependsOn điều khiển thứ tự/song song</li>
+            <li>Artifact truyền giữa stage</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Conan</h4><ul>
+            <li>Package C/C++ theo config (binary)</li>
+            <li>Profile = OS/arch/compiler/build_type</li>
+            <li>Lockfile → reproducible</li>
+            <li>Remote (Artifactory)</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Docker</h4><ul>
+            <li>Image = layer xếp chồng (RUN/COPY/ADD)</li>
+            <li>Layer read-only + cache; container R/W mỏng</li>
+            <li>Đổi 1 layer → rebuild các layer trên</li>
+            <li>Container nhẹ hơn VM (chia kernel)</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Kubernetes</h4><ul>
+            <li>Pod (nhỏ nhất) ← Deployment/ReplicaSet</li>
+            <li>Service load-balance · Ingress route HTTP</li>
+            <li>ConfigMap (không bí mật) vs Secret</li>
+            <li>Sửa ConfigMap không tự restart pod</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Terraform</h4><ul>
+            <li>HCL declarative · write→plan→apply</li>
+            <li>State ánh xạ code↔thật (remote+lock+mã hoá)</li>
+            <li>Module = tái sử dụng (DRY)</li>
+            <li>Nay: GitOps, IaC chuẩn, supply-chain security</li>
+          </ul></div>
+        </div>
+
+        <!-- 11. Sources -->
+        <h2>11. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li>Microsoft Learn — <a href="https://learn.microsoft.com/en-us/azure/devops/pipelines/get-started/key-pipelines-concepts?view=azure-devops" target="_blank" rel="noopener">Azure Pipelines key concepts</a> (stage/job/step/agent/artifact).</li>
+          <li>Conan — <a href="https://docs.conan.io/" target="_blank" rel="noopener">Conan 2 docs</a> (profiles, lockfile, remote).</li>
+          <li>Docker — <a href="https://docs.docker.com/get-started/docker-concepts/building-images/understanding-image-layers/" target="_blank" rel="noopener">Understanding image layers</a>.</li>
+          <li>Kubernetes — <a href="https://kubernetes.io/docs/concepts/configuration/configmap/" target="_blank" rel="noopener">ConfigMaps</a> (không mã hoá; volume vs env var).</li>
+          <li>HashiCorp / Codecademy — <a href="https://www.codecademy.com/article/what-is-terraform-iac" target="_blank" rel="noopener">Terraform IaC</a> (HCL, state, modules).</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi giải thích được CI/CD + vai trò Conan/Docker/K8s/Terraform và state.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">
+        Chủ đề J · Automation / CI-CD / Cloud — Interview Prep
+      </footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../assets/js/app.js?v=4"></script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+# Ignore all files in cv/ except the Python script
+cv/*
+!cv/*.py

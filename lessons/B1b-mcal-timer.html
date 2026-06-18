@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>B1b · MCAL Timer — GPT/PWM/ICU — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/style.css?v=4" />
+</head>
+<body data-page="B1b" data-root="../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">B1b</span>
+            <span class="badge badge--core">Core</span>
+            <span class="chip">AUTOSAR — Module (đào sâu)</span>
+          </div>
+          <h1>MCAL Timer — GPT / PWM / ICU</h1>
+          <p class="lead">Ba driver dùng chung khối timer phần cứng nhưng <strong>mục đích khác nhau</strong>: GPT (đếm→ngắt), PWM (xuất xung), ICU (đo xung vào). Mỗi module một mục đầy đủ — ICU là gốc rễ <strong>đo timing SENT</strong>.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> 🟠 Core</span>
+            <span><b>Gắn:</b> SENT (bài <a href="D-sent-automation.html">D</a>), HW debug (<a href="F-mcu-peripherals.html">F</a>)</span>
+            <span><b>Cùng nhóm:</b> <a href="B1a-mcal-io.html">B1a</a> · <a href="B1c-mcal-system.html">B1c</a></span>
+          </div>
+        </div>
+
+        <div class="callout callout--note">
+          <div class="callout__icon">📌</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Nguồn:</strong> tên container/param/API/mode đối chiếu <strong>AUTOSAR Classic SWS</strong> (Gpt/Pwm/Icu Driver) &amp; tài liệu MCAL (TI — đã verify 4 mode ICU) — xem cuối bài.</p>
+          </div>
+        </div>
+
+        <!-- ================= GPT ================= -->
+        <h2>1. GPT Driver (General Purpose Timer)</h2>
+        <p><strong>Vai trò:</strong> dùng kênh timer phần cứng để <em>đếm thời gian</em> và sinh <strong>ngắt</strong> khi hết hạn — phục vụ delay, đo khoảng thời gian, hoặc làm time base cho BSW. Khác OS Counter ở chỗ GPT là <em>driver phần cứng</em>; OS Counter là đối tượng lịch của OS (thường lấy nguồn từ GPT/SysTick).</p>
+        <h3>1.1 Khái niệm cốt lõi</h3>
+        <dl class="kv">
+          <dt>Channel</dt><dd>Một kênh timer HW độc lập (16 hoặc 32-bit). Mỗi kênh có mode, tần số tick, max value riêng.</dd>
+          <dt>Mode: one-shot vs continuous</dt><dd><strong>One-shot</strong>: đếm tới target → ngắt → <em>dừng</em> (đo một khoảng/delay đơn). <strong>Continuous</strong>: hết hạn thì <em>tự nạp lại</em> &amp; đếm tiếp → ngắt định kỳ (vd tick 100 µs). Cấu hình <code>GptChannelMode</code>.</dd>
+          <dt>Tick · clock source · prescaler · độ rộng counter</dt><dd>Timer đếm theo clock đã chia qua <strong>prescaler</strong>; “tick” = đơn vị đếm, <strong>độ phân giải = 1/(clock sau prescaler)</strong>. Counter rộng 16/32-bit giới hạn khoảng đo tối đa (<code>GptChannelTickValueMax</code>); vượt → <strong>rollover</strong> (phải tính số lần tràn hoặc chọn prescaler/độ rộng phù hợp).</dd>
+          <dt>Time elapsed / remaining</dt><dd><code>Gpt_GetTimeElapsed</code> (đã đếm) / <code>Gpt_GetTimeRemaining</code> (còn lại) — đọc tiến độ runtime, vd để đo thời gian thực thi một đoạn code.</dd>
+          <dt>Notification</dt><dd>Callback gọi <em>trong ngữ cảnh ngắt</em> khi timer hết hạn. Phải ngắn &amp; cẩn thận re-entrancy (đăng ký qua cấu hình + <code>Gpt_EnableNotification</code>).</dd>
+          <dt>Wakeup capability</dt><dd>Một số kênh GPT có thể chạy ở chế độ sleep (<code>GPT_MODE_SLEEP</code>) và <strong>đánh thức MCU</strong> khi hết hạn (<code>Gpt_EnableWakeup</code>/<code>Gpt_CheckWakeup</code>) — phối hợp EcuM.</dd>
+          <dt>Predef timers</dt><dd>Bộ timer free-running độ phân giải cố định (1 µs / 100 µs / 1 ms / 16-bit/24-bit/32-bit) chuẩn hoá ở các release gần đây — đọc time base nhanh không cần cấu hình kênh riêng.</dd>
+        </dl>
+        <h3>1.2 API &amp; cấu hình</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>API</th><th>Ý nghĩa</th></tr></thead>
+          <tbody>
+            <tr><td><code>Gpt_Init</code> / <code>Gpt_DeInit</code></td><td>Khởi tạo/huỷ các kênh.</td></tr>
+            <tr><td><code>Gpt_StartTimer(Ch, Value)</code> / <code>Gpt_StopTimer</code></td><td>Khởi động kênh đếm tới Value tick / dừng.</td></tr>
+            <tr><td><code>Gpt_GetTimeElapsed</code> / <code>Gpt_GetTimeRemaining</code></td><td>Đọc tiến độ.</td></tr>
+            <tr><td><code>Gpt_EnableNotification</code> / <code>DisableNotification</code></td><td>Bật/tắt callback hết hạn.</td></tr>
+            <tr><td><code>Gpt_EnableWakeup</code> / <code>Gpt_CheckWakeup</code></td><td>Cấu hình/kiểm tra đánh thức.</td></tr>
+          </tbody>
+        </table></div>
+        <p class="small text-mute"><strong>Cấu hình:</strong> <code>GptChannelConfigSet</code> &gt; <code>GptChannelConfiguration</code> (<code>GptChannelId</code>, <code>GptChannelMode</code> [one-shot/continuous], <code>GptChannelTickFrequency</code>, <code>GptChannelTickValueMax</code>, <code>GptNotification</code>, <code>GptEnableWakeup</code>). <strong>Bẫy:</strong> nhầm tick↔µs (phải quy đổi theo TickFrequency); rollover khi đo khoảng dài; notification re-entrant. Det: <code>GPT_E_UNINIT</code>, <code>GPT_E_PARAM_CHANNEL</code>, <code>GPT_E_PARAM_VALUE</code>.</p>
+
+        <!-- ================= PWM ================= -->
+        <h2>2. PWM Driver</h2>
+        <p><strong>Vai trò:</strong> sinh tín hiệu <em>băm xung</em> với <strong>chu kỳ + duty</strong> điều khiển được (motor, LED, heater, bơm). Mỗi PWM channel gắn với một khối PWM phần cứng.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 186" role="img" aria-label="PWM period và duty" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="pw1" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <polyline points="30,120 50,120 50,55 140,55 140,120 230,120 230,55 320,55 320,120 410,120 410,55 500,55 500,120 560,120" fill="none" stroke="var(--brand-600)" stroke-width="2.5"/>
+            <line x1="50" y1="40" x2="140" y2="40" class="dgm-arrow" stroke-width="1.2" marker-start="url(#pw1)" marker-end="url(#pw1)"/><text x="95" y="34" text-anchor="middle" class="dgm-sub" font-size="9.5">duty (high time)</text>
+            <line x1="50" y1="145" x2="230" y2="145" class="dgm-arrow" stroke-width="1.2" marker-start="url(#pw1)" marker-end="url(#pw1)"/><text x="140" y="160" text-anchor="middle" class="dgm-sub" font-size="9.5">period (chu kỳ)</text>
+            <line x1="20" y1="120" x2="600" y2="120" stroke="var(--border-strong)" stroke-width="0.8" stroke-dasharray="2 2"/>
+            <text x="612" y="124" class="dgm-sub" font-size="9">idle</text>
+            <text x="360" y="180" text-anchor="middle" class="dgm-label" font-size="10.5" font-weight="700">duty 0x0000–0x8000 = 0–100% · polarity quyết định mức active · class: fixed / fixed-shifted / variable</text>
+          </svg>
+          <div class="figure__cap"><b>PWM.</b> Duty (độ rộng xung) trên một period. Polarity quyết định mức “active”; idle state = mức khi tắt (safe state).</div>
+        </div>
+
+        <h3>2.1 Khái niệm cốt lõi</h3>
+        <dl class="kv">
+          <dt>Period</dt><dd>Chu kỳ một xung (1/tần số). Với <em>variable-period</em> channel, đổi period <strong>chỉ có hiệu lực ở cuối chu kỳ hiện tại</strong> (tránh cắt cụt xung đang chạy gây nhiễu).</dd>
+          <dt>Duty cycle</dt><dd>Tỉ lệ thời gian mức active trên period. AUTOSAR biểu diễn <strong>tuyệt đối 0x0000–0x8000 = 0–100%</strong> (0x4000 = 50%) — không phụ thuộc period, nên đổi period không tự đổi duty %.</dd>
+          <dt>Polarity</dt><dd>Mức nào là “active”: <code>PWM_HIGH</code> (phần duty ở mức cao) hay <code>PWM_LOW</code> (đảo). Nhầm polarity → motor/LED chạy ngược logic.</dd>
+          <dt>Idle state</dt><dd>Mức xuất khi PWM bị đưa về nghỉ bằng <code>Pwm_SetOutputToIdle</code>. Cực kỳ quan trọng cho <strong>safe state</strong>: khi phát hiện lỗi, đưa PWM về mức tắt an toàn (vd ngắt motor) — liên hệ ISO 26262 (bài <a href="H-iso26262.html">H</a>).</dd>
+          <dt>Channel class</dt><dd><strong>PWM_FIXED_PERIOD</strong>: period cố định, chỉ đổi được duty (đa số chân điều khiển). <strong>PWM_FIXED_PERIOD_SHIFTED</strong>: period cố định nhưng dịch pha so với chân khác (nếu HW hỗ trợ — vd PWM nhiều pha). <strong>PWM_VARIABLE_PERIOD</strong>: đổi cả period runtime (vd điều khiển tần số). Gọi <code>SetPeriodAndDuty</code> trên class fixed → Det.</dd>
+          <dt>Alignment</dt><dd>Xung căn cạnh (<em>left/edge-aligned</em>: cạnh lên cố định đầu chu kỳ) hay <em>center-aligned</em> (đối xứng quanh giữa). AUTOSAR <strong>không định nghĩa</strong> alignment trong API — do HW/implementation. <strong>Center-aligned hay dùng cho motor</strong> (giảm nhiễu &amp; cho phép lấy mẫu ADC đúng giữa).</dd>
+          <dt>Edge notification</dt><dd>Callback tại cạnh xung: <code>PWM_RISING_EDGE</code> / <code>PWM_FALLING_EDGE</code> / <code>PWM_BOTH_EDGES</code>. Ứng dụng chính: <strong>kích ADC theo pha PWM</strong> (đo dòng motor đúng thời điểm) hoặc chẩn đoán tín hiệu (kiểm tra PWM thực sự đổi cạnh).</dd>
+          <dt>Autostart</dt><dd>Nếu channel autostart, băm xung <strong>bắt đầu ngay trong <code>Pwm_Init</code></strong>; nhưng notification chỉ phát sau khi gọi <code>Pwm_EnableNotification</code>. Edge case duty <strong>0% / 100%</strong>: output giữ mức tĩnh (không có cạnh) → notification có thể không xảy ra.</dd>
+        </dl>
+        <h3>2.2 API &amp; cấu hình</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>API</th><th>Ý nghĩa</th></tr></thead>
+          <tbody>
+            <tr><td><code>Pwm_Init</code> / <code>Pwm_DeInit</code></td><td>Khởi tạo/huỷ.</td></tr>
+            <tr><td><code>Pwm_SetDutyCycle(Ch, Duty)</code></td><td>Đổi duty (0–0x8000), period giữ nguyên.</td></tr>
+            <tr><td><code>Pwm_SetPeriodAndDuty(Ch, Period, Duty)</code></td><td>Đổi cả period+duty — <strong>chỉ variable-period</strong>.</td></tr>
+            <tr><td><code>Pwm_SetOutputToIdle(Ch)</code></td><td>Đưa output về mức idle (safe state).</td></tr>
+            <tr><td><code>Pwm_GetOutputState(Ch)</code></td><td>Đọc mức hiện tại.</td></tr>
+            <tr><td><code>Pwm_EnableNotification(Ch, Edge)</code> / <code>DisableNotification</code></td><td>Bật/tắt callback theo cạnh.</td></tr>
+          </tbody>
+        </table></div>
+        <p class="small text-mute"><strong>Cấu hình:</strong> <code>PwmChannelConfigSet</code> &gt; <code>PwmChannel</code> (<code>PwmChannelId</code>, <code>PwmChannelClass</code>, <code>PwmPolarity</code>, <code>PwmIdleState</code>, <code>PwmDutycycleDefault</code>, <code>PwmPeriodDefault</code>, <code>PwmNotification</code>). Det: <code>PWM_E_UNINIT</code>, <code>PWM_E_PARAM_CHANNEL</code>, <code>PWM_E_PERIOD_UNCHANGEABLE</code> (SetPeriodAndDuty trên fixed class), <code>PWM_E_ALREADY_INITIALIZED</code>. Dead-time/complementary output (cho motor) là tính năng HW, cấu hình ngoài API chuẩn.</p>
+
+        <!-- ================= ICU ================= -->
+        <h2>3. ICU Driver (Input Capture Unit)</h2>
+        <p><strong>Vai trò:</strong> đo tín hiệu <em>vào</em> bằng input capture: bắt cạnh, đo period/duty, đếm cạnh, ghi timestamp. Đây là <strong>gốc rễ đo timing SENT</strong> (khoảng cách giữa các falling edge).</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 200" role="img" aria-label="ICU bắt cạnh và đo tín hiệu" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="ic1" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <polyline points="30,120 110,120 110,60 230,60 230,120 330,120 330,60 470,60 470,120 560,120" fill="none" stroke="var(--brand-600)" stroke-width="2.5"/>
+            <line x1="110" y1="50" x2="110" y2="135" stroke="var(--must)" stroke-width="1" stroke-dasharray="3 3"/>
+            <line x1="230" y1="50" x2="230" y2="135" stroke="var(--must)" stroke-width="1" stroke-dasharray="3 3"/>
+            <line x1="330" y1="50" x2="330" y2="135" stroke="var(--must)" stroke-width="1" stroke-dasharray="3 3"/>
+            <line x1="470" y1="50" x2="470" y2="135" stroke="var(--must)" stroke-width="1" stroke-dasharray="3 3"/>
+            <text x="110" y="44" text-anchor="middle" class="dgm-sub" font-size="9">↑ rising</text>
+            <text x="230" y="44" text-anchor="middle" class="dgm-sub" font-size="9">↓ falling</text>
+            <text x="330" y="44" text-anchor="middle" class="dgm-sub" font-size="9">↑</text>
+            <text x="470" y="44" text-anchor="middle" class="dgm-sub" font-size="9">↓</text>
+            <line x1="110" y1="150" x2="330" y2="150" class="dgm-arrow" stroke-width="1.2" marker-start="url(#ic1)" marker-end="url(#ic1)"/><text x="220" y="165" text-anchor="middle" class="dgm-sub" font-size="9.5">period (2 cạnh cùng chiều)</text>
+            <line x1="110" y1="100" x2="230" y2="100" class="dgm-arrow" stroke-width="1.2" marker-start="url(#ic1)" marker-end="url(#ic1)"/><text x="170" y="94" text-anchor="middle" class="dgm-sub" font-size="9">high time</text>
+            <text x="360" y="190" text-anchor="middle" class="dgm-label" font-size="10.5" font-weight="700">ICU lưu timestamp tại mỗi cạnh → suy ra period/duty/pulse · đếm cạnh · chính là cách đo tick/nibble SENT</text>
+          </svg>
+          <div class="figure__cap"><b>ICU.</b> Capture timestamp tại cạnh (rising/falling/both) → tính period/duty/độ rộng xung hoặc đếm cạnh.</div>
+        </div>
+
+        <h3>3.1 Khái niệm cốt lõi — 4 measurement mode</h3>
+        <dl class="kv">
+          <dt>Activation edge &amp; default start edge</dt><dd>Cạnh kích: <code>ICU_RISING_EDGE</code> / <code>ICU_FALLING_EDGE</code> / <code>ICU_BOTH_EDGES</code> (đặt bằng <code>Icu_SetActivationCondition</code>). <strong>Default start edge</strong> (<code>IcuDefaultStartEdge</code>) định cạnh <em>bắt đầu</em> một phép đo (vd đo high-time bắt đầu từ rising).</dd>
+          <dt>SIGNAL_EDGE_DETECT</dt><dd>Phát hiện <em>một</em> cạnh → gọi callback <code>IcuSignalNotification</code>. <strong>Không đo thời gian</strong>, chỉ báo “có cạnh” (vd phát hiện sự kiện/wakeup). Đơn giản &amp; nhẹ nhất.</dd>
+          <dt>SIGNAL_MEASUREMENT</dt><dd>Đo <em>tham số thời gian</em> của tín hiệu — chọn một <strong>property</strong>: <em>period time</em>, <em>high time</em>, <em>low time</em>, hoặc <em>duty cycle</em>. HW tự đo giữa các cạnh; đọc qua <code>Icu_GetTimeElapsed</code> / <code>Icu_GetDutyCycleValues</code>. Dùng đo tần số/duty PWM, tốc độ (bánh răng).</dd>
+          <dt>TIMESTAMP</dt><dd>Ghi <em>chuỗi timestamp tuyệt đối</em> của các cạnh vào một buffer (do app cấp). Buffer kiểu <strong>linear</strong> (đầy thì dừng) hoặc <strong>circular</strong> (cuộn vòng); sau khi đủ N timestamp gọi <code>IcuTimestampNotification</code>. Đọc vị trí bằng <code>Icu_GetTimestampIndex</code>. Dùng cho tín hiệu phức tạp/không đều — <strong>chính là cách giải mã SENT</strong> (chuỗi falling edge).</dd>
+          <dt>EDGE_COUNTER</dt><dd>Đếm số cạnh (chỉ cạnh đã cấu hình). <code>Icu_EnableEdgeCount</code> / <code>Icu_GetEdgeNumbers</code>. Dùng đo số vòng/tần số bằng cách đếm cạnh trong một cửa sổ thời gian.</dd>
+          <dt>Input state</dt><dd><code>Icu_GetInputState</code> báo trạng thái <em>active/idle</em> của kênh (đã có cạnh từ lần đọc trước chưa) — dùng polling nhẹ thay notification.</dd>
+          <dt>Overflow</dt><dd>Nếu khoảng giữa hai cạnh <em>dài hơn</em> tầm đếm của timer → tràn (overflow). Phải chọn <strong>prescaler/độ rộng counter</strong> sao cho vừa độ phân giải (tick nhỏ) vừa tầm đo (không tràn) — đánh đổi kinh điển khi đo SENT (tick 3–90 µs).</dd>
+          <dt>Wakeup</dt><dd>Ở nơi HW hỗ trợ, ICU có thể là wakeup source (cạnh tín hiệu đánh thức MCU); một số HW không hỗ trợ.</dd>
+        </dl>
+        <div class="callout callout--tip"><div class="callout__icon">🔗</div><div class="callout__body"><p class="mb-0"><strong>Liên hệ SENT:</strong> giải mã SENT = đo khoảng cách giữa các <em>falling edge</em> → dùng <strong>TIMESTAMP</strong> (ghi chuỗi cạnh rồi tính hiệu) hoặc <strong>SIGNAL_MEASUREMENT</strong> (period). Hiểu ICU giải thích vì sao SENT nhạy jitter (timing trực tiếp = giá trị) &amp; cách debug bằng UDE/oscilloscope (bài <a href="D-sent-automation.html">D</a>, <a href="F-mcu-peripherals.html">F</a>).</p></div></div>
+        <h3>3.2 API &amp; cấu hình</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>API</th><th>Ý nghĩa</th></tr></thead>
+          <tbody>
+            <tr><td><code>Icu_Init</code> / <code>Icu_SetActivationCondition(Ch, Edge)</code></td><td>Khởi tạo / đặt cạnh kích.</td></tr>
+            <tr><td><code>Icu_EnableNotification</code> / <code>DisableNotification</code></td><td>Bật/tắt callback cạnh.</td></tr>
+            <tr><td><code>Icu_StartSignalMeasurement</code> / <code>StopSignalMeasurement</code></td><td>Đo period/duty/high/low.</td></tr>
+            <tr><td><code>Icu_GetTimeElapsed</code> / <code>Icu_GetDutyCycleValues</code></td><td>Đọc kết quả đo.</td></tr>
+            <tr><td><code>Icu_StartTimestamp</code> / <code>Icu_GetTimestampIndex</code></td><td>Ghi/đọc chuỗi timestamp.</td></tr>
+            <tr><td><code>Icu_EnableEdgeCount</code> / <code>Icu_GetEdgeNumbers</code></td><td>Đếm cạnh.</td></tr>
+            <tr><td><code>Icu_GetInputState</code></td><td>Trạng thái active/idle.</td></tr>
+          </tbody>
+        </table></div>
+        <p class="small text-mute"><strong>Cấu hình:</strong> <code>IcuConfigSet</code> &gt; <code>IcuChannel</code> (<code>IcuMeasurementMode</code>, <code>IcuSignalMeasurement</code> [property], <code>IcuTimestampMeasurement</code> [buffer linear/circular], <code>IcuDefaultStartEdge</code>, <code>IcuSignalNotification</code>, <code>IcuTimestampNotification</code>, <code>IcuWakeupCapability</code>). <strong>Bẫy:</strong> overflow khi khoảng cạnh dài; mode loại trừ nhau/kênh; prescaler chọn sai → mất độ phân giải. Det: <code>ICU_E_UNINIT</code>, <code>ICU_E_PARAM_CHANNEL</code>, <code>ICU_E_PARAM_ACTIVATION</code>.</p>
+
+        <!-- ================= Trước -> Nay ================= -->
+        <h2>4. Trước (~2020) → Nay</h2>
+        <div class="evo">
+          <div class="evo__head">⏱️ <span>Timer trong điều khiển &amp; SDV</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>PWM + ICU rời rạc; đo SENT bằng ICU/capture cơ bản.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p><strong>PWM↔ADC↔ICU phối hợp chặt</strong> (PWM edge kích ADC đo dòng đúng pha; ICU phản hồi tốc độ) cho motor BLDC/EV; predef timer chuẩn hoá; khối timer phức tạp (RH850 TAUD/TAUJ, GTM) với MCAL safety.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> trả lời được “PWM center-aligned + edge-notification kích ADC để lấy mẫu dòng đúng giữa xung” cho thấy bạn hiểu vòng điều khiển thật, không chỉ từng driver.</div>
+        </div>
+
+        <!-- ================= Q&A ================= -->
+        <h2>5. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">GPT, PWM, ICU khác nhau ra sao? GPT khác OS Counter? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>GPT</strong> đếm→ngắt (delay/đo khoảng); <strong>PWM</strong> xuất xung period+duty (output); <strong>ICU</strong> đo xung vào (cạnh/period/duty/đếm/timestamp). GPT là driver HW; <strong>OS Counter</strong> là đối tượng lịch của OS, thường <em>lấy nguồn</em> từ một timer HW (GPT/SysTick) để tạo tick cho Alarm/Schedule Table.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>One-shot vs continuous khác gì?</li><li>Rollover xử lý thế nào khi đo khoảng dài?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">PWM channel class &amp; edge notification để làm gì? Duty biểu diễn ra sao? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Class: <strong>FIXED_PERIOD</strong> (chỉ đổi duty), <strong>FIXED_PERIOD_SHIFTED</strong> (dịch pha nếu HW hỗ trợ), <strong>VARIABLE_PERIOD</strong> (đổi cả period). Duty <strong>tuyệt đối 0x0000–0x8000 = 0–100%</strong> (độc lập period). Edge notification (rising/falling/both) dùng để <strong>kích ADC theo pha</strong> hoặc chẩn đoán. <code>SetOutputToIdle</code> đưa về mức an toàn.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Đổi period có hiệu lực lúc nào? (cuối chu kỳ hiện tại)</li><li>Center-aligned vs left-aligned? (impl; center hợp motor)</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">ICU có 4 mode gì? Đo SENT dùng mode nào và vì sao? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>SIGNAL_EDGE_DETECT</strong> (báo cạnh, không đo time), <strong>SIGNAL_MEASUREMENT</strong> (period/high/low/duty), <strong>TIMESTAMP</strong> (chuỗi timestamp cạnh vào buffer linear/circular + notification sau N), <strong>EDGE_COUNTER</strong> (đếm cạnh). SENT = chuỗi falling edge không đều → dùng <strong>TIMESTAMP</strong> (ghi cạnh rồi tính hiệu) hoặc SIGNAL_MEASUREMENT period; phải chọn prescaler để vừa độ phân giải (tick 3 µs) vừa tránh overflow.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Overflow xảy ra khi nào &amp; xử lý sao?</li><li>Linear vs circular timestamp buffer khác gì?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Làm sao PWM, ADC, ICU phối hợp trong điều khiển motor? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">PWM (center-aligned) điều khiển cầu công suất; <strong>edge notification / HW trigger của PWM kích ADC</strong> để lấy mẫu dòng đúng giữa xung (ít nhiễu chuyển mạch); <strong>ICU</strong> đọc cảm biến tốc độ/vị trí (đo period/đếm cạnh). Cả ba khoá pha với nhau qua khối timer chung.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Vì sao lấy mẫu ADC đúng giữa xung PWM?</li></ul></div>
+          </div></div>
+        </div>
+
+        <!-- ================= Cheat-sheet ================= -->
+        <h2>6. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>GPT</h4><ul>
+            <li>One-shot vs continuous</li>
+            <li>Tick/prescaler/độ rộng/rollover</li>
+            <li>TimeElapsed/Remaining · notification · wakeup</li>
+            <li>Khác OS Counter (OS lấy nguồn từ timer)</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>PWM — cơ bản</h4><ul>
+            <li>Period + duty (0x0000–0x8000)</li>
+            <li>Polarity · idle state (safe state)</li>
+            <li>Class: fixed / fixed-shifted / variable</li>
+            <li>Đổi period: cuối chu kỳ hiện tại</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>PWM — nâng cao</h4><ul>
+            <li>Alignment left/center (impl; center=motor)</li>
+            <li>Edge notification → kích ADC/chẩn đoán</li>
+            <li>Autostart trong Init; notif sau Enable</li>
+            <li>SetPeriodAndDuty chỉ variable class</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>ICU — 4 mode</h4><ul>
+            <li>EDGE_DETECT (báo cạnh)</li>
+            <li>SIGNAL_MEASUREMENT (period/duty/high/low)</li>
+            <li>TIMESTAMP (chuỗi cạnh, linear/circular)</li>
+            <li>EDGE_COUNTER (đếm)</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>ICU — chi tiết</h4><ul>
+            <li>Activation + default start edge</li>
+            <li>TIMESTAMP = đo SENT</li>
+            <li>Overflow ↔ prescaler/độ rộng counter</li>
+            <li>GetInputState (polling nhẹ)</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Phối hợp</h4><ul>
+            <li>PWM edge → trigger ADC đúng pha</li>
+            <li>ICU đo tốc độ phản hồi</li>
+            <li>Khoá pha qua timer chung</li>
+            <li>Det: *_E_UNINIT / PARAM_CHANNEL</li>
+          </ul></div>
+        </div>
+
+        <!-- ================= Sources ================= -->
+        <h2>7. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li>AUTOSAR Classic SWS — <strong>Gpt Driver</strong>, <strong>Pwm Driver</strong> (channel class, edge notification), <strong>Icu Driver</strong> (measurement mode).</li>
+          <li>TI — <a href="https://software-dl.ti.com/mcu-plus-sdk/esd/PLATFORM_SW_MCAL/AM263x/11.00.00/src/Module_User_Guide_Icu.html" target="_blank" rel="noopener">Platform MCAL ICU</a> (4 mode + signal measurement properties — đã verify).</li>
+          <li>AUTOSAR Compendium — <a href="https://www.ar-compendium.com/part-ii-basic-software-mcal/" target="_blank" rel="noopener">BSW/MCAL driver grouping</a>.</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi giải thích được GPT vs OS counter, PWM class+duty+edge, 4 ICU mode và cách đo SENT.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">
+        Chủ đề B1b · MCAL Timer — GPT/PWM/ICU — Interview Prep
+      </footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../assets/js/app.js?v=4"></script>
+</body>
+</html>

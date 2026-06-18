@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>I · AI / LLM Engineering — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/style.css?v=4" />
+</head>
+<body data-page="I" data-root="../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">I</span>
+            <span class="badge badge--defend">Defend</span>
+            <span class="badge badge--core">Core (hybrid)</span>
+            <span class="chip">Vòng 4 · AI &amp; tổng duyệt</span>
+          </div>
+          <h1>AI / LLM Engineering</h1>
+          <p class="lead">Vai trò hybrid → vừa core vừa cần <strong>defend</strong>. Interviewer sẽ test xem bạn hiểu sâu hệ thống mình build hay chỉ “gọi API”. Nắm RAG, agentic AI, prompt/context engineering, MCP, governance — và chuẩn bị giải thích sâu <em>một</em> hệ thống bạn tự làm.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> 🔵 Defend + 🟠 Core</span>
+            <span><b>Use case thật:</b> hotline RAG, requirement tracing, AI platform governance</span>
+          </div>
+        </div>
+
+        <div class="callout callout--note">
+          <div class="callout__icon">📌</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Nguồn:</strong> các con số &amp; thực hành (chunk size, hybrid+rerank, MCP, chi phí agentic, model routing) đối chiếu tài liệu 2025–2026 (modelcontextprotocol.io, MTEB, RAGAS, báo cáo thị trường) — xem “Nguồn tham khảo” cuối bài.</p>
+          </div>
+        </div>
+
+        <div class="callout callout--interview"><div class="callout__icon">🛡️</div><div class="callout__body">
+          <div class="callout__title">Tư duy “defend”</div>
+          <p class="mb-0">Với mỗi lựa chọn (chunk size, vector store, model, có rerank không…), chuẩn bị trả lời <strong>“vì sao chọn vậy, đánh đổi gì, phương án khác là gì”</strong>. Đó là điểm khác biệt giữa người <em>xây</em> và người <em>chỉ dùng</em>.</p>
+        </div></div>
+
+        <!-- 1. RAG -->
+        <h2>1. RAG — Retrieval-Augmented Generation</h2>
+        <p>Cho LLM trả lời dựa trên <strong>tài liệu riêng</strong> thay vì chỉ kiến thức huấn luyện → giảm “bịa” (hallucination), cập nhật được và trích dẫn nguồn. Hai pha: <strong>indexing</strong> (offline) và <strong>retrieval + generation</strong> (online). RAG nay là kiến trúc mặc định (≈72% doanh nghiệp dùng trong production).</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 256" role="img" aria-label="RAG pipeline" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="arR" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <text x="20" y="22" class="dgm-label" font-size="11" font-weight="800">① INDEXING (offline)</text>
+            <rect x="20" y="32" width="110" height="40" rx="7" fill="var(--brand-800)"/><text x="75" y="56" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Docs</text>
+            <line x1="130" y1="52" x2="158" y2="52" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arR)"/>
+            <rect x="160" y="32" width="120" height="40" rx="7" fill="var(--brand-800)"/><text x="220" y="51" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Chunk</text><text x="220" y="65" text-anchor="middle" class="dgm-inv-sub" font-size="8">256–512 tok · overlap 20–25%</text>
+            <line x1="280" y1="52" x2="308" y2="52" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arR)"/>
+            <rect x="310" y="32" width="110" height="40" rx="7" fill="var(--brand-800)"/><text x="365" y="56" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Embed</text>
+            <line x1="420" y1="52" x2="448" y2="52" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arR)"/>
+            <rect x="450" y="32" width="130" height="40" rx="7" fill="var(--brand-600)"/><text x="515" y="56" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Vector DB</text>
+            <line x1="515" y1="72" x2="515" y2="150" class="dgm-arrow" stroke-width="1.4" marker-end="url(#arR)"/><text x="556" y="115" class="dgm-sub" font-size="9">k-NN</text>
+            <text x="20" y="142" class="dgm-label" font-size="11" font-weight="800">② QUERY (online)</text>
+            <rect x="20" y="152" width="110" height="40" rx="7" fill="var(--brand-400)"/><text x="75" y="176" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Câu hỏi</text>
+            <line x1="130" y1="172" x2="158" y2="172" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arR)"/>
+            <rect x="160" y="152" width="100" height="40" rx="7" fill="var(--brand-400)"/><text x="210" y="176" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Embed</text>
+            <line x1="260" y1="172" x2="288" y2="172" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arR)"/>
+            <rect x="290" y="152" width="130" height="40" rx="7" fill="var(--brand-600)"/><text x="355" y="171" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Retrieve (hybrid)</text><text x="355" y="185" text-anchor="middle" class="dgm-inv-sub" font-size="8">vector + BM25 · RRF</text>
+            <line x1="420" y1="172" x2="448" y2="172" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arR)"/>
+            <rect x="450" y="152" width="110" height="40" rx="7" fill="var(--core)"/><text x="505" y="171" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Rerank</text><text x="505" y="185" text-anchor="middle" class="dgm-inv-sub" font-size="8">cross-encoder</text>
+            <line x1="560" y1="172" x2="588" y2="172" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arR)"/>
+            <rect x="590" y="152" width="110" height="40" rx="7" fill="var(--brand-900)"/><text x="645" y="176" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">LLM</text>
+            <text x="360" y="226" text-anchor="middle" class="dgm-sub" font-size="10.5">Prompt = [system + context(top-n chunks) + câu hỏi] → LLM → Trả lời + citation</text>
+            <text x="360" y="244" text-anchor="middle" class="dgm-sub" font-size="10">Đánh giá: RAGAS (recall/relevance/faithfulness) · TTFT p90 &lt; 2s</text>
+          </svg>
+          <div class="figure__cap"><b>RAG pipeline.</b> Index một lần (chunk→embed→store); mỗi truy vấn: embed → <b>hybrid retrieve</b> (vector + keyword, hợp nhất bằng RRF) → <b>rerank</b> (cross-encoder) → LLM sinh câu trả lời có trích dẫn.</div>
+        </div>
+
+        <div class="accordion">
+          <div class="accordion__item"><button class="accordion__head">Chunking — chia tài liệu (lever quan trọng nhất) <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner"><p class="mb-0">Cắt tài liệu thành đoạn vừa đủ ngữ cảnh — quyết định <em>đòn bẩy lớn nhất</em>. Sweet spot ~<strong>256–512 token</strong> (baseline production 512–1024) với <strong>overlap 20–25%</strong>. <strong>Semantic chunking</strong> (cắt theo ranh giới ngữ nghĩa bằng embedding) cải thiện retrieval đáng kể (vd +36% F1 trên tài liệu pháp lý); <strong>hierarchical</strong> (parent summary + child detail) cho tài liệu dài. Với tài liệu kỹ thuật: chunk theo heading/section.</p></div></div>
+          </div>
+          <div class="accordion__item"><button class="accordion__head">Embedding — vector hoá <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner"><p class="mb-0">Biến text thành vector sao cho văn bản gần nghĩa → vector gần nhau (cosine). Model embedding khác model sinh; <strong>cùng một embedding model</strong> cho cả index lẫn query. So sánh model qua <strong>MTEB</strong>; nhiều model open-source dẫn đầu (GTE-Qwen2, E5-mistral) — hợp dữ liệu nhạy cảm self-host.</p></div></div>
+          </div>
+          <div class="accordion__item"><button class="accordion__head">Vector store &amp; hybrid retrieval <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner"><p class="mb-0">Lưu vector + metadata, tìm <strong>k láng giềng gần nhất</strong> (ANN). <strong>Hybrid search</strong> = vector (ngữ nghĩa) + keyword/BM25 (chính xác từ khoá — tốt cho mã lỗi/ký hiệu kỹ thuật), hợp nhất bằng <strong>Reciprocal Rank Fusion (RRF)</strong>; thường tốt hơn vector thuần.</p></div></div>
+          </div>
+          <div class="accordion__item"><button class="accordion__head">Rerank — xếp hạng lại <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner"><p class="mb-0">Sau khi lấy top-k (rộng, rẻ bằng bi-encoder), dùng <strong>cross-encoder</strong> chấm điểm độ liên quan câu hỏi↔chunk để chọn top-n đưa vào prompt. Tăng precision rõ rệt, đổi lại thêm độ trễ/chi phí.</p></div></div>
+          </div>
+        </div>
+        <div class="callout callout--tip"><div class="callout__icon">💡</div><div class="callout__body"><p class="mb-0"><strong>Vì sao RAG thay vì fine-tune?</strong> RAG cập nhật tri thức dễ (chỉ re-index), trích dẫn nguồn, rẻ hơn; fine-tune hợp khi cần đổi <em>phong cách/định dạng/kỹ năng</em>, không phải để “nhồi” kiến thức hay đổi.</p></div></div>
+
+        <!-- 2. Agentic AI -->
+        <h2>2. Agentic AI</h2>
+        <p>LLM không chỉ trả lời mà <strong>hành động</strong>: gọi tool, lặp, ra quyết định nhiều bước để đạt mục tiêu. Công thức: <em>“LLM trong một vòng lặp, có tools &amp; memory”</em>. Ba dấu hiệu: <strong>tool use</strong>, <strong>multi-step loop</strong> (act→observe→decide), <strong>goal-directed</strong>.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 220" role="img" aria-label="Vòng lặp agent" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="arA" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="270" y="20" width="180" height="34" rx="7" fill="var(--brand-900)"/><text x="360" y="42" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Goal (mục tiêu)</text>
+            <line x1="360" y1="54" x2="360" y2="70" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arA)"/>
+            <rect x="180" y="72" width="180" height="64" rx="9" fill="var(--brand-800)"/><text x="270" y="100" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="800">LLM</text><text x="270" y="118" text-anchor="middle" class="dgm-inv-sub" font-size="9">think → chọn tool + tham số</text>
+            <rect x="440" y="72" width="180" height="64" rx="9" fill="var(--brand-600)"/><text x="530" y="100" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="800">Tools / Runtime</text><text x="530" y="118" text-anchor="middle" class="dgm-inv-sub" font-size="9">chạy hàm → trả kết quả</text>
+            <line x1="360" y1="92" x2="436" y2="92" class="dgm-arrow" stroke-width="1.6" marker-end="url(#arA)"/><text x="398" y="86" text-anchor="middle" class="dgm-sub" font-size="9">tool call</text>
+            <line x1="440" y1="120" x2="364" y2="120" class="dgm-arrow" stroke-width="1.6" marker-end="url(#arA)"/><text x="402" y="134" text-anchor="middle" class="dgm-sub" font-size="9">observation</text>
+            <rect x="180" y="156" width="180" height="34" rx="7" fill="var(--surface-2)" class="dgm-layer"/><text x="270" y="178" text-anchor="middle" class="dgm-label" font-size="10.5" font-weight="700">Memory / Context</text>
+            <line x1="270" y1="156" x2="270" y2="138" class="dgm-arrow" stroke-width="1.3" marker-start="url(#arA)" marker-end="url(#arA)"/>
+            <rect x="440" y="156" width="180" height="34" rx="7" fill="var(--ok)"/><text x="530" y="178" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Trả lời (khi đạt goal)</text>
+            <text x="360" y="210" text-anchor="middle" class="dgm-sub" font-size="10">Lặp act→observe→decide tới khi xong · GIỚI HẠN số vòng để tránh loop vô hạn &amp; chi phí</text>
+          </svg>
+          <div class="figure__cap"><b>Vòng lặp agent (ReAct).</b> LLM phát <b>tool call có cấu trúc</b> (function calling) → runtime chạy → <b>observation</b> quay lại context → LLM quyết bước tiếp. Phải có giới hạn vòng vì agentic tốn token gấp <b>10–20×</b> một query thường.</div>
+        </div>
+
+        <h3>2.1 Multi-agent orchestration</h3>
+        <p>Chia bài toán cho nhiều agent chuyên biệt (planner, researcher, coder, reviewer); một <strong>orchestrator</strong> điều phối: routing, sequencing, chia sẻ context, failure recovery — chạy <strong>song song</strong> khi độc lập, <strong>tuần tự</strong> khi phụ thuộc. Frameworks: LangChain, AutoGen, CrewAI, n8n. Ưu: chia để trị, context mỗi agent gọn. Nhược: phức tạp, tốn token, khó debug → chỉ dùng khi đủ lớn; tránh vendor lock-in.</p>
+        <div class="callout callout--interview"><div class="callout__icon">🗣️</div><div class="callout__body"><p class="mb-0"><strong>Kể được:</strong> “Tôi thiết kế agentic workflow với agents/sub-agents, skills, tool use và orchestration; làm trực tiếp với cơ chế agent-harness — context window, tool-use loop, multi-agent control — để tự động hoá tác vụ kỹ thuật lặp lại.”</p></div></div>
+
+        <!-- 3. MCP -->
+        <h2>3. MCP — Model Context Protocol</h2>
+        <p><strong>MCP</strong> là chuẩn mở do <strong>Anthropic</strong> giới thiệu (cuối 2024) để chuẩn hoá cách LLM/agent kết nối tool &amp; nguồn dữ liệu — biến bài toán tích hợp <strong>M×N</strong> (M app × N tool, mỗi cặp một connector riêng) thành <strong>M+N</strong>. Client-server trên <strong>JSON-RPC 2.0</strong>; được OpenAI, Google, Cursor, Cline… adopt.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 220" role="img" aria-label="MCP M×N sang M+N" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="arM" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <text x="175" y="22" text-anchor="middle" class="dgm-label" font-size="11" font-weight="800">Trước: M × N connector</text>
+            <rect x="40" y="40" width="80" height="28" rx="6" fill="var(--brand-800)"/><text x="80" y="59" text-anchor="middle" class="dgm-inv" font-size="9.5">App 1</text>
+            <rect x="40" y="78" width="80" height="28" rx="6" fill="var(--brand-800)"/><text x="80" y="97" text-anchor="middle" class="dgm-inv" font-size="9.5">App 2</text>
+            <rect x="230" y="32" width="80" height="24" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="270" y="48" text-anchor="middle" class="dgm-text" font-size="9">Tool A</text>
+            <rect x="230" y="64" width="80" height="24" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="270" y="80" text-anchor="middle" class="dgm-text" font-size="9">Tool B</text>
+            <rect x="230" y="96" width="80" height="24" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="270" y="112" text-anchor="middle" class="dgm-text" font-size="9">Tool C</text>
+            <line x1="120" y1="54" x2="230" y2="44" stroke="var(--must)" stroke-width="1"/><line x1="120" y1="54" x2="230" y2="76" stroke="var(--must)" stroke-width="1"/><line x1="120" y1="54" x2="230" y2="108" stroke="var(--must)" stroke-width="1"/>
+            <line x1="120" y1="92" x2="230" y2="44" stroke="var(--must)" stroke-width="1"/><line x1="120" y1="92" x2="230" y2="76" stroke="var(--must)" stroke-width="1"/><line x1="120" y1="92" x2="230" y2="108" stroke="var(--must)" stroke-width="1"/>
+            <text x="175" y="138" text-anchor="middle" class="dgm-sub" font-size="9.5">rối, mỗi cặp một tích hợp</text>
+            <text x="540" y="22" text-anchor="middle" class="dgm-label" font-size="11" font-weight="800">Nay: M + N qua MCP</text>
+            <rect x="400" y="40" width="80" height="28" rx="6" fill="var(--brand-800)"/><text x="440" y="59" text-anchor="middle" class="dgm-inv" font-size="9.5">App 1</text>
+            <rect x="400" y="78" width="80" height="28" rx="6" fill="var(--brand-800)"/><text x="440" y="97" text-anchor="middle" class="dgm-inv" font-size="9.5">App 2</text>
+            <rect x="510" y="52" width="70" height="44" rx="7" fill="var(--brand-600)"/><text x="545" y="72" text-anchor="middle" class="dgm-inv" font-size="9.5" font-weight="700">MCP</text><text x="545" y="86" text-anchor="middle" class="dgm-inv-sub" font-size="8">JSON-RPC</text>
+            <rect x="612" y="32" width="86" height="24" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="655" y="48" text-anchor="middle" class="dgm-text" font-size="9">Server: FS</text>
+            <rect x="612" y="64" width="86" height="24" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="655" y="80" text-anchor="middle" class="dgm-text" font-size="9">Server: DB</text>
+            <rect x="612" y="96" width="86" height="24" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="655" y="112" text-anchor="middle" class="dgm-text" font-size="9">Server: API</text>
+            <line x1="480" y1="54" x2="510" y2="68" class="dgm-arrow" stroke-width="1.2" marker-end="url(#arM)"/><line x1="480" y1="92" x2="510" y2="80" class="dgm-arrow" stroke-width="1.2" marker-end="url(#arM)"/>
+            <line x1="580" y1="62" x2="610" y2="44" class="dgm-arrow" stroke-width="1.2" marker-end="url(#arM)"/><line x1="580" y1="74" x2="610" y2="76" class="dgm-arrow" stroke-width="1.2" marker-end="url(#arM)"/><line x1="580" y1="86" x2="610" y2="108" class="dgm-arrow" stroke-width="1.2" marker-end="url(#arM)"/>
+            <text x="540" y="138" text-anchor="middle" class="dgm-sub" font-size="9.5">client khám phá &amp; gọi server theo chuẩn</text>
+            <text x="360" y="172" text-anchor="middle" class="dgm-sub" font-size="10.5">MCP chuẩn hoá function calling/tool use — “USB-C cho LLM tool”; client discover &amp; invoke server</text>
+            <text x="360" y="192" text-anchor="middle" class="dgm-sub" font-size="10">Lưu ý bảo mật: auth/credential/quyền thực thi — kiểm soát server tin cậy</text>
+          </svg>
+          <div class="figure__cap"><b>MCP.</b> Thay vì viết connector riêng cho từng cặp app–tool (M×N), mỗi tool có một <b>MCP server</b> và mỗi app là <b>MCP client</b> (M+N). Đây là nền của Claude Code (MCP, skills, hooks).</div>
+        </div>
+
+        <!-- 4. Prompt & context engineering -->
+        <h2>4. Prompt &amp; context engineering</h2>
+        <div class="grid grid-2">
+          <div class="card">
+            <h4 class="mt-0">Kỹ thuật prompt</h4>
+            <dl class="kv mb-0">
+              <dt>4 phần</dt><dd>Context · Data · Task · Format (không phải lúc nào cũng cần cả 4).</dd>
+              <dt>System prompt</dt><dd>Định vai trò, ràng buộc, định dạng output.</dd>
+              <dt>Few-shot / CoT</dt><dd>Vài ví dụ mẫu; yêu cầu suy luận từng bước cho bài khó. <em>Thử zero-shot trước.</em></dd>
+              <dt>Structured output</dt><dd>Ép JSON/schema để máy parse.</dd>
+            </dl>
+          </div>
+          <div class="card">
+            <h4 class="mt-0">Quản lý context (xu hướng chính)</h4>
+            <dl class="kv mb-0">
+              <dt>Context window</dt><dd>Giới hạn token model “thấy” — ngân sách phải phân bổ khôn ngoan.</dd>
+              <dt>Context engineering</dt><dd>Thiết kế <em>pipeline chọn/định dạng/lắp ráp</em> đúng thông tin vào cửa sổ runtime (retrieve, tóm tắt, memory) — không nhồi tất cả.</dd>
+              <dt>Prompt caching</dt><dd>Cache phần lặp lại (system, tài liệu) → giảm chi phí &amp; độ trễ rõ rệt.</dd>
+            </dl>
+          </div>
+        </div>
+        <div class="callout callout--key"><div class="callout__icon">🎯</div><div class="callout__body"><p class="mb-0"><strong>Câu “đắt”:</strong> “Đa số lỗi đến từ <em>ambiguity</em> chứ không phải model. Context window là tài nguyên khan hiếm; việc của context engineering là tối đa <em>signal-to-noise</em> — retrieve đúng, nén phần thừa, cache phần ổn định, và <strong>pin model snapshot</strong> để hành vi ổn định giữa các version.”</p></div></div>
+
+        <!-- 5. Governance -->
+        <h2>5. LLM governance &amp; cost (việc bạn vận hành)</h2>
+        <p>Chi tiêu LLM API doanh nghiệp tăng vọt (≈$3.5B cuối 2024 → ≈$8.4B giữa 2025); gốc rễ là <strong>attribution</strong> (gắn token với team/use case), không phải đơn giá. <strong>Agentic multiplier</strong> (10–20× token/tác vụ) làm chi phí bùng nổ nếu thiếu governance.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 200" role="img" aria-label="LLM governance gateway" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="arG" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="20" y="60" width="130" height="60" rx="9" fill="var(--brand-800)"/><text x="85" y="86" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Users / Teams</text><text x="85" y="104" text-anchor="middle" class="dgm-inv-sub" font-size="9">+ danh tính (Entra ID)</text>
+            <line x1="150" y1="90" x2="186" y2="90" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arG)"/>
+            <rect x="188" y="48" width="200" height="84" rx="9" fill="var(--brand-600)"/><text x="288" y="72" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="800">Gateway (enforcement)</text><text x="288" y="92" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">virtual keys · budget/quota</text><text x="288" y="108" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">model routing · rate limit</text><text x="288" y="124" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">semantic cache · guardrail</text>
+            <line x1="388" y1="78" x2="424" y2="64" class="dgm-arrow" stroke-width="1.4" marker-end="url(#arG)"/><text x="408" y="58" class="dgm-sub" font-size="8.5">rẻ</text>
+            <line x1="388" y1="104" x2="424" y2="118" class="dgm-arrow" stroke-width="1.4" marker-end="url(#arG)"/><text x="404" y="130" class="dgm-sub" font-size="8.5">frontier</text>
+            <rect x="426" y="46" width="140" height="32" rx="7" fill="var(--ok)"/><text x="496" y="66" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Model nhỏ/rẻ</text>
+            <rect x="426" y="104" width="140" height="32" rx="7" fill="var(--core)"/><text x="496" y="124" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Model frontier</text>
+            <rect x="584" y="60" width="120" height="60" rx="9" fill="var(--surface-2)" class="dgm-layer"/><text x="644" y="84" text-anchor="middle" class="dgm-label" font-size="10" font-weight="700">Observability</text><text x="644" y="102" text-anchor="middle" class="dgm-sub" font-size="9">attribution token↔team</text>
+            <text x="360" y="170" text-anchor="middle" class="dgm-sub" font-size="10.5">Model routing: gửi việc dễ cho model rẻ, để frontier cho việc khó (vd giảm tới ~85% chi phí, giữ ~95% chất lượng)</text>
+            <text x="360" y="188" text-anchor="middle" class="dgm-sub" font-size="10">Enforcement (chặn vượt ngân sách) ≠ Visibility (chỉ báo đã tăng) · compliance: EU AI Act, ISO 42001</text>
+          </svg>
+          <div class="figure__cap"><b>Governance.</b> <b>Gateway</b> (virtual key, budget, routing, cache) <em>chặn</em> chi phí trước khi vượt; <b>observability</b> gắn token với team/use case. 3 tầng: đo → tối ưu → quản trị.</div>
+        </div>
+
+        <div class="grid grid-3">
+          <div class="card"><h4 class="mt-0">API key &amp; access</h4><p class="mb-0 small">Phân phối key tập trung (virtual keys), gắn danh tính (Entra ID), phân quyền theo team/dự án.</p></div>
+          <div class="card"><h4 class="mt-0">Cost governance</h4><p class="mb-0 small">Attribution token/chi phí theo người/team, quota &amp; cảnh báo; <strong>model routing</strong> + semantic cache để tối ưu.</p></div>
+          <div class="card"><h4 class="mt-0">An toàn &amp; tin cậy</h4><p class="mb-0 small">Chống rò rỉ dữ liệu nội bộ; guardrail prompt injection; log &amp; audit; eval chất lượng output.</p></div>
+        </div>
+        <div class="callout callout--warn"><div class="callout__icon">⚠️</div><div class="callout__body"><p class="mb-0"><strong>Prompt injection</strong> là rủi ro thật: nội dung tài liệu/web có thể chứa lệnh ẩn để “bẻ” agent. Phòng: tách dữ liệu khỏi chỉ thị, giới hạn quyền tool, kiểm duyệt output, không cho agent hành động bất khả nghịch nếu chưa xác thực.</p></div></div>
+
+        <!-- 6. Defend a system -->
+        <h2>6. “Defend” một hệ thống bạn build</h2>
+        <p>Chuẩn bị kể sâu hệ <strong>RAG hỗ trợ hotline ticket / requirement tracing</strong> theo khung kiến trúc + trade-off:</p>
+        <div class="accordion">
+          <div class="accordion__item"><button class="accordion__head">Bài toán &amp; dữ liệu <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner"><p class="mb-0">Nối tài liệu nội bộ, ticket, tri thức kỹ thuật để trả lời hotline &amp; trace requirement. Thách thức: thuật ngữ kỹ thuật, mã lỗi, tài liệu dài.</p></div></div>
+          </div>
+          <div class="accordion__item"><button class="accordion__head">Lựa chọn kiến trúc &amp; vì sao <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner"><ul class="mb-0">
+              <li><strong>Chunk theo cấu trúc</strong> + overlap → giữ ngữ cảnh kỹ thuật.</li>
+              <li><strong>Hybrid search</strong> (vector + keyword/RRF) → bắt đúng mã lỗi/ký hiệu.</li>
+              <li><strong>Rerank</strong> khi truy hồi nhiễu → tăng độ chính xác.</li>
+              <li><strong>Citation</strong> nguồn → kỹ sư kiểm chứng, tăng độ tin.</li>
+              <li><strong>Prompt caching</strong> phần tài liệu/system ổn định → giảm chi phí.</li>
+            </ul></div></div>
+          </div>
+          <div class="accordion__item"><button class="accordion__head">Đánh đổi &amp; giới hạn <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner"><p class="mb-0">Rerank/hybrid tăng độ trễ &amp; chi phí; cân bằng với trải nghiệm. Chất lượng phụ thuộc tài liệu nguồn. Phải có guardrail chống injection &amp; rò rỉ dữ liệu.</p></div></div>
+          </div>
+          <div class="accordion__item"><button class="accordion__head">Đo lường thành công <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner"><p class="mb-0">Đánh giá bằng <strong>RAGAS</strong> (recall/relevance/faithfulness); tỉ lệ câu trả lời được chấp nhận, thời gian xử lý ticket giảm, adoption của kỹ sư, chi phí/token mỗi truy vấn, TTFT.</p></div></div>
+          </div>
+        </div>
+
+        <!-- 7. Trước -> Nay -->
+        <h2>7. Trước (~2020) → Nay — bức tranh AI ứng dụng</h2>
+        <div class="evo">
+          <div class="evo__head">🤖 <span>Từ “prompt khéo” sang hệ thống có engineering &amp; governance</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>NLP theo model riêng từng task; “prompt engineering” = mẹo câu chữ; chưa có RAG/agent chuẩn; chi phí &amp; governance ít được nói tới.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay (2025–2026)</div><p>Chuyển sang <strong>context engineering</strong> + <strong>RAG</strong> + <strong>agentic</strong> + <strong>MCP</strong> chuẩn hoá tool; vai trò “prompt engineer” đơn lẻ mờ đi, thay bằng kỹ năng thiết kế context + viết eval + <strong>cost/governance</strong> (attribution, routing, EU AI Act/ISO 42001).</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> đúng vai trò AI Platform của bạn — bạn không “gọi API” mà <em>vận hành</em> attribution, routing, governance &amp; agentic harness. Đây là phần “defend” mạnh nhất.</div>
+        </div>
+
+        <!-- Self test -->
+        <h2>8. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">Khi nào RAG, khi nào fine-tune? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">RAG khi cần <strong>kiến thức cập nhật/trích dẫn nguồn</strong> (tài liệu hay đổi). Fine-tune khi cần đổi <strong>phong cách/định dạng/kỹ năng</strong> ổn định. Nhồi kiến thức hay đổi bằng fine-tune là tốn kém &amp; khó cập nhật.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Có thể kết hợp cả hai không? (có — fine-tune kỹ năng + RAG tri thức)</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Rerank &amp; hybrid search giải quyết vấn đề gì? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>Hybrid</strong> (vector + BM25, hợp bằng RRF) bắt cả ngữ nghĩa lẫn từ khoá chính xác (mã lỗi/ký hiệu). <strong>Rerank</strong> (cross-encoder) chấm lại độ liên quan câu hỏi↔chunk cụ thể để đẩy chunk thực sự đúng lên đầu — vá điểm yếu của vector search (bi-encoder) đôi khi “gần nghĩa nhưng không trả lời”.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Bi-encoder vs cross-encoder khác gì về tốc độ/độ chính xác?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Một hệ agentic gồm những gì? Vì sao phải giới hạn vòng? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">“LLM trong vòng lặp, có tools + memory”: tool use (function calling), multi-step loop (act→observe→decide), goal-directed. Phải giới hạn số vòng vì agentic tốn token <strong>10–20×</strong> một query và có thể loop vô hạn → đốt chi phí (đã có sự cố ~$47K trước khi cảnh báo).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Multi-agent khi nào nên dùng, đánh đổi gì?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">MCP để làm gì? Khác function calling thế nào? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">MCP <strong>chuẩn hoá</strong> tool use/function calling: biến M×N tích hợp thành M+N. Mỗi tool = một MCP server, mỗi app = client; giao tiếp JSON-RPC, client discover &amp; gọi server. Không thay function calling mà chuẩn hoá nó → tái sử dụng &amp; mở rộng. Là nền của Claude Code (MCP/skills/hooks).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Rủi ro bảo mật của MCP? (auth, credential, quyền thực thi)</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Governance/cost cho một AI platform gồm gì? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Ba tầng: <strong>đo</strong> (attribution token↔team/use case) → <strong>tối ưu</strong> (model routing, semantic cache, prompt caching) → <strong>quản trị</strong> (virtual keys, budget/quota, rate limit, guardrail, audit). Phân biệt <em>enforcement</em> (gateway chặn vượt ngân sách) vs <em>visibility</em> (chỉ báo cáo). Gắn danh tính (Entra ID) &amp; compliance (EU AI Act, ISO 42001).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Vì sao “attribution” là gốc rễ, không phải đơn giá?</li><li>Model routing tiết kiệm thế nào mà vẫn giữ chất lượng?</li></ul></div>
+          </div></div>
+        </div>
+
+        <!-- 9. Cheat-sheet -->
+        <h2>9. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>RAG</h4><ul>
+            <li>Index: chunk→embed→vector DB</li>
+            <li>Query: embed→hybrid→rerank→LLM</li>
+            <li>Chunk 256–512 tok, overlap 20–25%</li>
+            <li>Hybrid (vector+BM25/RRF) · cross-encoder rerank</li>
+            <li>Eval: RAGAS · TTFT p90 &lt;2s</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Agentic</h4><ul>
+            <li>LLM + loop + tools + memory</li>
+            <li>tool use · act→observe→decide · goal</li>
+            <li>Giới hạn vòng (token 10–20×)</li>
+            <li>Multi-agent: orchestrator, song song/tuần tự</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>MCP</h4><ul>
+            <li>Anthropic 2024, chuẩn mở</li>
+            <li>M×N → M+N · client-server JSON-RPC</li>
+            <li>Chuẩn hoá function calling</li>
+            <li>Nền Claude Code (MCP/skills/hooks)</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Prompt/Context</h4><ul>
+            <li>Context · Data · Task · Format</li>
+            <li>Zero-shot trước, rồi few-shot/CoT</li>
+            <li>Context engineering &gt; câu chữ khéo</li>
+            <li>Prompt caching · pin model snapshot</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Governance/Cost</h4><ul>
+            <li>Gốc = attribution, không phải đơn giá</li>
+            <li>Agentic multiplier 10–20×</li>
+            <li>Routing (rẻ↔frontier), semantic cache</li>
+            <li>Enforcement (gateway) vs visibility</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Defend (hệ của bạn)</h4><ul>
+            <li>Hotline RAG + requirement tracing</li>
+            <li>Chunk cấu trúc + hybrid + rerank + citation</li>
+            <li>Guardrail injection + cost governance</li>
+            <li>Đo: accepted%, ticket time, adoption</li>
+          </ul></div>
+        </div>
+
+        <!-- 10. Sources -->
+        <h2>10. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li>Model Context Protocol — <a href="https://modelcontextprotocol.io/specification/2025-11-25" target="_blank" rel="noopener">spec</a> &amp; <a href="https://github.com/modelcontextprotocol" target="_blank" rel="noopener">GitHub</a> (Anthropic, client-server JSON-RPC).</li>
+          <li>Google Cloud — <a href="https://cloud.google.com/discover/what-is-model-context-protocol" target="_blank" rel="noopener">What is MCP</a> (M×N → M+N).</li>
+          <li>IBM — <a href="https://www.ibm.com/think/topics/ai-agent-orchestration" target="_blank" rel="noopener">AI Agent Orchestration</a> (multi-agent).</li>
+          <li>RAG/chunking/rerank: production guides 2025 (semantic chunking, hybrid + RRF, cross-encoder); <strong>MTEB</strong> (embedding), <strong>RAGAS</strong> (eval).</li>
+          <li>Cost/governance: Menlo Ventures 2025 LLM market (spend $3.5B→$8.4B), RouteLLM (model routing); compliance EU AI Act / ISO 42001.</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi vẽ được sơ đồ RAG, vòng lặp agent, MCP, và defend được 1 hệ bạn build.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">
+        Chủ đề I · AI / LLM Engineering — Interview Prep
+      </footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../assets/js/app.js?v=4"></script>
+</body>
+</html>

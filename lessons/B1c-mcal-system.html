@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>B1c · MCAL System — MCU/WDG/SPI/Fls — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/style.css?v=4" />
+</head>
+<body data-page="B1c" data-root="../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">B1c</span>
+            <span class="badge badge--core">Core</span>
+            <span class="chip">AUTOSAR — Module (đào sâu)</span>
+          </div>
+          <h1>MCAL System — MCU / WDG / SPI / Fls</h1>
+          <p class="lead">Nhóm system/communication/memory của MCAL: <strong>MCU</strong> (clock/PLL/reset), <strong>WDG</strong> (watchdog + WdgM), <strong>SPI</strong> (Handler/Driver 3 cấp), <strong>Fls</strong> (flash). Mỗi module một mục đầy đủ.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> 🟠 Core</span>
+            <span><b>Gắn:</b> init/clock (bài <a href="F-mcu-peripherals.html">F</a>), memory (<a href="B2-memory.html">B2</a>)</span>
+            <span><b>Cùng nhóm:</b> <a href="B1a-mcal-io.html">B1a</a> · <a href="B1b-mcal-timer.html">B1b</a></span>
+          </div>
+        </div>
+
+        <div class="callout callout--note">
+          <div class="callout__icon">📌</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Nguồn:</strong> tên container/param/API đối chiếu <strong>AUTOSAR Classic SWS</strong> (Mcu/Wdg/Spi/Fls Driver, WdgM) &amp; tài liệu MCAL nhà sản xuất — xem cuối bài.</p>
+          </div>
+        </div>
+
+        <!-- ================= MCU ================= -->
+        <h2>1. MCU Driver</h2>
+        <p><strong>Vai trò:</strong> init lõi &amp; hệ thống — clock tree, PLL, RAM, reset, power mode. <strong>Là driver init đầu tiên</strong> vì mọi ngoại vi cần clock đúng trước khi chạy.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 200" role="img" aria-label="MCU clock tree và init sequence" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="mc1" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="16" y="74" width="120" height="48" rx="8" fill="var(--brand-800)"/><text x="76" y="94" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">OSC / RC</text><text x="76" y="110" text-anchor="middle" class="dgm-inv-sub" font-size="9">8–40 MHz</text>
+            <line x1="136" y1="98" x2="168" y2="98" class="dgm-arrow" stroke-width="1.5" marker-end="url(#mc1)"/>
+            <rect x="170" y="74" width="120" height="48" rx="8" fill="var(--brand-600)"/><text x="230" y="94" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="800">PLL ×N</text><text x="230" y="110" text-anchor="middle" class="dgm-inv-sub" font-size="9">chờ LOCK</text>
+            <line x1="290" y1="98" x2="322" y2="98" class="dgm-arrow" stroke-width="1.5" marker-end="url(#mc1)"/>
+            <rect x="324" y="74" width="70" height="48" rx="7" fill="var(--brand-400)"/><text x="359" y="94" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">prescaler</text><text x="359" y="109" text-anchor="middle" class="dgm-inv-sub" font-size="9">÷</text>
+            <line x1="394" y1="86" x2="430" y2="56" class="dgm-arrow" stroke-width="1.3" marker-end="url(#mc1)"/>
+            <line x1="394" y1="98" x2="430" y2="98" class="dgm-arrow" stroke-width="1.3" marker-end="url(#mc1)"/>
+            <line x1="394" y1="110" x2="430" y2="140" class="dgm-arrow" stroke-width="1.3" marker-end="url(#mc1)"/>
+            <rect x="432" y="40" width="270" height="34" rx="6" fill="var(--surface)" class="dgm-layer"/><text x="567" y="62" text-anchor="middle" class="dgm-text" font-size="10.5">CPU core(s)</text>
+            <rect x="432" y="82" width="270" height="34" rx="6" fill="var(--surface)" class="dgm-layer"/><text x="567" y="104" text-anchor="middle" class="dgm-text" font-size="10.5">Flash / RAM bus</text>
+            <rect x="432" y="124" width="270" height="34" rx="6" fill="var(--surface)" class="dgm-layer"/><text x="567" y="146" text-anchor="middle" class="dgm-text" font-size="10.5">Peripheral (CAN/ADC/SPI/timer)</text>
+            <text x="360" y="186" text-anchor="middle" class="dgm-sub" font-size="10">Init: Mcu_Init → InitRamSection(ECC) → InitClock → chờ GetPllStatus=LOCKED → DistributePllClock</text>
+          </svg>
+          <div class="figure__cap"><b>Clock tree &amp; init.</b> OSC → PLL (×N) → prescaler chia cho từng miền. Phải <b>chờ PLL lock</b> trước khi chuyển hệ sang PLL.</div>
+        </div>
+
+        <h3>1.1 Khái niệm cốt lõi</h3>
+        <dl class="kv">
+          <dt>Clock source</dt><dd>OSC nội (RC, rẻ, kém chính xác) / thạch anh ngoài (chính xác) / PLL. MCU driver chọn &amp; cấu hình. RC oscillator dùng được vì SENT/UART cho phép sai số (xem bài D/E).</dd>
+          <dt>PLL &amp; lock</dt><dd>PLL <strong>nhân</strong> tần số (vd 8→160 MHz). Sau khi bật phải <strong>chờ <code>Mcu_GetPllStatus</code>=LOCKED</strong> rồi mới <code>Mcu_DistributePllClock</code>. Chuyển hệ sang PLL khi <em>chưa lock</em> → clock không ổn định → treo/lỗi ngẫu nhiên (bug rất khó tìm).</dd>
+          <dt>Clock distribution / domains / prescaler</dt><dd>Mỗi bus/ngoại vi chạy ở <strong>miền clock</strong> riêng, chia từ clock hệ qua prescaler. Đặt prescaler sai → ngoại vi sai baud/sampling. <code>Mcu_DistributePllClock</code> phân phối clock tới các miền sau khi PLL lock.</dd>
+          <dt>RAM section init (ECC)</dt><dd><code>Mcu_InitRamSection</code> ghi/zero một vùng RAM. Với RAM có <strong>ECC</strong>: phải ghi để <em>khởi tạo checkbit</em> trước khi đọc — đọc RAM chưa init → checkbit rác → <strong>lỗi ECC</strong> (có thể gây exception). Đây là bước init quan trọng dễ quên.</dd>
+          <dt>Reset reason</dt><dd><code>Mcu_GetResetReason</code> / <code>GetResetRawValue</code> đọc nguồn reset gần nhất: power-on, watchdog, software, illegal (sai lệnh/địa chỉ), clock-loss… Giá trị bị <em>latched</em> qua reset → đọc sớm lúc startup để chẩn đoán &amp; vào đúng đường khởi động (vd watchdog reset → ghi DTC).</dd>
+          <dt>Power mode</dt><dd><code>Mcu_SetMode</code> chuyển RUN/HALT/STOP/STANDBY (tắt dần clock/nguồn để tiết kiệm). Phối hợp EcuM/wakeup source; clock phải được khôi phục &amp; lock lại khi thức dậy.</dd>
+          <dt>CMU (clock monitor)</dt><dd>Clock Monitoring Unit phát hiện <strong>mất/lệch clock</strong> (OSC chết) → ngắt/reset an toàn — một safety mechanism (clock là single point of failure).</dd>
+        </dl>
+        <h3>1.2 API &amp; cấu hình</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>API</th><th>Ý nghĩa</th></tr></thead>
+          <tbody>
+            <tr><td><code>Mcu_Init</code> / <code>Mcu_InitRamSection</code></td><td>Init cơ bản / init vùng RAM (ECC).</td></tr>
+            <tr><td><code>Mcu_InitClock</code> + <code>Mcu_GetPllStatus</code></td><td>Bật clock/PLL rồi chờ lock.</td></tr>
+            <tr><td><code>Mcu_DistributePllClock</code></td><td>Chuyển hệ sang PLL (sau lock).</td></tr>
+            <tr><td><code>Mcu_GetResetReason</code> / <code>Mcu_PerformReset</code></td><td>Đọc nguyên nhân reset / reset chủ động.</td></tr>
+            <tr><td><code>Mcu_SetMode(Mode)</code></td><td>Đổi power mode.</td></tr>
+          </tbody>
+        </table></div>
+        <p class="small text-mute"><strong>Cấu hình:</strong> <code>McuModuleConfiguration</code> (<code>McuClockSettingConfig</code>, <code>McuPllStatusRef</code>, <code>McuRamSectorSettingConf</code>, <code>McuModeSettingConf</code>, <code>McuResetReasonConf</code>). Det: <code>MCU_E_UNINIT</code>, <code>MCU_E_PARAM_CONFIG/CLOCK/MODE/RAMSECTION</code>, <code>MCU_E_PLL_NOT_LOCKED</code>. <strong>Bẫy:</strong> distribute trước lock; quên init RAM ECC; reset reason đọc muộn (bị ghi đè).</p>
+
+        <!-- ================= WDG ================= -->
+        <h2>2. WDG Driver (Watchdog)</h2>
+        <p><strong>Vai trò:</strong> điều khiển watchdog phần cứng — reset MCU nếu phần mềm không “nuôi” đúng nhịp. Cấp trên là <strong>WdgM</strong> (Watchdog Manager) lo giám sát logic; WDG chỉ là driver HW.</p>
+        <h3>2.1 Khái niệm cốt lõi</h3>
+        <dl class="kv">
+          <dt>Trigger / refresh + timeout</dt><dd>“Nuôi” watchdog bằng <code>Wdg_SetTriggerCondition(timeout)</code> — đặt thời gian (ms) tới lần nuôi kế. Quá hạn không nuôi → reset.</dd>
+          <dt>Window (open / closed)</dt><dd>Window watchdog có <strong>cửa sổ [min, max]</strong>: nuôi <em>quá sớm</em> (đang ở cửa đóng) <strong>cũng reset</strong>. Nhờ đó bắt được code chạy <em>sai nhịp/lặp bất thường</em> — không chỉ treo. Mạnh hơn watchdog đơn (chỉ 1 ngưỡng max).</dd>
+          <dt>Mode</dt><dd><code>WDGIF_OFF_MODE</code> / <code>WDGIF_SLOW_MODE</code> / <code>WDGIF_FAST_MODE</code> (timeout khác nhau, vd slow lúc init/sleep, fast lúc chạy). OFF thường bị <strong>giới hạn</strong> vì an toàn (không tắt watchdog tuỳ tiện).</dd>
+          <dt>Internal vs external</dt><dd><strong>Internal</strong>: watchdog tích hợp MCU. <strong>External</strong>: chip watchdog rời, nuôi qua <strong>SPI</strong> (xem mục SPI) — độc lập CPU/clock hơn (reset được cả khi MCU/clock chết), thường yêu cầu cho ASIL cao; đổi lại tốn SPI &amp; timing.</dd>
+          <dt>WdgIf</dt><dd>Lớp interface trừu tượng <strong>nhiều instance</strong> watchdog (internal + external) cho WdgM gọi thống nhất.</dd>
+          <dt>WdgM (Watchdog Manager)</dt><dd>Giám sát <em>logic</em> phần mềm qua <strong>Supervised Entity</strong> &amp; <strong>Checkpoint</strong>: <em>Alive supervision</em> (đếm số checkpoint trong cửa sổ — phát hiện chạy quá nhanh/chậm), <em>Deadline supervision</em> (thời gian giữa 2 checkpoint), <em>Logical supervision</em> (đúng <strong>thứ tự</strong> checkpoint theo control-flow graph — phát hiện nhảy sai luồng). Chỉ khi mọi giám sát OK, WdgM mới cho phép trigger Wdg.</dd>
+        </dl>
+        <h3>2.2 API &amp; cấu hình</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>API</th><th>Ý nghĩa</th></tr></thead>
+          <tbody>
+            <tr><td><code>Wdg_Init</code></td><td>Khởi tạo, đặt mode ban đầu.</td></tr>
+            <tr><td><code>Wdg_SetMode(Mode)</code></td><td>Đổi OFF/SLOW/FAST.</td></tr>
+            <tr><td><code>Wdg_SetTriggerCondition(timeout)</code></td><td>Nuôi watchdog / đặt hạn kế.</td></tr>
+          </tbody>
+        </table></div>
+        <p class="small text-mute"><strong>Cấu hình:</strong> <code>WdgSettingsFast/Slow</code>, <code>WdgDefaultMode</code>, <code>WdgTriggerSourceRef</code>. WdgM: <code>WdgMSupervisedEntity</code> + <code>WdgMCheckpoint</code> + <code>WdgMAliveSupervision/DeadlineSupervision/LogicalSupervision</code>. <strong>Bẫy:</strong> nuôi quá sớm (window); chuyển mode bị giới hạn; external WDG sai timing SPI. Liên hệ window vs independent ở bài <a href="F-mcu-peripherals.html">F</a>, safety mechanism ở bài <a href="H-iso26262.html">H</a>.</p>
+
+        <!-- ================= SPI ================= -->
+        <h2>3. SPI Handler/Driver</h2>
+        <p><strong>Vai trò:</strong> không chỉ driver thô — tổ chức truyền theo <strong>3 cấp</strong> (Channel→Job→Sequence) và có <strong>3 Level</strong> hành vi sync/async. Nối EEPROM ngoài, watchdog ngoài, I/O ASIC qua SPI.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 230" role="img" aria-label="SPI sequence job channel" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="sp1" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="20" y="20" width="680" height="44" rx="9" fill="var(--brand-800)"/><text x="360" y="40" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="800">Sequence</text><text x="360" y="56" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">chuỗi Job theo thứ tự · Interruptible · đơn vị app yêu cầu (Spi_AsyncTransmit)</text>
+            <line x1="200" y1="64" x2="200" y2="78" class="dgm-arrow" stroke-width="1.4" marker-end="url(#sp1)"/>
+            <line x1="520" y1="64" x2="520" y2="78" class="dgm-arrow" stroke-width="1.4" marker-end="url(#sp1)"/>
+            <rect x="60" y="80" width="280" height="44" rx="8" fill="var(--brand-600)"/><text x="200" y="100" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">Job 1 (→ một thiết bị / CS)</text><text x="200" y="116" text-anchor="middle" class="dgm-inv-sub" font-size="9">priority + JobNotification</text>
+            <rect x="380" y="80" width="280" height="44" rx="8" fill="var(--brand-600)"/><text x="520" y="100" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">Job 2 (→ thiết bị khác / CS)</text>
+            <line x1="200" y1="124" x2="200" y2="138" class="dgm-arrow" stroke-width="1.3" marker-end="url(#sp1)"/>
+            <rect x="70" y="140" width="120" height="40" rx="6" fill="var(--brand-400)"/><text x="130" y="164" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Channel A</text>
+            <rect x="200" y="140" width="120" height="40" rx="6" fill="var(--brand-400)"/><text x="260" y="164" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Channel B</text>
+            <text x="200" y="200" text-anchor="middle" class="dgm-sub" font-size="10">Channel = đơn vị dữ liệu (IB nội / EB ngoài) · Job = nhóm channel + 1 chip select</text>
+            <text x="520" y="160" text-anchor="middle" class="dgm-sub" font-size="10">Level 0: sync · 1: async · 2: cả hai</text>
+          </svg>
+          <div class="figure__cap"><b>SPI 3 cấp.</b> Channel → Job (+1 CS, priority, notification) → Sequence (chuỗi job, interruptible).</div>
+        </div>
+
+        <h3>3.1 Khái niệm cốt lõi</h3>
+        <dl class="kv">
+          <dt>Channel</dt><dd>Đơn vị dữ liệu nhỏ nhất. Gắn buffer <strong>IB</strong> (Internal Buffer — nhỏ, nằm trong driver, cho dữ liệu cố định nhỏ) hoặc <strong>EB</strong> (External Buffer — app cấp con trỏ, cho dữ liệu lớn/động). Cấu hình <em>data width</em> (vd 8/16-bit) &amp; <em>transfer start</em> (MSB-first/LSB-first).</dd>
+          <dt>Job</dt><dd>Một nhóm channel truyền tới <em>một thiết bị</em> = <strong>một chip select</strong>; có <strong>priority</strong> &amp; <code>JobNotification</code> riêng. Job là đơn vị mà CS &amp; baud/CPOL/CPHA gắn vào (mỗi thiết bị có timing riêng).</dd>
+          <dt>Sequence</dt><dd>Chuỗi job thực thi theo thứ tự — là <em>đơn vị app yêu cầu truyền</em>. Có thể <strong>interruptible</strong>: cho phép một sequence ưu tiên cao <em>chen</em> giữa các job của sequence đang chạy (sau khi xong job hiện tại).</dd>
+          <dt>Level 0/1/2</dt><dd><strong>0</strong> = chỉ đồng bộ (<code>Spi_SyncTransmit</code> chặn tới xong). <strong>1</strong> = chỉ bất đồng bộ (<code>Spi_AsyncTransmit</code> + notification + <code>Spi_MainFunction_Handling</code>). <strong>2</strong> = cả hai.</dd>
+          <dt>Async mode &amp; MainFunction</dt><dd>Async chạy nền: phần truyền do <code>Spi_MainFunction_Handling</code> (polling) hoặc ngắt đẩy tới (interrupt). <code>Spi_SetAsyncMode(POLLING/INTERRUPT)</code> chọn cơ chế.</dd>
+          <dt>CS / CPOL / CPHA / baud</dt><dd>Driver điều khiển chip select (auto theo job, polarity cấu hình); mỗi job có <strong>baud</strong>, <strong>CPOL</strong> (<code>SpiShiftClockIdleLevel</code>) &amp; <strong>CPHA</strong> (<code>SpiDataShiftEdge</code>) riêng — phải khớp thiết bị (xem 4 mode SPI ở bài <a href="E-protocols.html">E</a>).</dd>
+          <dt>Result / status / cancel</dt><dd><code>Spi_GetSequenceResult</code>/<code>GetJobResult</code>/<code>GetStatus</code>/<code>GetHWUnitStatus</code> (PENDING/OK/FAILED); <code>Spi_Cancel</code> huỷ sequence đang chạy.</dd>
+        </dl>
+        <h3>3.2 API &amp; cấu hình</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>API</th><th>Ý nghĩa</th></tr></thead>
+          <tbody>
+            <tr><td><code>Spi_WriteIB</code> / <code>Spi_ReadIB</code> / <code>Spi_SetupEB</code></td><td>Ghi/đọc IB / gán EB.</td></tr>
+            <tr><td><code>Spi_SyncTransmit(Seq)</code> / <code>Spi_AsyncTransmit(Seq)</code></td><td>Truyền đồng bộ (L0/2) / bất đồng bộ (L1/2).</td></tr>
+            <tr><td><code>Spi_SetAsyncMode</code> / <code>Spi_Cancel</code></td><td>Chọn polling/interrupt / huỷ.</td></tr>
+            <tr><td><code>Spi_GetSequenceResult</code> / <code>GetJobResult</code> / <code>GetHWUnitStatus</code></td><td>Tra kết quả/trạng thái.</td></tr>
+          </tbody>
+        </table></div>
+        <p class="small text-mute"><strong>Cấu hình:</strong> <code>SpiDriver</code> &gt; <code>SpiChannel</code> (BufferType IB/EB, DataWidth, NumberOfBuffers, TransferStart) / <code>SpiJob</code> (<code>SpiCsSelection</code>, <code>SpiCsPolarity</code>, <code>SpiBaudrate</code>, <code>SpiShiftClockIdleLevel</code>[CPOL], <code>SpiDataShiftEdge</code>[CPHA], <code>SpiJobPriority</code>, channel list) / <code>SpiSequence</code> (job list, <code>SpiInterruptibleSequence</code>). Det: <code>SPI_E_UNINIT</code>, <code>SPI_E_PARAM_CHANNEL/JOB/SEQ</code>, <code>SPI_E_SEQ_PENDING/IN_PROCESS</code>. <strong>Bẫy:</strong> CS/timing sai với thiết bị; IB quá nhỏ; priority inversion; external WDG dùng chung SPI.</p>
+
+        <!-- ================= Fls ================= -->
+        <h2>4. Fls Driver (Flash, MCAL)</h2>
+        <p><strong>Vai trò:</strong> driver tầng thấp cho flash on-chip — read/write/erase theo địa chỉ &amp; sector; là đáy của memory stack (bài <a href="B2-memory.html">B2</a>).</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 160" role="img" aria-label="Fls erase before write" xmlns="http://www.w3.org/2000/svg">
+            <text x="20" y="26" class="dgm-label" font-size="11.5" font-weight="800">Một sector (gồm nhiều page)</text>
+            <rect x="20" y="36" width="160" height="34" rx="5" fill="var(--brand-600)"/><text x="100" y="58" text-anchor="middle" class="dgm-inv" font-size="10">page (write)</text>
+            <rect x="184" y="36" width="160" height="34" rx="5" fill="var(--brand-600)"/><text x="264" y="58" text-anchor="middle" class="dgm-inv" font-size="10">page</text>
+            <rect x="348" y="36" width="160" height="34" rx="5" fill="var(--brand-600)"/><text x="428" y="58" text-anchor="middle" class="dgm-inv" font-size="10">page</text>
+            <rect x="512" y="36" width="160" height="34" rx="5" fill="var(--brand-600)"/><text x="592" y="58" text-anchor="middle" class="dgm-inv" font-size="10">page</text>
+            <text x="20" y="104" class="dgm-sub" font-size="10.5">• WRITE: chỉ chuyển bit 1→0, theo PAGE (khối nhỏ)</text>
+            <text x="20" y="124" class="dgm-sub" font-size="10.5">• ERASE: chuyển 0→1, theo cả SECTOR → toàn sector về 0xFF (1)</text>
+            <text x="20" y="144" class="dgm-sub" font-size="10.5">→ muốn ghi lại giá trị mới phải ERASE sector trước (lý do cần Fee/wear-leveling ở trên, bài B2)</text>
+          </svg>
+          <div class="figure__cap"><b>Erase-before-write.</b> Flash chỉ ghi 1→0 (per page); muốn 0→1 phải erase cả sector. Đây là gốc rễ của Fee &amp; wear-leveling.</div>
+        </div>
+
+        <h3>4.1 Khái niệm cốt lõi</h3>
+        <dl class="kv">
+          <dt>Sector vs Page</dt><dd><strong>Erase</strong> theo <em>sector</em> (khối lớn, vd 8–64 KB); <strong>write</strong> theo <em>page</em> (khối nhỏ, vd 8–256 byte). Hai đơn vị khác nhau → quản lý phức tạp hơn RAM.</dd>
+          <dt>Erase-before-write</dt><dd>Flash chỉ chuyển bit <strong>1→0</strong> khi ghi; muốn <strong>0→1</strong> phải <em>erase</em> (đưa cả sector về 0xFF). Nên không ghi đè byte tuỳ ý được — đây là lý do cần Fee (giả lập EEPROM) &amp; wear-leveling ở lớp trên.</dd>
+          <dt>Async job + MainFunction</dt><dd>Ghi/xoá flash <em>chậm</em> (µs–ms), thường <strong>chặn truy cập flash</strong> trong lúc thao tác → API khởi động <em>job</em>, <code>Fls_MainFunction</code> tiến hành từng bước, báo kết quả qua <code>Fls_GetJobResult</code>; không chặn CPU lâu.</dd>
+          <dt>BlankCheck / Compare</dt><dd><code>Fls_BlankCheck</code> (vùng đã erase chưa — toàn 0xFF?), <code>Fls_Compare</code> (so dữ liệu flash với buffer) — kiểm tra toàn vẹn trước/sau ghi.</dd>
+          <dt>ECC</dt><dd>Flash thường có ECC (sửa 1 bit, phát hiện 2 bit). Đọc vùng <em>chưa init/erase đúng</em> có thể gây lỗi ECC. Lỗi ECC không sửa được (double-bit) → thường escalate lên safety.</dd>
+          <dt>Read-while-write / suspend-resume</dt><dd>Khi đang ghi/xoá một bank, một số HW cho phép <strong>đọc bank khác</strong> (read-while-write) hoặc <em>tạm dừng</em> erase để đọc gấp rồi resume — quan trọng để code vẫn chạy khi đang cập nhật NV.</dd>
+          <dt>vs Fee</dt><dd>Fls là driver HW thuần (địa chỉ vật lý). <strong>Fee</strong> (bài B2) nằm trên, biến flash thành “EEPROM logic” (block, giả ghi đè, wear-leveling, garbage collection).</dd>
+        </dl>
+        <h3>4.2 API &amp; cấu hình</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>API</th><th>Ý nghĩa</th></tr></thead>
+          <tbody>
+            <tr><td><code>Fls_Read</code> / <code>Fls_Write</code> / <code>Fls_Erase</code></td><td>Đọc / ghi(page) / xoá(sector) — bất đồng bộ.</td></tr>
+            <tr><td><code>Fls_BlankCheck</code> / <code>Fls_Compare</code></td><td>Kiểm tra đã erase / so dữ liệu.</td></tr>
+            <tr><td><code>Fls_GetStatus</code> / <code>Fls_GetJobResult</code></td><td>Theo dõi job.</td></tr>
+          </tbody>
+        </table></div>
+        <p class="small text-mute"><strong>Cấu hình:</strong> <code>FlsConfigSet</code> &gt; <code>FlsSectorList</code> (<code>FlsSectorSize</code>, <code>FlsNumberOfSectors</code>, <code>FlsPageSize</code>), <code>FlsMaxReadFastMode</code>, <code>FlsCallCycle</code>, <code>FlsJobEndNotification</code>, <code>FlsJobErrorNotification</code>. Det: <code>FLS_E_UNINIT</code>, <code>FLS_E_PARAM_ADDRESS/LENGTH</code>, <code>FLS_E_BUSY</code>, <code>FLS_E_VERIFY_ERASE/WRITE_FAILED</code>. <strong>Bẫy:</strong> erase chặn lâu; ghi không align page; đọc khi đang ghi; ECC vùng chưa erase.</p>
+
+        <!-- ================= Trước -> Nay ================= -->
+        <h2>5. Trước (~2020) → Nay</h2>
+        <div class="evo">
+          <div class="evo__head">🧩 <span>System MCAL: đa lõi, safety, OTA</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>MCU lõi đơn; watchdog đơn giản; flash chủ yếu lưu hiệu chỉnh.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p>MCU <strong>đa lõi/lockstep</strong> + CMU clock monitor + external WDG cho ASIL cao; <strong>WdgM logical supervision</strong> (freedom from interference); flash lớn cho <strong>OTA</strong> (bank A/B, read-while-write khi cập nhật) — gắn UCM/SDV.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> nói được “external WDG qua SPI + WdgM logical supervision + CMU” là bộ ba an toàn cho ASIL D, và flash bank A/B cho OTA — cho thấy bạn hiểu hệ thống.</div>
+        </div>
+
+        <!-- ================= Q&A ================= -->
+        <h2>6. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">Thứ tự init MCU? Vì sao chờ PLL lock &amp; init RAM ECC? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><code>Mcu_Init</code>→<code>Mcu_InitRamSection</code>(ECC)→<code>Mcu_InitClock</code>→chờ <code>GetPllStatus=LOCKED</code>→<code>Mcu_DistributePllClock</code>. Chờ lock vì chuyển sang PLL chưa ổn định → clock sai/treo ngẫu nhiên. Init RAM ECC vì đọc RAM chưa khởi tạo checkbit → lỗi ECC (exception).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Reset reason đọc lúc nào &amp; vì sao?</li><li>CMU làm gì?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Window watchdog &amp; WdgM giám sát những gì? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Window: cửa sổ [min,max] — nuôi quá sớm cũng reset (bắt sai nhịp). <strong>WdgM</strong> giám sát logic qua checkpoint: <em>alive</em> (đếm checkpoint), <em>deadline</em> (thời gian giữa 2 checkpoint), <em>logical</em> (đúng thứ tự control-flow). Chỉ khi mọi giám sát OK mới trigger Wdg. External WDG (qua SPI) độc lập CPU hơn cho ASIL cao.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Logical supervision bắt lỗi gì? (nhảy sai luồng)</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">SPI Handler tổ chức truyền thế nào? IB vs EB? Level 0/1/2? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>Channel</strong>(IB nội/EB ngoài, data width, MSB/LSB)→<strong>Job</strong>(1 CS, priority, notification, CPOL/CPHA/baud riêng)→<strong>Sequence</strong>(chuỗi job, interruptible, là thứ app yêu cầu). <strong>IB</strong>=buffer nhỏ trong driver; <strong>EB</strong>=app cấp (dữ liệu lớn). <strong>L0</strong> sync · <strong>L1</strong> async (+MainFunction) · <strong>L2</strong> cả hai.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Vì sao CPOL/CPHA gắn theo Job?</li><li>Interruptible sequence để làm gì?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Vì sao flash cần erase-before-write? Đọc khi đang ghi xử lý sao? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Flash chỉ ghi 1→0 (per page); muốn 0→1 phải erase cả sector → không ghi đè byte tuỳ ý (lý do cần Fee). Ghi/xoá chậm &amp; chặn flash → dùng async job + <code>Fls_MainFunction</code>. Đọc khi đang ghi: <strong>read-while-write</strong> (bank khác) hoặc <em>suspend-resume</em> erase để đọc gấp.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>ECC vùng chưa erase gây gì?</li><li>Fls khác Fee thế nào?</li></ul></div>
+          </div></div>
+        </div>
+
+        <!-- ================= Cheat-sheet ================= -->
+        <h2>7. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>MCU</h4><ul>
+            <li>OSC/PLL → lock → distribute → prescaler</li>
+            <li>InitRamSection (ECC) trước khi đọc</li>
+            <li>Reset reason (latched) · power mode</li>
+            <li>CMU clock monitor (safety)</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>WDG</h4><ul>
+            <li>Window [min,max] — quá sớm cũng reset</li>
+            <li>OFF/SLOW/FAST · internal vs external(SPI)</li>
+            <li>WdgIf nhiều instance</li>
+            <li>WdgM: alive / deadline / logical</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>SPI</h4><ul>
+            <li>Channel(IB/EB)→Job(CS,prio)→Sequence(interruptible)</li>
+            <li>Level 0 sync / 1 async / 2 cả hai</li>
+            <li>CPOL/CPHA/baud theo Job</li>
+            <li>SetAsyncMode polling/interrupt · Cancel</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Fls</h4><ul>
+            <li>Erase sector · write page · erase-before-write</li>
+            <li>Async job + MainFunction</li>
+            <li>BlankCheck/Compare · ECC</li>
+            <li>Read-while-write / suspend-resume</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>An toàn (nay)</h4><ul>
+            <li>External WDG + WdgM logical + CMU = ASIL cao</li>
+            <li>RefreshPortDirection / ADC limit-check (B1a)</li>
+            <li>Flash bank A/B cho OTA</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Det/test</h4><ul>
+            <li>*_E_UNINIT / PARAM_* / PLL_NOT_LOCKED</li>
+            <li>Stub register + fault injection</li>
+            <li>VERIFY_ERASE/WRITE_FAILED (Fls)</li>
+            <li>Init order là câu hỏi kinh điển</li>
+          </ul></div>
+        </div>
+
+        <!-- ================= Sources ================= -->
+        <h2>8. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li>AUTOSAR Classic SWS — <strong>Mcu Driver</strong>, <strong>Wdg Driver</strong> + <strong>WdgM</strong> (Watchdog Manager), <strong>Spi Handler/Driver</strong>, <strong>Fls Driver</strong>.</li>
+          <li>AUTOSAR Compendium — <a href="https://www.ar-compendium.com/part-ii-basic-software-mcal/" target="_blank" rel="noopener">BSW/MCAL grouping</a>; Embitel — <a href="https://www.embitel.com/blog/embedded-blog/what-is-autosar-mcal-software-architecture" target="_blank" rel="noopener">AUTOSAR MCAL</a>.</li>
+          <li>Renesas RH850 HW User's Manual (clock/PLL/CMU/flash) theo part cụ thể.</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi giải thích được init MCU (PLL lock/RAM ECC), WdgM 3 loại supervision, SPI 3 cấp, và erase-before-write.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">
+        Chủ đề B1c · MCAL System — MCU/WDG/SPI/Fls — Interview Prep
+      </footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../assets/js/app.js?v=4"></script>
+</body>
+</html>

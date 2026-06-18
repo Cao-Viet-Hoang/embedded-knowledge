@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A · Câu chuyện sự nghiệp & STAR — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/style.css?v=4" />
+</head>
+<body data-page="A" data-root="../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">A</span>
+            <span class="badge badge--must">Must-tell</span>
+            <span class="chip">Vòng 1 · Phải kể được</span>
+          </div>
+          <h1>Câu chuyện sự nghiệp &amp; STAR</h1>
+          <p class="lead">Phần mở đầu mọi buổi phỏng vấn — quyết định ấn tượng đầu tiên. Mục tiêu: kể trơn tru 3 giai đoạn sự nghiệp với một mạch xuyên suốt là <em>“biến công việc thủ công thành automation”</em>, và có sẵn bộ STAR cho câu hỏi behavioral.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> 🔴 Cao nhất</span>
+            <span><b>Dạng câu hỏi:</b> Behavioral + Self-intro</span>
+            <span><b>Cần thuộc:</b> Pitch 90s + 6 câu chuyện STAR</span>
+          </div>
+        </div>
+
+        <div class="callout callout--note">
+          <div class="callout__icon">📌</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Nguồn nội dung:</strong> bài này lấy <em>đúng theo CV của bạn</em> (<code>CV_Cao_Viet_Hoang</code>) — các mốc thời gian, vai trò, con số (1–2 tháng → 2–3 ngày), giải thưởng đều khớp hồ sơ. Khi luyện, hãy thay bằng lời kể tự nhiên của chính bạn, đừng học vẹt.</p>
+          </div>
+        </div>
+
+        <div class="callout callout--key">
+          <div class="callout__icon">🎯</div>
+          <div class="callout__body">
+            <div class="callout__title">Sau bài này bạn sẽ</div>
+            <ul class="mb-0">
+              <li>Đọc trôi <strong>pitch 90 giây</strong> (bản tiếng Anh + tiếng Việt) và có sẵn bản <strong>30 giây</strong> rút gọn.</li>
+              <li>Giải thích được <strong>logic chuyển đổi</strong> Classic → Adaptive → AI Platform.</li>
+              <li>Kể 6 câu chuyện <strong>STAR</strong> có số liệu, có vai trò cá nhân rõ ràng.</li>
+              <li>Trả lời gọn “vì sao rời Bosch / vì sao muốn vị trí mới” và có câu hỏi ngược.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- ============== 1. STAR là gì ============== -->
+        <h2>1. Khung STAR — vũ khí trả lời behavioral</h2>
+        <p>Mọi câu hỏi dạng <em>“Kể về một lần bạn…”</em> nên trả lời theo 4 bước. Giữ tỉ lệ thời gian: <strong>S+T ngắn (~20%) → A dài nhất (~60%) → R có số liệu (~20%)</strong>.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 150" role="img" aria-label="Cấu trúc STAR và ngân sách thời gian" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="34" width="80" height="58" rx="7" fill="var(--brand-400)"/>
+            <text x="60" y="60" text-anchor="middle" class="dgm-inv" font-size="18" font-weight="800">S</text>
+            <text x="60" y="80" text-anchor="middle" class="dgm-inv-sub" font-size="10">Situation</text>
+            <rect x="104" y="34" width="80" height="58" rx="7" fill="var(--brand-600)"/>
+            <text x="144" y="60" text-anchor="middle" class="dgm-inv" font-size="18" font-weight="800">T</text>
+            <text x="144" y="80" text-anchor="middle" class="dgm-inv-sub" font-size="10">Task</text>
+            <rect x="188" y="34" width="352" height="58" rx="7" fill="var(--brand-800)"/>
+            <text x="364" y="58" text-anchor="middle" class="dgm-inv" font-size="18" font-weight="800">A — Action</text>
+            <text x="364" y="80" text-anchor="middle" class="dgm-inv-sub" font-size="10.5">việc CỦA BẠN, từng bước, có chiều sâu kỹ thuật (chiếm nhiều thời gian nhất)</text>
+            <rect x="544" y="34" width="156" height="58" rx="7" fill="var(--ok)"/>
+            <text x="622" y="58" text-anchor="middle" class="dgm-inv" font-size="18" font-weight="800">R — Result</text>
+            <text x="622" y="80" text-anchor="middle" class="dgm-inv-sub" font-size="10">kết quả + SỐ LIỆU + bài học</text>
+            <text x="20" y="20" class="dgm-sub" font-size="11">⟵ Bối cảnh (ngắn) ⟶</text>
+            <text x="364" y="118" text-anchor="middle" class="dgm-sub" font-size="11">Tỉ lệ thời gian gợi ý:  S+T ≈ 20%   ·   A ≈ 60%   ·   R ≈ 20%</text>
+          </svg>
+          <div class="figure__cap"><b>Ngân sách thời gian của một câu STAR.</b> Người nghe quên phần bối cảnh; họ nhớ <b>bạn đã làm gì (A)</b> và <b>kết quả đo được (R)</b> — nên dồn thời lượng vào A &amp; R.</div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Chữ</th><th>Ý nghĩa</th><th>Trả lời câu hỏi</th><th>Lỗi thường gặp</th></tr></thead>
+            <tbody>
+              <tr><td><strong>S</strong> — Situation</td><td>Bối cảnh, dự án, ràng buộc</td><td>“Lúc đó đang làm gì?”</td><td>Dài dòng, kể lể nền</td></tr>
+              <tr><td><strong>T</strong> — Task</td><td>Nhiệm vụ / mục tiêu của <em>bạn</em></td><td>“Bạn cần đạt gì?”</td><td>Nói “team” thay vì “tôi”</td></tr>
+              <tr><td><strong>A</strong> — Action</td><td>Việc <em>bạn</em> đã làm, từng bước</td><td>“Bạn đã làm gì?”</td><td>Mơ hồ, thiếu kỹ thuật</td></tr>
+              <tr><td><strong>R</strong> — Result</td><td>Kết quả định lượng + bài học</td><td>“Kết quả ra sao?”</td><td>Không có số liệu</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout--tip">
+          <div class="callout__icon">💡</div>
+          <div class="callout__body">
+            <p class="mb-0">Với người nhiều kinh nghiệm, interviewer test <strong>độ thật</strong>. Luôn nói “<em>tôi</em> đã làm…”, kèm con số (tháng→ngày, %, số module, số target) và một <strong>bài học</strong> ở cuối để cho thấy bạn biết phản tư.</p>
+          </div>
+        </div>
+
+        <!-- ============== 2. Tell me about yourself ============== -->
+        <h2>2. “Tell me about yourself” — pitch 90 giây</h2>
+        <p>Cấu trúc 4 nhịp: <strong>Hiện tại → Hành trình (3 giai đoạn) → Điểm khác biệt → Vì sao ngồi đây</strong>. Mạch xuyên suốt: <em>turning manual engineering work into scalable automation</em>.</p>
+
+        <div class="card card--pad-lg">
+          <div class="flashcard__tag">Bản tiếng Anh — đọc ~90 giây</div>
+          <p>“I'm an embedded software engineer with nearly <strong>4 years at Bosch</strong>, focused on <strong>AUTOSAR test &amp; integration</strong>. My career has three chapters, and the thread connecting them is turning manual engineering work into automation.</p>
+          <p><strong>First</strong>, I started in <strong>AUTOSAR Classic</strong> — doing unit and component testing for MCAL drivers on RH850, and integrating the full BSW stack as a CUBAS integrator using TRACE32, under ASPICE traceability.</p>
+          <p><strong>Then</strong> I moved to <strong>AUTOSAR Adaptive</strong> as a system test engineer and automation lead. The highlight there: I led an automation initiative for the SENT validation workflow that cut a full test cycle from about <strong>1–2 months down to 2–3 days</strong>.</p>
+          <p><strong>Most recently</strong>, I took that same automation mindset into <strong>AI platform engineering</strong> — building an internal LLM platform with RAG pipelines and agentic workflows to automate repetitive engineering tasks.</p>
+          <p class="mb-0">So I combine deep <strong>embedded/AUTOSAR</strong> roots with a strong <strong>automation and AI</strong> edge — and that's exactly the kind of hybrid value I'd like to bring to this role.”</p>
+        </div>
+
+        <div class="accordion">
+          <div class="accordion__item">
+            <button class="accordion__head">🇻🇳 Bản tiếng Việt (để nắm ý, tự dịch lại khi nói) <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p>“Tôi là kỹ sư phần mềm nhúng, gần <strong>4 năm tại Bosch</strong>, chuyên về <strong>kiểm thử &amp; tích hợp AUTOSAR</strong>. Sự nghiệp của tôi có 3 chương, và sợi chỉ xuyên suốt là biến công việc thủ công thành automation.</p>
+              <p><strong>Giai đoạn đầu</strong>: AUTOSAR Classic — unit/component test cho driver MCAL trên RH850, và tích hợp toàn bộ BSW stack với vai trò CUBAS integrator, dùng TRACE32, dưới chuẩn truy vết ASPICE.</p>
+              <p><strong>Giai đoạn hai</strong>: chuyển sang AUTOSAR Adaptive, làm system test và lead automation. Điểm nhấn: tôi dẫn dắt sáng kiến automation cho quy trình kiểm thử SENT, rút một chu kỳ test từ <strong>1–2 tháng xuống 2–3 ngày</strong>.</p>
+              <p><strong>Hiện tại</strong>: mang đúng tư duy automation đó sang mảng AI platform — xây nền tảng LLM nội bộ với RAG và agentic workflow để tự động hoá các tác vụ kỹ thuật lặp đi lặp lại.</p>
+              <p class="mb-0">Tôi kết hợp nền tảng <strong>nhúng/AUTOSAR</strong> sâu với thế mạnh <strong>automation &amp; AI</strong> — đúng kiểu giá trị hybrid tôi muốn mang tới vị trí này.”</p>
+            </div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">⚡ Bản 30 giây (khi bị giục hoặc networking) <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p class="mb-0">“Kỹ sư embedded gần 4 năm ở Bosch, chuyên test &amp; integration AUTOSAR Classic/Adaptive. Điểm mạnh của tôi là <strong>biến việc thủ công thành automation</strong> — ví dụ rõ nhất là rút chu kỳ test SENT từ ~1–2 tháng xuống 2–3 ngày. Gần đây tôi mở rộng sang AI platform (RAG, agentic) cho công cụ kỹ thuật nội bộ. Tôi tìm vai trò hybrid embedded + AI để tạo tác động trực tiếp.”</p>
+            </div></div>
+          </div>
+        </div>
+
+        <div class="callout callout--warn">
+          <div class="callout__icon">⏱️</div>
+          <div class="callout__body">
+            <div class="callout__title">Luật của pitch</div>
+            <ul class="mb-0">
+              <li>Đừng kể tuổi thơ/đại học. Bắt đầu từ “hiện tại / Bosch”.</li>
+              <li>Một con số duy nhất phải bật ra: <strong>1–2 tháng → 2–3 ngày</strong>.</li>
+              <li>Kết bằng câu nối về vị trí ứng tuyển (call-back), không lan man.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- ============== 3. Logic chuyển đổi ============== -->
+        <h2>3. Logic chuyển đổi 3 giai đoạn (mạch automation)</h2>
+        <p>Interviewer hay hỏi “<em>vì sao đang Classic lại nhảy sang Adaptive rồi sang AI?</em>” — nghe như “nhảy việc”. Phải trả lời sao cho thấy đó là <strong>một mạch logic, không phải ngẫu nhiên</strong>.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 218" role="img" aria-label="Timeline 3 giai đoạn sự nghiệp" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="arT" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="18" y="14" width="212" height="124" rx="9" fill="var(--brand-800)"/>
+            <text x="124" y="40" text-anchor="middle" class="dgm-inv" font-size="13" font-weight="800">AUTOSAR Classic</text>
+            <text x="124" y="58" text-anchor="middle" class="dgm-inv-sub" font-size="10">Test &amp; Integration</text>
+            <text x="124" y="82" text-anchor="middle" class="dgm-mono dgm-inv-sub" font-size="10">Sep 2022 – May 2024</text>
+            <text x="124" y="104" text-anchor="middle" class="dgm-inv-sub" font-size="10">MCAL test · CUBAS BSW</text>
+            <text x="124" y="120" text-anchor="middle" class="dgm-inv-sub" font-size="10">TRACE32 · ASPICE</text>
+            <line x1="232" y1="76" x2="240" y2="76" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arT)"/>
+            <rect x="242" y="14" width="212" height="124" rx="9" fill="var(--brand-600)"/>
+            <text x="348" y="40" text-anchor="middle" class="dgm-inv" font-size="13" font-weight="800">AUTOSAR Adaptive</text>
+            <text x="348" y="58" text-anchor="middle" class="dgm-inv-sub" font-size="10">System Test &amp; Automation Lead</text>
+            <text x="348" y="82" text-anchor="middle" class="dgm-mono dgm-inv-sub" font-size="10">May 2024 – Apr 2025</text>
+            <text x="348" y="104" text-anchor="middle" class="dgm-inv-sub" font-size="10">ARA stack · framework</text>
+            <text x="348" y="120" text-anchor="middle" class="dgm-inv-sub" font-size="10">SENT: 1–2 tháng → 2–3 ngày</text>
+            <line x1="456" y1="76" x2="464" y2="76" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arT)"/>
+            <rect x="466" y="14" width="212" height="124" rx="9" fill="var(--core)"/>
+            <text x="572" y="40" text-anchor="middle" class="dgm-inv" font-size="13" font-weight="800">AI Platform Engineer</text>
+            <text x="572" y="58" text-anchor="middle" class="dgm-inv-sub" font-size="10">Internal LLM platform</text>
+            <text x="572" y="82" text-anchor="middle" class="dgm-mono dgm-inv-sub" font-size="10">Apr 2025 – nay</text>
+            <text x="572" y="104" text-anchor="middle" class="dgm-inv-sub" font-size="10">RAG · agentic · UI/UX</text>
+            <text x="572" y="120" text-anchor="middle" class="dgm-inv-sub" font-size="10">key/cost governance</text>
+            <rect x="18" y="158" width="660" height="44" rx="9" fill="var(--surface-2)" class="dgm-layer"/>
+            <text x="348" y="178" text-anchor="middle" class="dgm-label" font-size="12" font-weight="700">Sợi chỉ xuyên suốt: biến công việc thủ công → automation</text>
+            <text x="348" y="194" text-anchor="middle" class="dgm-sub" font-size="10.5">test thủ công  →  framework + CI/CD  →  tự động hoá công việc tri thức bằng AI</text>
+          </svg>
+          <div class="figure__cap"><b>Một mạch, không phải nhảy việc.</b> Mỗi bước là leo lên một tầng trừu tượng cao hơn của <em>cùng một bài toán</em>: giảm công thủ công, tăng năng suất kỹ sư.</div>
+        </div>
+
+        <ul class="steps">
+          <li>
+            <h4>Classic (Sep 2022 – May 2024) — Xây nền “làm thật”</h4>
+            <p class="mb-0">Test MCAL + integrate BSW trên target thật (RH850, TRACE32). Đây là lúc tôi <strong>chạm tận tay</strong> manual testing tốn công → nhìn ra cơ hội automation.</p>
+          </li>
+          <li>
+            <h4>Adaptive + Automation Lead (May 2024 – Apr 2025) — Biến nhận ra thành tác động</h4>
+            <p class="mb-0">Lên system test cho ARA stack, và <strong>dẫn dắt</strong> automation SENT (1–2 tháng → 2–3 ngày). Cùng tư duy “bỏ thủ công”, nhưng giờ ở quy mô framework + CI/CD.</p>
+          </li>
+          <li>
+            <h4>AI Platform (Apr 2025 – nay) — Automation ở tầng tri thức</h4>
+            <p class="mb-0">Vẫn là automation, nhưng đối tượng là <strong>công việc tri thức</strong> (đọc ticket, trace requirement) bằng RAG + agentic AI. Đây là bước tiến tự nhiên của cùng một mục tiêu: tăng năng suất kỹ sư.</p>
+          </li>
+        </ul>
+
+        <div class="callout callout--interview">
+          <div class="callout__icon">🗣️</div>
+          <div class="callout__body">
+            <div class="callout__title">Câu chốt nên thuộc</div>
+            <p class="mb-0">“Tôi không đổi nghề — tôi <strong>leo lên các tầng trừu tượng của cùng một bài toán</strong>: từ test thủ công, lên framework automation, rồi lên tự động hoá công việc tri thức bằng AI. Embedded vẫn là gốc, automation là phương pháp xuyên suốt.”</p>
+          </div>
+        </div>
+
+        <!-- ============== 4. Bộ STAR ============== -->
+        <h2>4. Bộ 6 câu chuyện STAR (soạn sẵn)</h2>
+        <p>Bấm vào từng câu hỏi để xem khung trả lời. Mỗi câu chuyện có thể tái sử dụng cho nhiều câu hỏi khác nhau — nắm <em>lõi</em>, đừng học vẹt.</p>
+
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+
+        <!-- STAR 1 -->
+        <div class="qa">
+          <div class="qa__q">Thử thách kỹ thuật lớn nhất của bạn? <span class="qa__lv qa__lv--experience">STAR</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="text-mute small">Câu chuyện: <strong>Debug lỗi timing SENT trên ST &amp; Infineon</strong></p>
+            <dl class="kv">
+              <dt>S</dt><dd>Đang integrate/test SENT stack; xuất hiện lỗi sai lệch tín hiệu &amp; timing chỉ trên một số target ST/Infineon, không tái hiện ổn định.</dd>
+              <dt>T</dt><dd>Tôi phải tìm ra gốc rễ lỗi nằm ở phần cứng hay phần mềm, và chứng minh được bằng bằng chứng đo đạc.</dd>
+              <dt>A</dt><dd>Dùng <strong>UDE Debugger</strong> bắt timing ở mức protocol (tick time, nibble, khung fast/slow); đối chiếu với reference manual; cô lập biến bằng cách so cùng software trên 2 target; phân tích tương tác HW/SW để xác định điểm lệch.</dd>
+              <dt>R</dt><dd>Khoanh đúng nguyên nhân ở tầng timing và sửa hành vi tín hiệu; rút ra checklist debug protocol-level dùng lại cho team. <em>Bài học:</em> với lỗi “khó tái hiện”, phải đo ở tầng thấp nhất thay vì đoán.</dd>
+            </dl>
+            <p class="small mb-0"><strong>Dùng lại cho:</strong> “lỗi khó nhất”, “debug như thế nào”, “khi nào không bỏ cuộc”.</p>
+          </div></div>
+        </div>
+
+        <!-- STAR 2 -->
+        <div class="qa">
+          <div class="qa__q">Một lần bạn dẫn dắt team/dự án? <span class="qa__lv qa__lv--experience">STAR</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="text-mute small">Câu chuyện: <strong>Sáng kiến automation SENT</strong> (xương sống của hồ sơ)</p>
+            <dl class="kv">
+              <dt>S</dt><dd>Quy trình validation SENT làm thủ công, tốn ~1–2 tháng mỗi chu kỳ, dễ sai, khó lặp lại.</dd>
+              <dt>T</dt><dd>Tôi nhận vai trò lead: lập kế hoạch, chia task, và đưa team agile tới sản phẩm automation chạy được.</dd>
+              <dt>A</dt><dd>Phân rã bài toán; thiết kế <strong>framework automation</strong> tái sử dụng cho test/dev/doc; tích hợp <strong>Azure Pipelines + Conan</strong> cho CI/CD; điều phối team theo agile, theo dõi tiến độ, gỡ vướng kỹ thuật.</dd>
+              <dt>R</dt><dd>Chu kỳ test từ <strong>1–2 tháng → 2–3 ngày</strong>; framework được ARA system team adopt; nhận giải thưởng innovation nội bộ. <em>Bài học:</em> automation thắng không nhờ code giỏi mà nhờ <strong>chia nhỏ đúng</strong> và đưa cả team theo.</dd>
+            </dl>
+            <p class="small mb-0"><strong>Dùng lại cho:</strong> leadership, “thành tựu tự hào nhất”, “cải tiến quy trình”, “làm việc nhóm”.</p>
+          </div></div>
+        </div>
+
+        <!-- STAR 3 -->
+        <div class="qa">
+          <div class="qa__q">Thành tựu bạn tự hào nhất? <span class="qa__lv qa__lv--experience">STAR</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="text-mute small">Câu chuyện: <strong>Tác động đo được + được ghi nhận</strong></p>
+            <dl class="kv">
+              <dt>S</dt><dd>Cùng bối cảnh SENT thủ công, nhưng góc nhìn “tác động &amp; ghi nhận”.</dd>
+              <dt>T</dt><dd>Không chỉ chạy được mà phải tạo ra giá trị đo được và được tổ chức công nhận.</dd>
+              <dt>A</dt><dd>Đưa automation thành chuẩn làm việc của team; chia sẻ lại qua training để người khác dùng được.</dd>
+              <dt>R</dt><dd>Rút mạnh thời gian chu kỳ test (1–2 tháng → 2–3 ngày); nhận <strong>Best/Outstanding Performance</strong> hằng năm (một lần cấp công ty) và nhiều giải innovation/automation tool. <em>Bài học:</em> giá trị thật là khi người khác tiếp tục dùng sau khi mình rời đi.</dd>
+            </dl>
+            <p class="small mb-0"><strong>Mẹo:</strong> luôn quy ra con số và “ai được hưởng lợi”.</p>
+          </div></div>
+        </div>
+
+        <!-- STAR 4 -->
+        <div class="qa">
+          <div class="qa__q">Một lần bất đồng với stakeholder? <span class="qa__lv qa__lv--experience">STAR</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="text-mute small">Câu chuyện: <strong>Vai trò integration hub</strong></p>
+            <dl class="kv">
+              <dt>S</dt><dd>Là CUBAS integrator, tôi đứng giữa nhiều team phát triển BSW component với interface/kỳ vọng khác nhau, deadline chung.</dd>
+              <dt>T</dt><dd>Phải dung hoà các bên để interface khớp và tích hợp đúng hạn, dù quan điểm kỹ thuật xung đột.</dd>
+              <dt>A</dt><dd>Đưa tranh luận về <strong>bằng chứng kỹ thuật</strong> (log TRACE32, requirement, ASPICE traceability) thay vì ý kiến; làm rõ ảnh hưởng tới integration; đề xuất phương án dung hoà và nêu trade-off minh bạch.</dd>
+              <dt>R</dt><dd>Các bên đồng thuận trên dữ liệu, integration về đúng tiến độ. <em>Bài học:</em> ở vai trò hub, dữ liệu khách quan dập tắt tranh cãi nhanh hơn tranh luận quan điểm.</dd>
+            </dl>
+            <p class="small mb-0"><strong>Dùng lại cho:</strong> conflict, giao tiếp cross-team, thuyết phục.</p>
+          </div></div>
+        </div>
+
+        <!-- STAR 5 -->
+        <div class="qa">
+          <div class="qa__q">Một lần bạn học công nghệ mới rất nhanh? <span class="qa__lv qa__lv--experience">STAR</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="text-mute small">Câu chuyện: <strong>Nhảy Classic → Adaptive, rồi → AI</strong></p>
+            <dl class="kv">
+              <dt>S</dt><dd>Hai lần chuyển miền lớn: từ signal-oriented (Classic) sang service-oriented (Adaptive ARA), rồi sang AI/LLM platform.</dd>
+              <dt>T</dt><dd>Phải đóng góp được trong thời gian ngắn dù miền kiến thức mới.</dd>
+              <dt>A</dt><dd>Học theo kiểu “bắc cầu từ cái đã biết”: ánh xạ khái niệm Classic↔Adaptive (signal↔service, COM↔ara::com); với AI thì học bằng cách build hệ thật (RAG, agent) thay vì chỉ đọc.</dd>
+              <dt>R</dt><dd>Lên được system test ARA trên nhiều target (R-Car/QNX/Linux); và đang vận hành AI platform thật. <em>Bài học:</em> học nhanh nhất bằng cách giao một deliverable thật và bắc cầu từ nền cũ.</dd>
+            </dl>
+          </div></div>
+        </div>
+
+        <!-- STAR 6 -->
+        <div class="qa">
+          <div class="qa__q">Một lần thất bại / mắc lỗi? <span class="qa__lv qa__lv--experience">STAR</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="text-mute small">Mẫu an toàn (chọn lỗi kỹ thuật, không đổ cho người khác)</p>
+            <dl class="kv">
+              <dt>S</dt><dd>Giai đoạn đầu automation, tôi tối ưu tốc độ chạy test nhưng coi nhẹ độ ổn định môi trường.</dd>
+              <dt>T</dt><dd>Cần pipeline chạy nhanh <em>và</em> ổn định để team tin dùng.</dd>
+              <dt>A</dt><dd>Sau vài lần pipeline “flaky”, tôi dừng lại chuẩn hoá môi trường (Conan để cố định dependency), thêm cơ chế retry/log rõ ràng, tách test phụ thuộc hardware.</dd>
+              <dt>R</dt><dd>Pipeline ổn định, team mới thật sự adopt. <em>Bài học:</em> với automation, <strong>độ tin cậy quan trọng hơn tốc độ</strong> — tool không ổn định thì không ai dùng.</dd>
+            </dl>
+          </div></div>
+        </div>
+
+        <!-- ============== 5. Why leave / why join ============== -->
+        <h2>5. “Vì sao rời Bosch / vì sao muốn vị trí này?”</h2>
+        <div class="grid grid-2">
+          <div class="card">
+            <h4 class="mt-0">Vì sao rời (frame tích cực)</h4>
+            <p class="text-soft mb-0">“Tôi rất biết ơn 4 năm ở Bosch — nó cho tôi nền embedded/AUTOSAR vững và cơ hội dẫn dắt automation. Tôi tìm vị trí mới để <strong>kết hợp cả hai thế mạnh embedded và AI</strong> ở quy mô/sản phẩm mà tôi có thể tạo tác động trực tiếp hơn.” <em>Không chê công ty cũ.</em></p>
+          </div>
+          <div class="card">
+            <h4 class="mt-0">Vì sao vị trí này</h4>
+            <p class="text-soft mb-0">Nối <strong>nhu cầu của JD</strong> với 1–2 thế mạnh cụ thể của bạn (vd: “vị trí cần test automation cho embedded — đúng thứ tôi đã làm giảm 1–2 tháng xuống 2–3 ngày”). Cho thấy bạn đã đọc kỹ JD.</p>
+          </div>
+        </div>
+
+        <!-- ============== 6. Reverse questions ============== -->
+        <h2>6. Câu hỏi ngược cho interviewer</h2>
+        <p>Luôn chuẩn bị 3–4 câu. Hỏi tốt = thể hiện sự nghiêm túc và trình độ.</p>
+        <div class="grid grid-2">
+          <div class="card">
+            <h4 class="mt-0">Về công việc</h4>
+            <ul class="mb-0 small">
+              <li>Trong 6 tháng đầu, thành công ở vị trí này trông như thế nào?</li>
+              <li>Thử thách kỹ thuật lớn nhất team đang đối mặt là gì?</li>
+              <li>Quy trình test/CI hiện tại của team ra sao — đâu là điểm đau?</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 class="mt-0">Về định hướng</h4>
+            <ul class="mb-0 small">
+              <li>Team nhìn nhận vai trò của AI/automation trong embedded thế nào?</li>
+              <li>Lộ trình phát triển kỹ thuật (không lên quản lý) ra sao?</li>
+              <li>Điều gì khiến người giỏi ở lại team này?</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- ============== 7. Self-test ============== -->
+        <h2>7. Tự kiểm tra (3 cấp)</h2>
+        <div class="grid grid-3">
+          <div class="flashcard"><div class="flashcard__inner">
+            <div class="flashcard__face flashcard__face--front">
+              <div class="flashcard__tag">Cấp 1 · Định nghĩa</div>
+              <div class="flashcard__q">STAR gồm những gì và tỉ lệ thời gian lý tưởng?</div>
+              <div class="flashcard__hint">bấm để lật</div>
+            </div>
+            <div class="flashcard__face flashcard__face--back">
+              <p class="mb-0">Situation, Task, Action, Result. Tỉ lệ ~20/—/60/20: A dài nhất, R phải có số.</p>
+            </div>
+          </div></div>
+
+          <div class="flashcard"><div class="flashcard__inner">
+            <div class="flashcard__face flashcard__face--front">
+              <div class="flashcard__tag">Cấp 2 · Áp dụng</div>
+              <div class="flashcard__q">Một câu nối logic 3 giai đoạn sự nghiệp?</div>
+              <div class="flashcard__hint">bấm để lật</div>
+            </div>
+            <div class="flashcard__face flashcard__face--back">
+              <p class="mb-0">“Tôi leo các tầng trừu tượng của cùng bài toán automation: test thủ công → framework → tự động hoá tri thức bằng AI.”</p>
+            </div>
+          </div></div>
+
+          <div class="flashcard"><div class="flashcard__inner">
+            <div class="flashcard__face flashcard__face--front">
+              <div class="flashcard__tag">Cấp 3 · Kinh nghiệm</div>
+              <div class="flashcard__q">Con số “đắt” nhất của bạn là gì, kể trong 15 giây?</div>
+              <div class="flashcard__hint">bấm để lật</div>
+            </div>
+            <div class="flashcard__face flashcard__face--back">
+              <p class="mb-0">SENT validation: từ ~1–2 tháng thủ công xuống 2–3 ngày nhờ framework automation + CI/CD, được team adopt.</p>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="callout callout--danger">
+          <div class="callout__icon">🚩</div>
+          <div class="callout__body">
+            <div class="callout__title">Bẫy cần tránh</div>
+            <ul class="mb-0">
+              <li>Kể “chúng tôi” suốt → interviewer không thấy <em>bạn</em> làm gì.</li>
+              <li>Pitch dài quá 2 phút → mất điểm ngay câu đầu.</li>
+              <li>Chê công ty cũ / đồng nghiệp khi nói “vì sao rời”.</li>
+              <li>Không có con số trong phần Result.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- ============== 8. Cheat-sheet ============== -->
+        <h2>8. Cheat-sheet 1 trang (liếc trước khi vào phòng)</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>Pitch 90s — 4 nhịp</h4><ul>
+            <li>Hiện tại: embedded ~4 năm Bosch, AUTOSAR test &amp; integration</li>
+            <li>Hành trình: Classic → Adaptive → AI Platform</li>
+            <li>Khác biệt: hybrid embedded + automation/AI</li>
+            <li>Call-back: giá trị hybrid cho vị trí này</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Con số phải bật ra</h4><ul>
+            <li><strong>SENT: 1–2 tháng → 2–3 ngày</strong></li>
+            <li>~4 năm Bosch, 3 giai đoạn</li>
+            <li>Best/Outstanding Performance hằng năm (1 lần cấp công ty)</li>
+            <li>Nhiều giải innovation/automation tool</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Mạch logic 3 giai đoạn</h4><ul>
+            <li>Classic: test MCAL, CUBAS BSW, TRACE32</li>
+            <li>Adaptive: ARA system test + lead automation SENT</li>
+            <li>AI: LLM platform, RAG, agentic, governance</li>
+            <li>Chốt: “leo tầng trừu tượng của cùng bài toán automation”</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>6 STAR (gọi tên là nhớ)</h4><ul>
+            <li>Thử thách: debug timing SENT (UDE)</li>
+            <li>Leadership: automation SENT</li>
+            <li>Tự hào: tác động + ghi nhận</li>
+            <li>Conflict: integration hub (dữ liệu)</li>
+            <li>Học nhanh: bắc cầu Classic→Adaptive→AI</li>
+            <li>Thất bại: pipeline flaky → ưu tiên độ tin cậy</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Why leave / why join</h4><ul>
+            <li>Rời: biết ơn Bosch, muốn kết hợp embedded + AI, tác động trực tiếp hơn</li>
+            <li>Không chê công ty cũ</li>
+            <li>Join: nối JD ↔ thế mạnh cụ thể của mình</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Câu hỏi ngược (chọn 3)</h4><ul>
+            <li>Thành công 6 tháng đầu trông thế nào?</li>
+            <li>Thử thách kỹ thuật lớn nhất của team?</li>
+            <li>Vai trò AI/automation trong embedded của team?</li>
+          </ul></div>
+        </div>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi bạn đã kể trôi pitch + 6 STAR.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">
+        Chủ đề A · Câu chuyện sự nghiệp &amp; STAR — Interview Prep
+      </footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../assets/js/app.js?v=4"></script>
+</body>
+</html>

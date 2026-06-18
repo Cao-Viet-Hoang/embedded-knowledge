@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D · SENT Automation Case Study — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/style.css?v=4" />
+</head>
+<body data-page="D" data-root="../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">D</span>
+            <span class="badge badge--must">Must-tell</span>
+            <span class="chip">Vòng 1 · Phải kể được</span>
+          </div>
+          <h1>SENT Automation — Case Study</h1>
+          <p class="lead">Thành tựu “đắt” nhất của bạn: rút một chu kỳ kiểm thử SENT từ <strong>~1–2 tháng thủ công xuống 2–3 ngày</strong>. Hãy chuẩn bị như một bài thuyết trình ngắn — luyện kể 3 phiên bản: <em>1 phút / 3 phút / sâu kỹ thuật</em>. Bài này cũng nạp đủ <strong>SENT ở mức kỹ thuật</strong> để bạn không đuối khi bị đào.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> 🔴 Cao nhất</span>
+            <span><b>Vai trò:</b> Automation Lead</span>
+            <span><b>Kết quả:</b> 1–2 tháng → 2–3 ngày</span>
+          </div>
+        </div>
+
+        <div class="callout callout--note">
+          <div class="callout__icon">📌</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Nguồn nội dung:</strong> phần <em>case study</em> (vai trò, con số, công cụ) lấy đúng theo CV của bạn. Phần <em>kỹ thuật SENT</em> đối chiếu chuẩn <strong>SAE J2716</strong> và tài liệu nhà sản xuất (xem mục “Nguồn tham khảo” cuối bài) — không suy diễn.</p>
+          </div>
+        </div>
+
+        <div class="callout callout--interview">
+          <div class="callout__icon">🎤</div>
+          <div class="callout__body">
+            <div class="callout__title">Vì sao câu chuyện này quan trọng nhất</div>
+            <p class="mb-0">Nó chứng minh đồng thời: <strong>năng lực kỹ thuật</strong> (SENT, framework, CI/CD), <strong>leadership</strong> (lead team agile), và <strong>tư duy tác động</strong> (con số rõ ràng). Đây là câu trả lời “đa năng” cho rất nhiều câu hỏi behavioral lẫn technical.</p>
+          </div>
+        </div>
+
+        <!-- 1. SENT nền tảng đủ để kể -->
+        <h2>1. SENT là gì (đủ sâu để bảo vệ)</h2>
+        <p><strong>SENT</strong> (Single Edge Nibble Transmission, chuẩn <strong>SAE J2716</strong>) là giao thức <strong>một chiều</strong>, <strong>point-to-point</strong>, sensor → ECU, không có địa chỉ và không có clock line. Dùng phổ biến cho cảm biến áp suất, vị trí (throttle/pedal), lưu lượng khí. Dữ liệu được mã hoá bằng <strong>khoảng thời gian giữa hai falling edge</strong> (đo bằng số <em>tick</em>) — đây là lý do SENT cực nhạy với jitter timing.</p>
+
+        <div class="callout callout--key">
+          <div class="callout__icon">🔌</div>
+          <div class="callout__body">
+            <div class="callout__title">Giao diện vật lý (3 dây)</div>
+            <p class="mb-0">SENT là giao diện điện áp 1 chiều, 3 dây: <strong>SIGNAL</strong> (low &lt; 0.5 V, high &gt; 4.1 V), <strong>VCC 5 V</strong>, <strong>GND</strong>. Vì không có clock chung, máy thu phải <em>tự hiệu chỉnh tick time</em> từ xung calibration ở đầu mỗi khung.</p>
+          </div>
+        </div>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 210" role="img" aria-label="Cấu trúc khung SENT" xmlns="http://www.w3.org/2000/svg">
+            <text x="285" y="32" text-anchor="middle" class="dgm-sub" font-size="10.5">⟨ Channel 1 — 12-bit ⟩</text>
+            <text x="445" y="32" text-anchor="middle" class="dgm-sub" font-size="10.5">⟨ Channel 2 — 12-bit ⟩</text>
+            <line x1="208" y1="38" x2="362" y2="38" stroke="var(--border-strong)" stroke-width="1"/>
+            <line x1="368" y1="38" x2="522" y2="38" stroke="var(--border-strong)" stroke-width="1"/>
+            <rect x="10" y="44" width="120" height="58" rx="7" fill="var(--brand-600)"/><text x="70" y="70" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">Sync / Cal</text><text x="70" y="88" text-anchor="middle" class="dgm-inv-sub" font-size="10">56 ticks</text>
+            <rect x="134" y="44" width="70" height="58" rx="6" fill="var(--brand-800)"/><text x="169" y="68" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Status</text><text x="169" y="86" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">4-bit</text>
+            <rect x="208" y="44" width="50" height="58" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="233" y="78" text-anchor="middle" class="dgm-text" font-size="11">D1</text>
+            <rect x="260" y="44" width="50" height="58" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="285" y="78" text-anchor="middle" class="dgm-text" font-size="11">D2</text>
+            <rect x="312" y="44" width="50" height="58" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="337" y="78" text-anchor="middle" class="dgm-text" font-size="11">D3</text>
+            <rect x="368" y="44" width="50" height="58" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="393" y="78" text-anchor="middle" class="dgm-text" font-size="11">D4</text>
+            <rect x="420" y="44" width="50" height="58" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="445" y="78" text-anchor="middle" class="dgm-text" font-size="11">D5</text>
+            <rect x="472" y="44" width="50" height="58" rx="5" fill="var(--surface)" class="dgm-layer"/><text x="497" y="78" text-anchor="middle" class="dgm-text" font-size="11">D6</text>
+            <rect x="526" y="44" width="70" height="58" rx="6" fill="var(--core)"/><text x="561" y="68" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">CRC-4</text><text x="561" y="86" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">4-bit</text>
+            <rect x="600" y="44" width="110" height="58" rx="6" fill="var(--surface-2)" class="dgm-layer" stroke-dasharray="4 3"/><text x="655" y="68" text-anchor="middle" class="dgm-text" font-size="10.5">Pause</text><text x="655" y="86" text-anchor="middle" class="dgm-sub" font-size="9">tùy chọn · biến thiên</text>
+            <text x="360" y="134" text-anchor="middle" class="dgm-label" font-size="11.5" font-weight="700">Fast channel: Status + tối đa 6 Data nibble + CRC-4</text>
+            <text x="360" y="156" text-anchor="middle" class="dgm-sub" font-size="11">Mỗi nibble = 12–27 ticks → giá trị 0–15  ·  Pause cố định độ dài tổng khung để gửi đều</text>
+            <text x="360" y="176" text-anchor="middle" class="dgm-sub" font-size="11">Slow channel ghép dần từ bit trong Status nibble qua nhiều khung (ID, chẩn đoán)</text>
+          </svg>
+          <div class="figure__cap"><b>Khung fast-channel SENT điển hình (8 nibble).</b> Status + 6 data (2 kênh 12-bit) + CRC-4, sau đó là pause pulse tuỳ chọn. CRC-4 phủ các data nibble.</div>
+        </div>
+
+        <div class="figure">
+          <svg viewBox="0 0 680 180" role="img" aria-label="Mã hoá một nibble SENT bằng timing" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="arN" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <!-- waveform: high 50, low 110, falling at 60, rising at 150, falling at 470 -->
+            <polyline points="20,55 60,55 60,118 150,118 150,55 470,55 470,118 520,118" fill="none" stroke="var(--brand-600)" stroke-width="2.5"/>
+            <line x1="60" y1="40" x2="60" y2="150" stroke="var(--must)" stroke-width="1" stroke-dasharray="3 3"/>
+            <line x1="470" y1="40" x2="470" y2="150" stroke="var(--must)" stroke-width="1" stroke-dasharray="3 3"/>
+            <text x="60" y="34" text-anchor="middle" class="dgm-sub" font-size="10">↓ falling (mốc bắt đầu)</text>
+            <text x="470" y="34" text-anchor="middle" class="dgm-sub" font-size="10">↓ falling (mốc kết thúc)</text>
+            <text x="105" y="138" text-anchor="middle" class="dgm-sub" font-size="10">low ≥ 5 ticks (cố định)</text>
+            <text x="310" y="48" text-anchor="middle" class="dgm-sub" font-size="10">high — độ dài biến thiên (mang giá trị)</text>
+            <line x1="60" y1="162" x2="470" y2="162" class="dgm-arrow" stroke-width="1.3" marker-start="url(#arN)" marker-end="url(#arN)"/>
+            <text x="265" y="176" text-anchor="middle" class="dgm-label" font-size="11" font-weight="700">tổng 12–27 ticks  →  nibble = (số tick − 12) = 0…15</text>
+          </svg>
+          <div class="figure__cap"><b>Vì sao SENT nhạy jitter.</b> Giá trị nằm ở <b>khoảng cách giữa hai falling edge</b>. Tick time được suy ra từ xung calibration (56 ticks); sai số clock cho phép tới ±20% nên máy thu phải hiệu chỉnh mỗi khung.</div>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="card">
+            <h4 class="mt-0">Khái niệm lõi (đã đối chiếu J2716)</h4>
+            <dl class="kv mb-0">
+              <dt>Tick</dt><dd>Đơn vị thời gian cơ sở, <strong>3–90 µs</strong> (sender chọn); sai số clock cho phép <strong>±20%</strong> → dùng được RC oscillator rẻ.</dd>
+              <dt>Calibration</dt><dd>Xung <strong>56 ticks</strong> (≈6 low + 50 high) đầu khung; máy thu chia thời gian đo cho 56 để ra tick time.</dd>
+              <dt>Nibble</dt><dd>4-bit; low cố định (≥5 tick) + high biến thiên; tổng <strong>12–27 tick</strong>; giá trị = tick − 12.</dd>
+              <dt>Fast channel</dt><dd>Dữ liệu chính: status + tối đa 6 data nibble + CRC-4 (vd 2 kênh 12-bit).</dd>
+              <dt>Slow channel</dt><dd>Ghép qua nhiều khung từ bit status (Short/Enhanced Serial Message): ID, chẩn đoán.</dd>
+            </dl>
+          </div>
+          <div class="card">
+            <h4 class="mt-0">SENT khác CAN/LIN ở đâu</h4>
+            <ul class="mb-0 small">
+              <li><strong>Một chiều</strong>, không feedback — muốn hỏi/cấu hình sensor phải dùng interface khác.</li>
+              <li><strong>Point-to-point</strong>, không bus, không địa chỉ (khác CAN/LIN).</li>
+              <li><strong>Không clock</strong> — mã hoá bằng timing → nhạy jitter, cần calibration mỗi khung.</li>
+              <li><strong>Rẻ &amp; độ phân giải cao</strong> hơn analog/PWM cho cùng số dây.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="callout callout--tip">
+          <div class="callout__icon">🔁</div>
+          <div class="callout__body">
+            <p class="mb-0">Muốn ôn sâu SENT cạnh UART/SPI/I2C/CAN/UDS, xem bài <a href="E-protocols.html">E — Communication Protocols</a>.</p>
+          </div>
+        </div>
+
+        <!-- 2. Bối cảnh -->
+        <h2>2. Bối cảnh — vì sao quy trình cũ tốn 1–2 tháng</h2>
+        <p>Trả lời “vì sao chậm” bằng <strong>nguyên nhân cụ thể</strong>, không nói chung chung “vì làm tay”.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Điểm đau (manual)</th><th>Hệ quả</th></tr></thead>
+            <tbody>
+              <tr><td>Cấu hình test &amp; kích thích tín hiệu SENT bằng tay trên thiết bị</td><td>Mỗi ca test tốn nhiều giờ thiết lập</td></tr>
+              <tr><td>Đọc/đánh giá kết quả timing thủ công qua công cụ debug</td><td>Dễ sai, khó tái lập, phụ thuộc người</td></tr>
+              <tr><td>Bao phủ nhiều biến: tick time, nibble, CRC, lỗi, nhiều target</td><td>Tổ hợp test rất lớn → kéo dài hàng tuần</td></tr>
+              <tr><td>Không có CI: chạy lại từ đầu mỗi khi có thay đổi</td><td>Regression đắt đỏ, làm lại nhiều lần</td></tr>
+              <tr><td>Kết quả &amp; bằng chứng rải rác, tổng hợp report bằng tay</td><td>Tốn thời gian review &amp; truy vết ASPICE</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout--note">
+          <div class="callout__icon">🧩</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Câu chốt:</strong> “Quy trình cũ chậm không vì một việc, mà vì <em>toàn bộ vòng lặp</em> — setup, kích thích, đánh giá, tổng hợp — đều thủ công và không lặp lại được. Tôi tấn công cả vòng lặp, không chỉ một bước.”</p>
+          </div>
+        </div>
+
+        <!-- 3. Giải pháp / kiến trúc -->
+        <h2>3. Giải pháp — kiến trúc framework automation</h2>
+        <p>Ý tưởng: biến mỗi bước thủ công thành một thành phần tái sử dụng, ghép lại thành pipeline chạy tự động trong CI/CD.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 332" role="img" aria-label="Kiến trúc framework automation SENT" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="arF" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="60" y="12" width="600" height="52" rx="9" fill="var(--brand-600)"/>
+            <text x="360" y="34" text-anchor="middle" class="dgm-inv" font-size="12.5" font-weight="800">CI/CD — Azure Pipelines</text>
+            <text x="360" y="52" text-anchor="middle" class="dgm-inv-sub" font-size="10.5">trigger → build → test → report → publish</text>
+            <text x="360" y="82" text-anchor="middle" class="dgm-sub" font-size="10.5">Conan: cố định dependency &amp; toolchain (chạy CI giống local)</text>
+            <line x1="360" y1="88" x2="360" y2="100" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arF)"/>
+            <rect x="40" y="104" width="640" height="124" rx="9" fill="var(--surface-2)" class="dgm-layer"/>
+            <text x="360" y="126" text-anchor="middle" class="dgm-label" font-size="12.5" font-weight="800">SENT Automation Framework (data-driven)</text>
+            <rect x="60" y="136" width="160" height="56" rx="7" fill="var(--brand-800)"/><text x="140" y="160" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">Test Config</text><text x="140" y="178" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">tick/nibble/CRC/lỗi/target</text>
+            <line x1="220" y1="164" x2="244" y2="164" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arF)"/>
+            <rect x="246" y="136" width="160" height="56" rx="7" fill="var(--brand-800)"/><text x="326" y="160" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">Signal Stimulus</text><text x="326" y="178" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">sinh/điều khiển SENT</text>
+            <line x1="406" y1="164" x2="430" y2="164" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arF)"/>
+            <rect x="432" y="136" width="160" height="56" rx="7" fill="var(--brand-800)"/><text x="512" y="160" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">Result Evaluator</text><text x="512" y="178" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">so timing/CRC → PASS/FAIL</text>
+            <rect x="60" y="200" width="532" height="20" rx="5" fill="var(--brand-400)"/><text x="326" y="214" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Report + Traceability (ASPICE: requirement ↔ test ↔ kết quả)</text>
+            <line x1="360" y1="228" x2="360" y2="252" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arF)"/>
+            <rect x="100" y="256" width="520" height="48" rx="9" fill="var(--brand-900)"/>
+            <text x="360" y="278" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">Targets</text>
+            <text x="360" y="296" text-anchor="middle" class="dgm-inv-sub" font-size="10.5">ST · Infineon · VECU · Renesas R-Car …</text>
+          </svg>
+          <div class="figure__cap"><b>Toàn bộ vòng lặp được tự động hoá.</b> Cấu hình (data) → kích thích → tự đánh giá → report truy vết, chạy trong CI/CD với môi trường cố định bởi Conan, trên nhiều target.</div>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="card">
+            <h4 class="mt-0">Nguyên tắc thiết kế</h4>
+            <ul class="mb-0 small">
+              <li><strong>Data-driven:</strong> test case tách khỏi code → thêm ca test = thêm dữ liệu, không sửa logic.</li>
+              <li><strong>Tái sử dụng:</strong> framework dùng chung cho test/dev/doc, không “xài một lần”.</li>
+              <li><strong>Reproducible:</strong> Conan cố định toolchain/dependency để chạy đâu cũng giống nhau.</li>
+              <li><strong>Tự đánh giá:</strong> evaluator so timing với ngưỡng, tự PASS/FAIL, không cần mắt người.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4 class="mt-0">Thành phần &amp; vai trò</h4>
+            <dl class="kv mb-0">
+              <dt>Test Config</dt><dd>Khai báo ca test bằng dữ liệu (tick, nibble, lỗi, target).</dd>
+              <dt>Signal Stimulus</dt><dd>Sinh/điều khiển tín hiệu SENT đầu vào tự động.</dd>
+              <dt>Result Evaluator</dt><dd>Phân tích timing/CRC, đối chiếu kỳ vọng, kết luận.</dd>
+              <dt>Report</dt><dd>Tổng hợp bằng chứng + map requirement↔test (ASPICE).</dd>
+            </dl>
+          </div>
+        </div>
+
+        <!-- 4. Vai trò cá nhân -->
+        <h2>4. Vai trò cá nhân (nhấn mạnh “tôi”)</h2>
+        <ul class="steps">
+          <li><h4>Planning &amp; phân rã</h4><p class="mb-0">Tôi chia bài toán lớn thành các module độc lập (config / stimulus / evaluator / report) để team làm song song và đo được tiến độ.</p></li>
+          <li><h4>Lead team theo agile</h4><p class="mb-0">Tôi lập backlog, chia task, theo dõi sprint, gỡ vướng kỹ thuật, và đảm bảo các phần ghép được với nhau.</p></li>
+          <li><h4>Kiến trúc &amp; chuẩn kỹ thuật</h4><p class="mb-0">Tôi quyết định cách tách lớp data-driven, chuẩn interface giữa các module, và tích hợp CI/CD (Azure Pipelines + Conan).</p></li>
+          <li><h4>Enablement</h4><p class="mb-0">Tôi viết tài liệu, training để ARA system team tự dùng framework — đảm bảo nó sống sau khi tôi chuyển vai trò.</p></li>
+        </ul>
+
+        <!-- 5. Thử thách -->
+        <h2>5. Thử thách &amp; cách giải quyết</h2>
+        <div class="accordion">
+          <div class="accordion__item">
+            <button class="accordion__head">Lỗi timing khó tái hiện trên ST/Infineon <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p class="mb-0">Dùng <strong>UDE Debugger</strong> đo ở tầng protocol (tick, nibble, fast/slow), so cùng software trên 2 target để cô lập biến, phân tích tương tác HW/SW. Kết quả: khoanh đúng nguyên nhân timing và đưa vào test tự động để bắt sớm lần sau.</p>
+            </div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">Pipeline “flaky” / môi trường không đồng nhất <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p class="mb-0">Chuẩn hoá dependency &amp; toolchain bằng <strong>Conan</strong>; thêm log rõ ràng và tách phần phụ thuộc hardware. Độ tin cậy tăng → team mới thật sự tin và adopt.</p>
+            </div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">Thuyết phục team bỏ thói quen làm tay <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p class="mb-0">Chứng minh bằng kết quả nhỏ trước (một nhóm test chạy tự động), đưa số liệu thời gian tiết kiệm, rồi mở rộng dần. Kèm training để giảm rào cản sử dụng.</p>
+            </div></div>
+          </div>
+        </div>
+
+        <!-- 6. Kết quả -->
+        <h2>6. Kết quả định lượng</h2>
+        <div class="figure">
+          <svg viewBox="0 0 720 150" role="img" aria-label="Trước và sau automation" xmlns="http://www.w3.org/2000/svg">
+            <text x="20" y="40" class="dgm-label" font-size="12" font-weight="700">Trước (thủ công)</text>
+            <rect x="200" y="26" width="500" height="28" rx="6" fill="var(--must)"/>
+            <text x="450" y="45" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">~ 1–2 tháng / chu kỳ</text>
+            <text x="20" y="100" class="dgm-label" font-size="12" font-weight="700">Sau (automation)</text>
+            <rect x="200" y="86" width="46" height="28" rx="6" fill="var(--ok)"/>
+            <text x="258" y="105" class="dgm-label" font-size="12" font-weight="700">2–3 ngày</text>
+            <text x="450" y="138" text-anchor="middle" class="dgm-sub" font-size="11">Cùng phạm vi test · cùng độ phủ — chỉ khác cách chạy (data-driven + CI/CD + tự đánh giá)</text>
+          </svg>
+          <div class="figure__cap"><b>Tác động trực quan.</b> Cùng phạm vi kiểm thử, thời gian một chu kỳ rút từ ~1–2 tháng xuống 2–3 ngày.</div>
+        </div>
+        <div class="grid grid-3">
+          <div class="card center"><div style="font-size:26px;font-weight:800;font-family:var(--font-head);color:var(--ok)">1–2 tháng<br>→ 2–3 ngày</div><p class="small text-mute mb-0">thời gian một chu kỳ test</p></div>
+          <div class="card center"><div style="font-size:26px;font-weight:800;font-family:var(--font-head);color:var(--brand-600)">Adopted</div><p class="small text-mute mb-0">ARA system team dùng làm chuẩn</p></div>
+          <div class="card center"><div style="font-size:26px;font-weight:800;font-family:var(--font-head);color:var(--core)">Award</div><p class="small text-mute mb-0">giải innovation/automation nội bộ</p></div>
+        </div>
+        <div class="callout callout--key">
+          <div class="callout__icon">📈</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Bài học rút ra:</strong> (1) tấn công <em>cả vòng lặp</em> chứ không một bước; (2) <strong>độ tin cậy &gt; tốc độ</strong> — tool flaky thì không ai dùng; (3) automation chỉ tạo giá trị khi người khác <em>tiếp tục dùng</em> → tài liệu &amp; training là một phần của giải pháp.</p>
+          </div>
+        </div>
+
+        <!-- 7. Ba phiên bản kể -->
+        <h2>7. Luyện kể 3 phiên bản</h2>
+
+        <div class="qa">
+          <div class="qa__q">Phiên bản 1 phút (elevator) <span class="qa__lv qa__lv--experience">Kể</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">“Quy trình validation SENT của team làm thủ công, mỗi chu kỳ tốn 1–2 tháng và dễ sai. Tôi lead một sáng kiến automation: thiết kế framework data-driven cho cả vòng lặp — cấu hình test, kích thích tín hiệu, tự đánh giá timing/CRC, và tự sinh report truy vết ASPICE — rồi đưa vào CI/CD bằng Azure Pipelines và Conan. Kết quả: chu kỳ test còn 2–3 ngày, team adopt làm chuẩn, và tôi nhận giải innovation nội bộ.”</p>
+          </div></div>
+        </div>
+
+        <div class="qa">
+          <div class="qa__q">Phiên bản 3 phút (STAR đầy đủ) <span class="qa__lv qa__lv--experience">Kể</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p><strong>S:</strong> Quy trình SENT thủ công, 1–2 tháng/chu kỳ; setup, kích thích, đánh giá, tổng hợp đều bằng tay và không lặp lại được.</p>
+            <p><strong>T:</strong> Tôi nhận vai trò automation lead: đưa team agile tới một framework chạy được, giảm mạnh thời gian và tăng độ tin cậy.</p>
+            <p><strong>A:</strong> Phân rã thành 4 module (config/stimulus/evaluator/report); chọn kiến trúc data-driven để mở rộng ca test mà không sửa code; tích hợp CI/CD (Azure Pipelines) và cố định môi trường bằng Conan; xử lý lỗi timing khó trên ST/Infineon bằng UDE; viết tài liệu + training để team tự dùng.</p>
+            <p class="mb-0"><strong>R:</strong> 1–2 tháng → 2–3 ngày; ARA system team adopt; giải innovation; bài học: tấn công cả vòng lặp, ưu tiên độ tin cậy, và enablement là một phần của automation.</p>
+          </div></div>
+        </div>
+
+        <div class="qa">
+          <div class="qa__q">Phiên bản sâu kỹ thuật (khi bị đào) <span class="qa__lv qa__lv--application">Kỹ thuật</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <ul class="mb-0">
+              <li><strong>Vì sao data-driven?</strong> Tách ca test (dữ liệu: tick/nibble/CRC/lỗi/target) khỏi logic → thêm test = thêm dòng dữ liệu, dễ review, dễ map requirement.</li>
+              <li><strong>Đánh giá timing thế nào?</strong> Evaluator so các tham số timing (tick time sau calibration 56 ticks, độ dài nibble 12–27 tick, CRC-4) với ngưỡng kỳ vọng → tự PASS/FAIL kèm bằng chứng.</li>
+              <li><strong>Vì sao Conan?</strong> SENT nhạy môi trường/toolchain; Conan cố định version để CI chạy giống local, loại bỏ “chạy máy tôi thì được”.</li>
+              <li><strong>Fault injection?</strong> Chủ động sinh khung lỗi (CRC sai, nibble ngoài dải 12–27 tick, calibration lệch, timing jitter) để kiểm tra error-handling, không chỉ happy path.</li>
+              <li><strong>Truy vết ASPICE?</strong> Report tự map requirement ↔ test ↔ kết quả để sẵn sàng review (xem bài <a href="C-testing.html">C</a>).</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <!-- 8. Trước -> Nay -->
+        <h2>8. Trước (~2020) → Nay — cập nhật về SENT</h2>
+        <div class="evo">
+          <div class="evo__head">⚡ <span>Tốc độ &amp; phiên bản SENT</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>Triển khai phổ biến theo SAE J2716 “cổ điển”: fast channel + slow channel, tick 3–90 µs, đủ cho cảm biến áp suất/vị trí.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p>Xuất hiện <strong>SENT-B</strong> — bản tăng tốc (~2×) nhưng <em>tương thích phần cứng</em>; SENT tiếp tục được dùng rộng cho sensor số trong kiến trúc zonal/SDV (sensor → zonal controller).</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> nếu bị hỏi “SENT có gì mới”, nói được SENT-B (nhanh ~2×, HW-compatible) cho thấy bạn cập nhật, không kẹt ở tài liệu cũ.</div>
+        </div>
+
+        <!-- 9. Self-test -->
+        <h2>9. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">SENT mã hoá dữ liệu bằng gì? Vì sao cần xung calibration mỗi khung? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p>Bằng <strong>khoảng thời gian giữa hai falling edge</strong>, đo bằng số tick (nibble = tick − 12). Không có clock chung và tick được sender chọn (3–90 µs) với sai số tới ±20%, nên mỗi khung mở đầu bằng <strong>xung calibration 56 ticks</strong> để máy thu suy ra tick time thực rồi giải mã các nibble theo đó.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul>
+              <li>Nếu clock sensor lệch 15% thì sao? (vẫn giải mã đúng nhờ calibrate lại mỗi khung)</li>
+              <li>Vì sao SENT nhạy jitter hơn UART? (UART có baud cố định/oversampling; SENT đo trực tiếp độ rộng xung)</li>
+            </ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Mô tả một khung fast-channel: gồm những nibble nào? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p>Sync/Calibration (56 ticks) → <strong>Status &amp; Communication nibble</strong> (4-bit, mang bit cho slow channel) → <strong>tối đa 6 data nibble</strong> (vd 2 kênh 12-bit) → <strong>CRC-4</strong> phủ data → <strong>pause pulse</strong> tuỳ chọn (làm tổng độ dài khung cố định). Slow channel được ghép dần qua nhiều khung từ bit của status nibble.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul>
+              <li>Pause pulse để làm gì? (cố định độ dài khung → gửi đều, dễ đồng bộ phía thu)</li>
+              <li>CRC-4 phủ phần nào? (các data nibble)</li>
+            </ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Bạn rút 1–2 tháng xuống 2–3 ngày — nhờ đâu, không phải “chạy nhanh hơn”? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p>Nhờ <strong>tự động hoá cả vòng lặp</strong> chứ không tối ưu một bước: (1) <em>data-driven</em> để nhân ca test bằng dữ liệu; (2) <em>signal stimulus</em> tự sinh tín hiệu thay cho thiết lập tay; (3) <em>evaluator</em> tự so timing/CRC, bỏ khâu đọc bằng mắt; (4) <em>CI/CD + Conan</em> để chạy lặp lại, song song, môi trường nhất quán; (5) <em>report tự truy vết</em> để khỏi tổng hợp tay. Cộng lại mới ra mức giảm lớn.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul>
+              <li>Đâu là bước tiết kiệm nhiều nhất? (loại bỏ đánh giá thủ công + regression tự động)</li>
+              <li>Làm sao tin kết quả tự đánh giá đúng? (đối chứng với kết quả manual giai đoạn đầu + fault injection)</li>
+            </ul></div>
+          </div></div>
+        </div>
+
+        <div class="grid grid-2" style="margin-top:18px">
+          <div class="flashcard"><div class="flashcard__inner">
+            <div class="flashcard__face flashcard__face--front"><div class="flashcard__tag">Số liệu</div><div class="flashcard__q">Tick time, calibration, dải nibble của SENT?</div><div class="flashcard__hint">bấm để lật</div></div>
+            <div class="flashcard__face flashcard__face--back"><p class="mb-0">Tick 3–90 µs (±20%); calibration 56 ticks; nibble 12–27 ticks (giá trị = tick − 12).</p></div>
+          </div></div>
+          <div class="flashcard"><div class="flashcard__inner">
+            <div class="flashcard__face flashcard__face--front"><div class="flashcard__tag">Áp dụng</div><div class="flashcard__q">Vì sao chọn data-driven thay vì script từng test?</div><div class="flashcard__hint">bấm để lật</div></div>
+            <div class="flashcard__face flashcard__face--back"><p class="mb-0">Mở rộng ca test bằng dữ liệu (không sửa logic), dễ review, dễ map requirement, giảm chi phí bảo trì khi số ca test lớn.</p></div>
+          </div></div>
+        </div>
+
+        <div class="callout callout--danger">
+          <div class="callout__icon">🚩</div>
+          <div class="callout__body">
+            <div class="callout__title">Bẫy cần tránh khi kể</div>
+            <ul class="mb-0">
+              <li>Nói “giảm còn 2–3 ngày” mà không giải thích <em>nhờ đâu</em> (data-driven + CI + tự đánh giá).</li>
+              <li>Quên nhấn vai trò cá nhân → nghe như cả team làm, không rõ bạn.</li>
+              <li>Không thủ sẵn phần SENT cơ bản → bị đào timing/CRC là đuối.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 10. Cheat-sheet -->
+        <h2>10. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>SENT số liệu</h4><ul>
+            <li>SAE J2716 · 1 chiều · point-to-point · 3 dây</li>
+            <li>Tick 3–90 µs · clock ±20%</li>
+            <li>Calibration 56 ticks (≈6 low + 50 high)</li>
+            <li>Nibble 12–27 ticks → giá trị = tick − 12</li>
+            <li>Fast: status + ≤6 data + CRC-4 · Slow: ghép qua nhiều khung</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Vì sao cũ chậm</h4><ul>
+            <li>Setup + stimulus thủ công</li>
+            <li>Đánh giá timing bằng mắt</li>
+            <li>Tổ hợp test lớn, không CI</li>
+            <li>Report &amp; trace tổng hợp tay</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Giải pháp (4 module)</h4><ul>
+            <li>Test Config (data-driven)</li>
+            <li>Signal Stimulus (tự sinh)</li>
+            <li>Result Evaluator (tự PASS/FAIL)</li>
+            <li>Report + Traceability (ASPICE)</li>
+            <li>CI/CD: Azure Pipelines + Conan</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Kết quả &amp; bài học</h4><ul>
+            <li><strong>1–2 tháng → 2–3 ngày</strong></li>
+            <li>ARA team adopt + giải innovation</li>
+            <li>Tấn công cả vòng lặp</li>
+            <li>Độ tin cậy &gt; tốc độ · enablement</li>
+          </ul></div>
+        </div>
+
+        <!-- Sources -->
+        <h2>11. Nguồn tham khảo (SENT)</h2>
+        <ul class="small text-soft">
+          <li>SAE <strong>J2716</strong> — SENT (Single Edge Nibble Transmission) for Automotive Applications (chuẩn gốc).</li>
+          <li>Wikipedia — <a href="https://en.wikipedia.org/wiki/SENT_(protocol)" target="_blank" rel="noopener">SENT (protocol)</a> (tick 3–90 µs, calibration 56 ticks, nibble 12–27 ticks, ±20%).</li>
+          <li>PEAK-System — <a href="https://www.peak-system.com/know-how/blog/the-sent-protocol-sae-j2716-explained-basics-application-and-practical-use-1/" target="_blank" rel="noopener">The SENT protocol (SAE J2716) explained</a>.</li>
+          <li>Texas Instruments — <a href="https://software-dl.ti.com/msp430/esd/MSPM0-SDK/1_20_01_06/docs/english/middleware/sent/doc_guide/doc_guide-srcs/Users_Guide.html" target="_blank" rel="noopener">MSPM0 SENT User's Guide</a>.</li>
+          <li>NXP — <a href="https://www.nxp.com/docs/en/application-note/AN4856.pdf" target="_blank" rel="noopener">AN4856: SENT/SPC Driver</a>.</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi kể trôi cả 3 phiên bản và giải thích được khung SENT.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">
+        Chủ đề D · SENT Automation Case Study — Interview Prep
+      </footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../assets/js/app.js?v=4"></script>
+</body>
+</html>
