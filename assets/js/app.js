@@ -22,7 +22,10 @@
     { id: "C", file: "C-testing.html",          title: "Testing Methodology & Tools", prio: "must",   group: "Vòng 1 — Phải kể được", desc: "Test levels, coverage MC/DC, Cantata, ECU-Test." },
     { id: "E", file: "E-protocols.html",        title: "Communication Protocols",     prio: "core",   group: "Vòng 2 — Core embedded", desc: "UART, SPI, I2C, CAN, SENT, UDS, LIN." },
     { id: "F", file: "F-mcu-peripherals.html",  title: "MCU Peripherals & HW Debug",  prio: "core",   group: "Vòng 2 — Core embedded", desc: "GPIO, Timer, ADC, WDG, RH850, TRACE32, UDE." },
-    { id: "G", file: "G-embedded-c.html",       title: "Embedded C/C++ Fundamentals", prio: "core",   group: "Vòng 2 — Core embedded", desc: "Memory layout, volatile, ISR, padding, linker." },
+    { id: "G", file: "G-embedded-c.html",       title: "Embedded C/C++ Fundamentals", prio: "core",   group: "Vòng 2 — Core embedded", desc: "Memory layout, volatile, ISR, padding, linker, MISRA C." },
+    { id: "K", file: "K-vecu-sil.html",         title: "vECU · MIL/SIL/HIL · SIL Kit", prio: "core",   group: "Vòng 2.5 — vECU & Mô phỏng (JD)", desc: "Virtual ECU, PoC, xIL, Vector SIL Kit, co-simulation bus." },
+    { id: "L", file: "L-fmi-fmu.html",          title: "FMI / FMU (Co-Simulation)",   prio: "core",   group: "Vòng 2.5 — vECU & Mô phỏng (JD)", desc: "FMI 2.0/3.0, Model Exchange vs Co-Sim, đóng gói .fmu." },
+    { id: "M", file: "M-host-runtime.html",     title: "Host Runtime — Win/POSIX & Build", prio: "core", group: "Vòng 2.5 — vECU & Mô phỏng (JD)", desc: "pthread/thread, timer, atomics, memory ordering, CMake/MSVC/Clang, VS debug." },
     { id: "H", file: "H-iso26262.html",         title: "ISO 26262 / Functional Safety", prio: "core", group: "Vòng 3 — Chiều sâu", desc: "ASIL, safe state, FMEA/FTA, vì sao MC/DC." },
     { id: "J", file: "J-cicd-cloud.html",       title: "Automation / CI-CD / Cloud",  prio: "core",   group: "Vòng 3 — Chiều sâu", desc: "Azure Pipelines, Conan, Docker, K8s, Terraform." },
     { id: "I", file: "I-ai-llm.html",           title: "AI / LLM Engineering",        prio: "defend", group: "Vòng 4 — AI & tổng duyệt", desc: "RAG, agentic AI, prompt/context, governance." }

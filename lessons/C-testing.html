@@ -8,6 +8,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../assets/css/style.css?v=4" />
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="../assets/favicon.ico" />
 </head>
 <body data-page="C" data-root="../">
   <div id="app">
@@ -264,8 +269,132 @@ void test_Adc_ReadChannel_returns_mapped_value(void) {
           <div class="evo__why"><b>Vì sao quan trọng:</b> đúng câu chuyện SENT automation của bạn — đưa test vào CI với VECU/Conan, bắt lỗi sớm thay vì chờ target.</div>
         </div>
 
-        <!-- 9. Self test -->
-        <h2>9. Tự kiểm tra</h2>
+        <!-- 9. Static analysis & sanitizers -->
+        <h2>9. Static Analysis &amp; Sanitizers</h2>
+        <p>JD xếp static analysis/sanitizer là <em>nice-to-have</em>. Đây là lớp kiểm thử <strong>tự động, không cần viết test case</strong> — bắt các lỗi mà unit test dễ bỏ sót (undefined behavior, data race, memory bug).</p>
+
+        <h3>9.1 Static analysis — soi code, không chạy</h3>
+        <p>Phân tích mã nguồn <strong>không thực thi</strong> (compile-time). Phát hiện: null dereference, buffer overflow, biến chưa init, dead code, integer overflow, và <strong>vi phạm MISRA</strong> (xem bài <a href="G-embedded-c.html">G</a>).</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Công cụ</th><th>Nhóm</th><th>Ghi chú</th></tr></thead>
+            <tbody>
+              <tr><td><strong>cppcheck</strong></td><td>Mã nguồn mở</td><td>Nhẹ, dễ đưa vào CI; bắt lỗi phổ biến.</td></tr>
+              <tr><td><strong>Clang-Tidy</strong></td><td>Mã nguồn mở (LLVM)</td><td>Linter + check hiện đại, tích hợp compiler.</td></tr>
+              <tr><td><strong>PC-lint Plus</strong></td><td>Thương mại</td><td>Kiểm C/C++ sâu, hỗ trợ MISRA.</td></tr>
+              <tr><td><strong>Coverity</strong></td><td>Thương mại</td><td>Phân tích luồng liên thủ tục quy mô lớn.</td></tr>
+              <tr><td><strong>Polyspace</strong></td><td>Thương mại</td><td><em>Abstract interpretation</em> — chứng minh <strong>vắng mặt</strong> lỗi runtime (proof), không chỉ tìm lỗi.</td></tr>
+              <tr><td><strong>Helix QAC · LDRA</strong></td><td>Thương mại</td><td>Chuyên MISRA/coding standard cho safety-critical.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>9.2 Sanitizers — kiểm tra lúc chạy (runtime)</h3>
+        <p>Biên dịch với cờ <code>-fsanitize=</code> của GCC/Clang (MSVC có <code>/fsanitize=address</code>), chèn kiểm tra vào binary rồi chạy — bắt lỗi <em>ngay tại thời điểm nó xảy ra</em>.</p>
+        <div class="kv">
+          <dt>ASan</dt><dd><strong>AddressSanitizer</strong> — heap/stack buffer overflow, use-after-free, use-after-return.</dd>
+          <dt>UBSan</dt><dd><strong>UndefinedBehaviorSanitizer</strong> — hành vi không xác định (overflow có dấu, dịch bit quá mức, deref lệch alignment…).</dd>
+          <dt>TSan</dt><dd><strong>ThreadSanitizer</strong> — phát hiện <strong>data race</strong>; cực hữu ích cho vECU đa luồng (xem bài <a href="M-host-runtime.html">M</a>).</dd>
+          <dt>MSan</dt><dd><strong>MemorySanitizer</strong> — đọc bộ nhớ <em>chưa khởi tạo</em>.</dd>
+          <dt>LSan</dt><dd><strong>LeakSanitizer</strong> — rò rỉ bộ nhớ (memory leak).</dd>
+        </div>
+        <p class="small text-mute"><strong>Valgrind</strong> (memcheck/helgrind): <em>không cần biên dịch lại</em> nhưng <em>chậm</em> (mô phỏng CPU) — tiện khi không sửa được build.</p>
+
+        <h3>9.3 Static vs Dynamic (sanitizer) — nên kết hợp</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th></th><th>Static analysis</th><th>Sanitizer (dynamic)</th></tr></thead>
+            <tbody>
+              <tr><td>Thời điểm</td><td>Compile-time, không chạy code</td><td>Runtime, cần chạy qua đường code</td></tr>
+              <tr><td>False positive</td><td>Cao hơn (suy diễn bảo thủ)</td><td>Thấp (báo lỗi thật đã xảy ra)</td></tr>
+              <tr><td>False negative</td><td>Sót lỗi phụ thuộc dữ liệu runtime</td><td>Sót đường code không được test chạy tới</td></tr>
+              <tr><td>Chi phí</td><td>Không ảnh hưởng tốc độ chạy</td><td>Làm chậm &amp; tốn RAM khi chạy</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout--key">
+          <div class="callout__icon">🎯</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Khuyến nghị:</strong> <em>kết hợp</em> — static quét toàn bộ code (kể cả nhánh chưa test), sanitizer bắt lỗi thật khi chạy test. Đưa cả hai thành <strong>CI gate</strong> (fail build khi có finding mới) — xem bài <a href="J-cicd-cloud.html">J</a>.</p>
+          </div>
+        </div>
+
+        <!-- 10. Deterministic & trace-based validation -->
+        <h2>10. Deterministic &amp; Trace-based Validation</h2>
+
+        <h3>10.1 Deterministic testing — kết quả lặp lại được</h3>
+        <p>JD yêu cầu <em>deterministic tests</em>: test cho <strong>cùng kết quả mỗi lần chạy</strong>. Muốn vậy phải kiểm soát mọi nguồn bất định:</p>
+        <ul>
+          <li><strong>Thời gian:</strong> đừng đọc đồng hồ thật — <em>inject clock / virtual time</em> để điều khiển (khớp mô hình vECU, xem bài <a href="K-vecu-sil.html">K</a>).</li>
+          <li><strong>Ngẫu nhiên:</strong> cố định <em>seed</em> để chuỗi random tái lập.</li>
+          <li><strong>Lịch luồng:</strong> tránh test phụ thuộc timing/thứ tự luồng (dễ cho kết quả khác nhau).</li>
+          <li><strong>I/O:</strong> mock/stub file, mạng, bus để loại phụ thuộc bên ngoài.</li>
+        </ul>
+        <div class="callout callout--tip">
+          <div class="callout__icon">⚠️</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Flaky test</strong> = test lúc pass lúc fail dù code không đổi (thường do timing/random/thứ tự luồng). Xấu vì làm mất niềm tin vào CI: người ta bắt đầu <em>bỏ qua</em> fail đỏ, che luôn cả lỗi thật.</p>
+          </div>
+        </div>
+
+        <h3>10.2 Trace-based validation — so trace với golden</h3>
+        <p>Thay vì chỉ assert giá trị trả về, ta <strong>ghi lại hành vi quan sát (trace)</strong> rồi so khớp với <strong>golden/reference trace</strong> kỳ vọng. Hợp với hệ thời gian thực / giao tiếp bus:</p>
+        <ul>
+          <li><strong>CAN frame trace:</strong> so ID, DLC, payload, timestamp, <em>chu kỳ</em> khung.</li>
+          <li><strong>Chuỗi UDS:</strong> so trình tự request/response chẩn đoán (xem bài <a href="B4-diagnostics.html">B4</a>).</li>
+          <li><strong>Signal log:</strong> so tín hiệu đã giải mã theo thời gian.</li>
+        </ul>
+        <p>Công cụ ghi/so: <strong>CANoe</strong> xuất trace <code>.blf</code>/<code>.asc</code>, phân tích <em>offline</em> so với reference.</p>
+        <div class="callout callout--note">
+          <div class="callout__icon">🔍</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Khác assertion-based unit test:</strong> unit test kiểm <em>một điểm</em> (giá trị/tương tác) tại chỗ; trace-based kiểm <em>cả chuỗi hành vi theo thời gian</em> (thứ tự, timing, chu kỳ) — bắt lỗi mà assert đơn lẻ không thấy.</p>
+          </div>
+        </div>
+
+        <!-- 11. Tooling CANoe/CAPL/Wireshark -->
+        <h2>11. Tooling: CANoe + CAPL, Wireshark</h2>
+
+        <h3>11.1 CANoe</h3>
+        <p>Công cụ Vector để <strong>mô phỏng &amp; giám sát</strong> CAN/LIN/Ethernet/FlexRay. Thành phần chính: <strong>simulation node</strong> (mô phỏng ECU), <strong>panels</strong> (nút/đèn điều khiển), <strong>test module/test unit</strong> (kịch bản test tự động). Dùng để <em>kích thích (stimulate)</em> và <em>quan sát</em> bus trong integration/system test.</p>
+
+        <h3>11.2 CAPL — CAN Access Programming Language</h3>
+        <p>Ngôn ngữ <strong>event-driven</strong> của CANoe/CANalyzer, cú pháp giống C; dùng để mô phỏng node, phát/nhận frame, viết test case. Code chạy theo <em>handler</em>:</p>
+        <ul>
+          <li><code>on message</code> — khi nhận một frame CAN.</li>
+          <li><code>on timer</code> — hết chu kỳ timer (gửi định kỳ).</li>
+          <li><code>on key</code> — khi nhấn phím.</li>
+          <li><code>on sysvar</code> — khi biến hệ thống đổi.</li>
+          <li><code>on start</code> — khi bắt đầu measurement.</li>
+        </ul>
+<pre><code class="language-c">// CAPL: mô phỏng một node — phản hồi frame và gửi định kỳ
+variables {
+    message 0x100 msgTx;   // frame sẽ gửi
+    msTimer  tHeartbeat;   // timer chu kỳ
+}
+
+on start {
+    setTimer(tHeartbeat, 100);       // 100 ms
+}
+
+on timer tHeartbeat {
+    msgTx.byte(0) = 0xA5;
+    output(msgTx);                   // gửi frame lên bus
+    setTimer(tHeartbeat, 100);       // nạp lại -> chu kỳ 100 ms
+}
+
+on message 0x200 {                   // khi nhận frame ID 0x200
+    if (this.byte(0) == 0x01) {
+        msgTx.byte(1) = this.byte(0);
+        output(msgTx);               // đáp lại request
+    }
+}</code></pre>
+
+        <h3>11.3 Wireshark</h3>
+        <p>Phân tích gói <strong>Ethernet/IP/UDP/TCP</strong> và các giao thức automotive <strong>DoIP/SOME-IP</strong>. Cơ chế: <em>capture</em> gói + <em>dissector</em> giải mã theo tầng. Hữu ích cho <strong>automotive Ethernet</strong> — bổ trợ CANoe khi debug giao tiếp service-oriented.</p>
+
+        <!-- 12. Self test -->
+        <h2>12. Tự kiểm tra</h2>
         <div class="taglist">
           <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
           <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
@@ -296,8 +425,24 @@ void test_Adc_ReadChannel_returns_mapped_value(void) {
           </div></div>
         </div>
 
-        <!-- 10. Cheat-sheet -->
-        <h2>10. Cheat-sheet 1 trang</h2>
+        <div class="qa"><div class="qa__q">ASan, TSan và static analysis khác nhau ra sao? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>Static analysis</strong>: soi code lúc compile, không chạy — bắt null deref/overflow/MISRA, quét cả nhánh chưa test (nhưng nhiều false positive). <strong>ASan</strong>: runtime, bắt lỗi <em>bộ nhớ</em> (buffer overflow, use-after-free). <strong>TSan</strong>: runtime, bắt <em>data race</em> giữa các luồng. Sanitizer báo lỗi thật đã xảy ra nhưng chỉ trên đường code được chạy → nên kết hợp cả hai.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Vì sao TSan quan trọng với vECU đa luồng?</li><li>Valgrind khác sanitizer chỗ nào? (không cần build lại, nhưng chậm)</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Làm sao test deterministic khi code phụ thuộc thời gian? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>Inject clock / virtual time</strong>: không đọc đồng hồ thật mà truyền nguồn thời gian vào (interface/mock), test tự điều khiển “giờ hiện tại” và cho nhảy tới thời điểm mong muốn. Tương tự: cố định seed random, mock I/O, tránh phụ thuộc lịch luồng. Nhờ vậy test lặp lại được, không <em>flaky</em>.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Flaky test là gì và vì sao nguy hiểm?</li><li>Test một timeout 5 phút mà không chờ thật thì làm sao?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">CAPL dùng để làm gì? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">CAPL là ngôn ngữ <strong>event-driven</strong> (cú pháp giống C) của CANoe/CANalyzer để <strong>mô phỏng node, phát/nhận frame và viết test case</strong> trên bus. Code tổ chức theo handler: <code>on message</code>, <code>on timer</code>, <code>on key</code>, <code>on sysvar</code>, <code>on start</code>. Vd: <code>on timer</code> gửi heartbeat định kỳ, <code>on message</code> đáp lại một request.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Trace-based validation với CAN/UDS làm thế nào?</li><li>Khi nào dùng Wireshark thay vì CANoe? (automotive Ethernet/DoIP/SOME-IP)</li></ul></div>
+          </div></div>
+        </div>
+
+        <!-- 13. Cheat-sheet -->
+        <h2>13. Cheat-sheet 1 trang</h2>
         <div class="cheatsheet">
           <div class="cheatsheet__group"><h4>Test levels</h4><ul>
             <li>Unit → Component → Integration → System</li>
@@ -329,6 +474,13 @@ void test_Adc_ReadChannel_returns_mapped_value(void) {
             <li>Pytest: automation/scripting</li>
             <li>VECU: shift-left CI · CANoe: bus</li>
           </ul></div>
+          <div class="cheatsheet__group"><h4>Static/Sanitizer/Trace</h4><ul>
+            <li>Static: cppcheck·Clang-Tidy·Coverity·Polyspace (MISRA)</li>
+            <li>Sanitizer: ASan·UBSan·TSan·MSan·LSan</li>
+            <li>TSan = data race · Valgrind = chậm, không build lại</li>
+            <li>Deterministic: inject clock, fix seed, mock I/O</li>
+            <li>Trace-based: so trace CAN/UDS với golden (.blf/.asc)</li>
+          </ul></div>
           <div class="cheatsheet__group"><h4>Câu chốt</h4><ul>
             <li>Black-box = theo spec · White-box = theo code</li>
             <li>MC/DC bắt lỗi Boolean phức tạp</li>
@@ -337,8 +489,8 @@ void test_Adc_ReadChannel_returns_mapped_value(void) {
           </ul></div>
         </div>
 
-        <!-- 11. Sources -->
-        <h2>11. Nguồn tham khảo</h2>
+        <!-- 14. Sources -->
+        <h2>14. Nguồn tham khảo</h2>
         <ul class="small text-soft">
           <li>Wikipedia — <a href="https://en.wikipedia.org/wiki/Modified_condition/decision_coverage" target="_blank" rel="noopener">Modified condition/decision coverage</a> (định nghĩa, n+1, subsumption).</li>
           <li>Wikipedia — <a href="https://en.wikipedia.org/wiki/Equivalence_partitioning" target="_blank" rel="noopener">Equivalence partitioning</a>, <a href="https://en.wikipedia.org/wiki/Boundary-value_analysis" target="_blank" rel="noopener">Boundary-value analysis</a> (ISTQB black-box).</li>

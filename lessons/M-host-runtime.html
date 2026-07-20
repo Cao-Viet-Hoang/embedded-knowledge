@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>M · Host Runtime — Win/POSIX &amp; Build — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/style.css?v=4" />
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="../assets/favicon.ico" />
+</head>
+<body data-page="M" data-root="../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">M</span>
+            <span class="badge badge--core">Core</span>
+            <span class="chip">Vòng 2.5 — vECU &amp; Mô phỏng (JD)</span>
+          </div>
+          <h1>Host Runtime — Windows/POSIX, Memory Model &amp; Build</h1>
+          <p class="lead">vECU chạy trên <strong>host PC</strong> (Windows/Linux), không phải MCU — nên phải hiểu <strong>API hệ điều hành host + toolchain</strong> thay cho MCAL/target. Bài lấp lỗ hổng "lập trình hệ thống trên host": threading, timer, <strong>atomics &amp; memory model đa lõi</strong> (phần quan trọng nhất), so sánh scheduling OSEK vs POSIX, và build/debug cross-platform.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> 🟠 Core</span>
+            <span><b>Gắn:</b> AUTOSAR OS vs POSIX (bài <a href="B5-os.html">B5</a>), vECU (<a href="K-vecu-sil.html">K</a>), Embedded C (<a href="G-embedded-c.html">G</a>)</span>
+            <span><b>Dạng:</b> Concept + code (C++/C)</span>
+          </div>
+        </div>
+
+        <div class="callout callout--note">
+          <div class="callout__icon">📌</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Bối cảnh:</strong> khi mô phỏng ECU trên PC (vECU/SIL, bài <a href="K-vecu-sil.html">K</a>), phần mềm ứng dụng biên dịch lại cho host và chạy trên <strong>OS đa dụng (GPOS)</strong>. Không còn MCAL/thanh ghi thật — thay bằng <strong>pthread / Win32 / std C++</strong>. Nguồn: cppreference (<code>std::atomic</code>, <code>memory_order</code>), POSIX pthreads, MSDN Synchronization, CMake docs — xem cuối bài.</p>
+          </div>
+        </div>
+
+        <!-- ================= 1. WHY ================= -->
+        <h2>1. Vì sao cần "host runtime"?</h2>
+        <p>Trên MCU, code chạy trực tiếp (bare-metal/RTOS) và nói chuyện với phần cứng qua <strong>MCAL + thanh ghi</strong>. Khi làm <strong>vECU</strong> (mô phỏng ECU trên PC để test sớm, song song với phần cứng), code ứng dụng được <em>biên dịch lại</em> cho Windows/Linux x86-64 và chạy như một <strong>process bình thường trên OS đa dụng</strong>.</p>
+        <dl class="kv">
+          <dt>Thay MCAL bằng OS API</dt><dd>Không còn thanh ghi/ISR thật. Timer, task, giao tiếp… được <strong>mô phỏng bằng API host</strong>: thread thay task, mutex/atomic thay khoá ngắt, timer host thay GPT. Hiểu API OS = điều kiện để viết/gỡ lỗi lớp mô phỏng.</dd>
+          <dt>Host KHÔNG real-time</dt><dd>Windows/Linux desktop là <strong>GPOS</strong> — scheduler tối ưu <em>throughput/công bằng</em>, không đảm bảo deadline. Thread có thể bị <strong>preempt bất kỳ lúc nào</strong>, độ phân giải <code>Sleep</code> thô (~15&nbsp;ms mặc định trên Windows), có jitter/paging/GC của OS. → vECU <strong>không</strong> dùng để đo timing thật; muốn tất định thì dùng <strong>simulated/virtual time</strong> (mục 3, bài <a href="K-vecu-sil.html">K</a>).</dd>
+          <dt>Đa lõi thật</dt><dd>PC có nhiều core chạy thật song song → xuất hiện <strong>data race &amp; memory-ordering</strong> mà trên MCU lõi đơn (chỉ ngắt xen kẽ) ít gặp. Đây là lý do phần <em>memory model</em> (mục 4) là trọng tâm.</dd>
+          <dt>Toolchain host</dt><dd>Dùng compiler PC (MSVC/GCC/Clang) + CMake + debugger/profiler/sanitizer PC — không phải cross-toolchain + JTAG. Đổi lại được cả một hệ sinh thái công cụ mạnh (mục 6–7).</dd>
+        </dl>
+        <div class="callout callout--tip"><div class="callout__icon">💡</div><div class="callout__body"><p class="mb-0"><strong>Câu chốt phỏng vấn:</strong> "vECU đổi <em>target + MCAL + JTAG</em> lấy <em>host OS + std C++ threading + sanitizer/profiler PC</em>; giá phải trả là <strong>mất tính real-time</strong> nên timing phải mô phỏng, và <strong>phải xử lý memory model đa lõi</strong>."</p></div></div>
+
+        <!-- ================= 2. THREADING ================= -->
+        <h2>2. Threading — POSIX ↔ Windows ↔ C++ std</h2>
+        <p>Ba "phương ngữ" cho cùng khái niệm. Với vECU <strong>cross-platform</strong>, nên viết bằng <strong>C++ std</strong> (portable, RAII an toàn) và chỉ tụt xuống API OS khi cần đặc quyền (affinity, priority class).</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Khái niệm</th><th>POSIX (Linux)</th><th>Windows (Win32)</th><th>C++ std (khuyến nghị)</th></tr></thead>
+          <tbody>
+            <tr><td>Tạo thread</td><td><code>pthread_create</code> / <code>pthread_join</code></td><td><code>CreateThread</code> / <code>_beginthreadex</code></td><td><code>std::thread</code>, <code>std::jthread</code> (C++20)</td></tr>
+            <tr><td>Mutex</td><td><code>pthread_mutex_t</code></td><td><code>CRITICAL_SECTION</code>, <code>SRWLOCK</code></td><td><code>std::mutex</code>, <code>std::recursive_mutex</code></td></tr>
+            <tr><td>Read/Write lock</td><td><code>pthread_rwlock_t</code></td><td><code>SRWLOCK</code> (shared/exclusive)</td><td><code>std::shared_mutex</code></td></tr>
+            <tr><td>Condition variable</td><td><code>pthread_cond_t</code></td><td><code>CONDITION_VARIABLE</code></td><td><code>std::condition_variable</code></td></tr>
+            <tr><td>Semaphore</td><td><code>sem_t</code> (<code>sem_wait/post</code>)</td><td><code>CreateSemaphore</code> / <code>WaitForSingleObject</code></td><td><code>std::counting_semaphore</code> (C++20)</td></tr>
+            <tr><td>Join / detach</td><td><code>pthread_join</code> / <code>pthread_detach</code></td><td><code>WaitForSingleObject</code> + <code>CloseHandle</code></td><td><code>.join()</code> / <code>.detach()</code></td></tr>
+            <tr><td>RAII lock</td><td>— (tự viết)</td><td>— (tự viết)</td><td><code>std::lock_guard</code>, <code>std::unique_lock</code>, <code>std::scoped_lock</code></td></tr>
+          </tbody>
+        </table></div>
+
+<pre><code class="language-cpp">#include &lt;thread&gt;
+#include &lt;mutex&gt;
+#include &lt;condition_variable&gt;
+#include &lt;queue&gt;
+
+std::mutex              m;
+std::condition_variable cv;
+std::queue&lt;int&gt;         q;
+bool done = false;
+
+void consumer() {
+    for (;;) {
+        std::unique_lock&lt;std::mutex&gt; lk(m);          // RAII: tự unlock khi ra scope
+        cv.wait(lk, []{ return !q.empty() || done; }); // predicate -> chống spurious wakeup
+        while (!q.empty()) { int v = q.front(); q.pop(); /* xử lý v */ }
+        if (done) break;
+    }
+}
+
+void producer(int v) {
+    { std::lock_guard&lt;std::mutex&gt; lk(m); q.push(v); } // scope nhỏ = giữ lock ngắn
+    cv.notify_one();                                  // đánh thức consumer
+}</code></pre>
+        <div class="callout callout--warn"><div class="callout__icon">⚠️</div><div class="callout__body"><p class="mb-0"><strong>Cạm bẫy đa luồng:</strong> (1) <strong>Deadlock</strong> — hai thread giữ lock chéo; tránh bằng <strong>lock ordering</strong> nhất quán hoặc <code>std::scoped_lock(a,b)</code> (khoá nhiều mutex không deadlock). (2) <strong>Spurious wakeup</strong> — <code>cv.wait</code> có thể "thức dậy vô cớ", <em>luôn</em> dùng predicate (kiểm tra lại điều kiện trong vòng lặp). (3) Quên unlock → dùng RAII (<code>lock_guard</code>/<code>unique_lock</code>) thay vì lock/unlock tay.</p></div></div>
+        <dl class="kv">
+          <dt>Tác vụ một-lần: future</dt><dd>Cần chạy nền rồi lấy kết quả → <code>std::async</code> + <code>std::future</code> (hoặc <code>std::promise</code>/<code>std::packaged_task</code>) sạch hơn tự quản thread; thường phía sau là một <strong>thread pool</strong> để tái dùng thread thay vì tạo/hủy liên tục.</dd>
+          <dt>Khi nào tụt xuống API OS</dt><dd>std C++ <em>không</em> phơi bày affinity/priority/tên thread. Cần gán lõi hay đặt độ ưu tiên (vd cô lập thread điều phối vECU) thì dùng native: <code>SetThreadAffinityMask</code>/<code>SetThreadPriority</code> (Windows), <code>pthread_setaffinity_np</code>/<code>pthread_setschedparam</code> (POSIX) qua <code>native_handle()</code>.</dd>
+        </dl>
+
+        <!-- ================= 3. TIMERS ================= -->
+        <h2>3. Timers &amp; thời gian trên host</h2>
+        <p>vECU cần "đồng hồ" và "hẹn giờ", nhưng đồng hồ host <strong>không tất định</strong>. Phải chọn đúng loại clock và ý thức được jitter.</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Nhu cầu</th><th>Windows</th><th>POSIX</th><th>C++ <code>&lt;chrono&gt;</code></th></tr></thead>
+          <tbody>
+            <tr><td>Đo khoảng thời gian chính xác</td><td><code>QueryPerformanceCounter</code> (+ <code>QueryPerformanceFrequency</code>)</td><td><code>clock_gettime(CLOCK_MONOTONIC)</code></td><td><code>std::chrono::steady_clock</code></td></tr>
+            <tr><td>Giờ tường (wall-clock)</td><td><code>GetSystemTimePreciseAsFileTime</code></td><td><code>clock_gettime(CLOCK_REALTIME)</code></td><td><code>std::chrono::system_clock</code></td></tr>
+            <tr><td>Ngủ / delay</td><td><code>Sleep</code> (thô ~15&nbsp;ms), waitable timer</td><td><code>nanosleep</code> / <code>clock_nanosleep</code></td><td><code>std::this_thread::sleep_for</code></td></tr>
+            <tr><td>Hẹn giờ định kỳ / callback</td><td>Multimedia timer, <em>waitable timer</em></td><td><code>timer_create</code>, <code>timerfd</code></td><td>tự dựng (thread + <code>sleep_until</code>)</td></tr>
+          </tbody>
+        </table></div>
+        <dl class="kv">
+          <dt>Monotonic vs wall-clock (rất hay hỏi)</dt><dd><strong>Đo khoảng thời gian phải dùng monotonic</strong> (<code>steady_clock</code>/<code>CLOCK_MONOTONIC</code>): nó <em>chỉ tăng</em>, không bị NTP chỉnh hay đổi giờ hè. Dùng <code>system_clock</code> (wall-clock) để đo duration là sai — đồng hồ có thể <strong>nhảy lùi</strong> → ra khoảng âm. Wall-clock chỉ dùng để hiển thị/đóng dấu thời gian tuyệt đối.</dd>
+          <dt>Độ phân giải &amp; jitter</dt><dd><code>Sleep(1)</code> trên Windows thực tế có thể ngủ ~15&nbsp;ms (timer tick mặc định). Muốn mịn hơn phải <code>timeBeginPeriod</code>/waitable timer, nhưng vẫn có jitter do scheduler GPOS. → không tin cậy cho timing thật.</dd>
+          <dt>Virtual/simulated time (mấu chốt vECU)</dt><dd>Để vECU <strong>tất định &amp; lặp lại được</strong>, engine mô phỏng dùng một <strong>"OS tick" ảo</strong>: thời gian do bộ mô phỏng cấp phát (advance theo bước), <em>không</em> phụ thuộc đồng hồ tường thực. Có thể chạy nhanh hơn/chậm hơn real-time, dừng ở breakpoint mà thời gian mô phỏng vẫn "đứng yên" (gắn bài <a href="K-vecu-sil.html">K</a>).</dd>
+        </dl>
+
+        <!-- ================= 4. ATOMICS & MEMORY MODEL ================= -->
+        <h2>4. Atomics &amp; Memory Model đa lõi <span class="chip">Trọng tâm</span></h2>
+        <p>Trên PC nhiều core chạy song song thật, đây là phần <strong>lấp lỗ hổng lớn nhất</strong> so với tư duy MCU lõi đơn. Phải nói được: data race là UB, <code>std::atomic</code> + <code>memory_order</code> để đồng bộ, và <code>volatile</code> <strong>không</strong> phải công cụ đa luồng.</p>
+        <dl class="kv">
+          <dt>Data race = UB</dt><dd>Hai thread truy cập cùng địa chỉ, ít nhất một ghi, <strong>không</strong> đồng bộ → <strong>undefined behavior</strong> theo chuẩn C++. Không phải "thỉnh thoảng sai" mà là "chương trình vô nghĩa" — compiler được phép tối ưu như thể race không xảy ra.</dd>
+          <dt><code>std::atomic</code></dt><dd>Cho phép truy cập <em>đồng thời không phải là race</em>. <code>std::atomic&lt;T&gt;</code> đảm bảo mỗi thao tác nguyên tử; <code>std::atomic_flag</code> là kiểu atomic <strong>luôn lock-free</strong> (dùng cho spinlock). Kiểm tra <code>is_lock_free()</code>: atomic nhỏ (đến word) thường lock-free; kiểu lớn có thể dùng khoá ẩn.</dd>
+          <dt><code>std::memory_order</code></dt><dd>Tham số cho biết <em>mức đảm bảo thứ tự</em> quanh thao tác atomic: <code>relaxed</code> (chỉ nguyên tử, <strong>không</strong> ràng buộc thứ tự) → <code>consume</code> (ít dùng, hầu hết coi như acquire) → <code>acquire</code> (dùng cho <em>load</em>) → <code>release</code> (dùng cho <em>store</em>) → <code>acq_rel</code> (cho read-modify-write) → <code>seq_cst</code> (mặc định, mạnh nhất, một thứ tự toàn cục duy nhất).</dd>
+        </dl>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 250" role="img" aria-label="Acquire/release semantics giữa hai thread" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="mM1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <text x="180" y="22" text-anchor="middle" class="dgm-label" font-size="11.5" font-weight="800">Thread A (producer)</text>
+            <text x="540" y="22" text-anchor="middle" class="dgm-label" font-size="11.5" font-weight="800">Thread B (consumer)</text>
+            <line x1="180" y1="34" x2="180" y2="230" stroke="var(--border-strong)" stroke-width="1"/>
+            <line x1="540" y1="34" x2="540" y2="230" stroke="var(--border-strong)" stroke-width="1"/>
+            <rect x="70" y="48" width="220" height="34" rx="6" fill="var(--brand-400)"/><text x="180" y="69" text-anchor="middle" class="dgm-inv" font-size="9.5" font-weight="700">payload = 42  (ghi thường)</text>
+            <rect x="70" y="94" width="220" height="34" rx="6" fill="var(--brand-800)"/><text x="180" y="111" text-anchor="middle" class="dgm-inv" font-size="9" font-weight="700">ready.store(true, release)</text><text x="180" y="123" text-anchor="middle" class="dgm-inv-sub" font-size="8">↑ mọi ghi phía TRÊN bị "đẩy" ra trước</text>
+            <rect x="430" y="94" width="220" height="34" rx="6" fill="var(--core)"/><text x="540" y="111" text-anchor="middle" class="dgm-inv" font-size="9" font-weight="700">while(!ready.load(acquire))</text><text x="540" y="123" text-anchor="middle" class="dgm-inv-sub" font-size="8">↓ mọi đọc phía DƯỚI giữ lại sau</text>
+            <rect x="430" y="150" width="220" height="34" rx="6" fill="var(--brand-400)"/><text x="540" y="171" text-anchor="middle" class="dgm-inv" font-size="9.5" font-weight="700">đọc payload → THẤY 42 ✓</text>
+            <path d="M290,111 C360,111 360,111 428,111" fill="none" class="dgm-arrow" stroke-width="1.6" marker-end="url(#mM1)"/>
+            <text x="360" y="104" text-anchor="middle" class="dgm-sub" font-size="8.5">synchronizes-with</text>
+            <text x="360" y="214" text-anchor="middle" class="dgm-sub" font-size="9.5">store-release "publish" mọi ghi trước nó → load-acquire "nhìn thấy" chúng.</text>
+            <text x="360" y="230" text-anchor="middle" class="dgm-sub" font-size="9.5">Không cần khoá payload là atomic — cặp release/acquire tạo happens-before.</text>
+          </svg>
+          <div class="figure__cap"><b>Acquire/release.</b> <b>store-release</b> (cờ ready) đảm bảo mọi ghi <em>trước</em> nó (payload=42) hiện ra <em>trước</em> khi cờ được set; <b>load-acquire</b> đảm bảo mọi đọc <em>sau</em> nó chỉ chạy <em>sau</em> khi thấy cờ. Cặp này tạo quan hệ <b>happens-before</b> giữa hai thread — rẻ hơn <code>seq_cst</code>.</div>
+        </div>
+
+<pre><code class="language-cpp">#include &lt;atomic&gt;
+#include &lt;cassert&gt;
+
+std::atomic&lt;bool&gt; ready{false};
+int payload = 0;                 // dữ liệu thường (non-atomic)
+
+void producer() {
+    payload = 42;                                     // (1) ghi dữ liệu
+    ready.store(true, std::memory_order_release);     // (2) publish (release)
+}
+
+void consumer() {
+    while (!ready.load(std::memory_order_acquire))    // (3) chờ cờ (acquire)
+        ;                                             //     spin
+    assert(payload == 42);                            // (4) BẢO ĐẢM thấy 42 — không race
+}</code></pre>
+
+        <dl class="kv">
+          <dt>Memory fence</dt><dd><code>std::atomic_thread_fence(order)</code> đặt rào tách khỏi thao tác atomic cụ thể. Ánh xạ phần cứng: x86 <code>MFENCE</code>; ARM <code>DMB</code> (data memory barrier — thứ tự truy cập bộ nhớ), <code>DSB</code> (chờ hoàn tất), <code>ISB</code> (đồng bộ pipeline lệnh). Thường không cần viết tay nếu đã dùng atomic đúng memory_order.</dd>
+          <dt>x86-TSO (strong) vs ARM (weak)</dt><dd><strong>x86</strong> = <em>Total Store Order</em>: khá "mạnh", CPU gần như không reorder trừ store→load → nhiều bug ordering <em>ẩn</em> trên x86 nhưng <strong>lộ ra khi chạy trên ARM</strong> (weak/relaxed, reorder tự do hơn). Bài học: đừng dựa vào TSO của PC — viết đúng memory_order để portable (vECU có thể chạy cả x86 lẫn ARM).</dd>
+          <dt>Compiler vs CPU reordering</dt><dd>Có <strong>hai</strong> nguồn sắp xếp lại: (1) <em>compiler</em> đổi thứ tự lệnh lúc tối ưu; (2) <em>CPU</em> đổi thứ tự lúc chạy (out-of-order/store buffer). <code>memory_order</code> chặn <strong>cả hai</strong>. <code>volatile</code> chỉ chặn compiler bỏ/gộp truy cập — <em>không</em> chặn CPU reorder, không tạo happens-before.</dd>
+          <dt>Cache coherence &amp; MESI</dt><dd>Các core có cache riêng; giao thức <strong>MESI</strong> (Modified/Exclusive/Shared/Invalid) giữ chúng nhất quán — khi một core ghi, cache line ở core khác bị <em>invalidate</em>. Coherence lo "giá trị đúng cuối cùng", còn <em>thứ tự</em> nhìn thấy vẫn do memory model quy định.</dd>
+          <dt>False sharing</dt><dd>Hai biến độc lập rơi vào <strong>cùng một cache line (~64B)</strong>; hai core ghi hai biến đó khiến line bị "ping-pong" invalidate qua lại → chậm dù logic không chia sẻ. Tránh bằng <strong><code>alignas(64)</code></strong> (hoặc <code>std::hardware_destructive_interference_size</code>) để tách biến sang line khác.</dd>
+          <dt>Read-modify-write &amp; lock-free</dt><dd>Các thao tác <em>đọc-sửa-ghi</em> nguyên tử: <code>fetch_add</code>/<code>fetch_sub</code>/<code>fetch_or</code>… và <strong>compare-and-swap</strong> <code>compare_exchange_weak/strong</code> — nền của cấu trúc dữ liệu <strong>lock-free</strong> (không mutex). CAS: "nếu giá trị vẫn là <em>expected</em> thì đặt thành <em>desired</em>, ngược lại nạp lại expected"; lặp trong vòng cho tới khi thành công. <code>_weak</code> có thể fail giả (dùng trong loop, rẻ hơn); <code>_strong</code> không.</dd>
+        </dl>
+<pre><code class="language-cpp">// Bộ đếm chỉ cần nguyên tử, KHÔNG cần thứ tự với dữ liệu khác -> relaxed (rẻ nhất)
+std::atomic&lt;long&gt; hits{0};
+hits.fetch_add(1, std::memory_order_relaxed);
+
+// CAS loop: cập nhật lock-free (vd cộng dồn có điều kiện)
+std::atomic&lt;int&gt; v{0};
+int cur = v.load(std::memory_order_relaxed);
+while (!v.compare_exchange_weak(cur, cur + 1,          // desired
+                                std::memory_order_acq_rel))
+    ; // cur được nạp lại giá trị hiện tại mỗi lần fail -> thử lại</code></pre>
+<pre><code class="language-cpp">// Tránh false sharing: mỗi bộ đếm nằm trên cache line riêng
+struct alignas(64) Counter { std::atomic&lt;long&gt; value{0}; };
+Counter counters[N_THREADS];   // không còn ping-pong cache line giữa các core</code></pre>
+        <div class="callout callout--danger"><div class="callout__icon">🐞</div><div class="callout__body"><p class="mb-0"><strong><code>volatile</code> KHÔNG phải công cụ đồng bộ đa luồng.</strong> Nó không nguyên tử, không tạo happens-before, không chặn CPU reorder — dùng nó để chia sẻ dữ liệu giữa thread là <em>data race/UB</em>. (Khác với <code>volatile</code> cho <strong>thanh ghi HW</strong> trong bài <a href="G-embedded-c.html">G</a>: ở đó nó đúng vai trò "đọc/ghi thật, chống tối ưu".) Đa luồng → dùng <code>std::atomic</code> + <code>memory_order</code>.</p></div></div>
+
+        <!-- ================= 5. OSEK vs POSIX SCHEDULING ================= -->
+        <h2>5. AUTOSAR OS/OSEK vs POSIX/host scheduling</h2>
+        <p>Trên target, task được lập lịch bởi <strong>OSEK/AUTOSAR OS</strong> (tĩnh, real-time — bài <a href="B5-os.html">B5</a>). Trên host, thread do <strong>scheduler GPOS</strong> quản lý. vECU phải <em>ánh xạ</em> mô hình OSEK lên host, hoặc mô phỏng luôn scheduler OSEK.</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Tiêu chí</th><th>AUTOSAR OS / OSEK (target)</th><th>Linux (POSIX)</th><th>Windows</th></tr></thead>
+          <tbody>
+            <tr><td>Chính sách lịch</td><td>Priority tĩnh cố định, non/full-preemptive</td><td><code>SCHED_FIFO</code>/<code>SCHED_RR</code> (RT) · <code>SCHED_OTHER</code> (CFS)</td><td>Priority class + quantum, round-robin trong mức</td></tr>
+            <tr><td>Đơn vị thực thi</td><td>Task khai báo <strong>tĩnh</strong> lúc cấu hình</td><td>Thread/process tạo <strong>động</strong></td><td>Thread/process tạo <strong>động</strong></td></tr>
+            <tr><td>Tính tất định</td><td><strong>Cao</strong> (RTOS, phân tích được WCET)</td><td>Thấp (CFS công bằng); RT policy đỡ hơn</td><td>Thấp (GPOS)</td></tr>
+            <tr><td>Preemption</td><td>Tùy cấu hình (điểm schedule rõ ràng)</td><td>Preemptive theo priority/quantum</td><td>Preemptive theo priority/quantum</td></tr>
+            <tr><td>Số lượng</td><td>Cố định, biết trước</td><td>Không giới hạn (theo tài nguyên)</td><td>Không giới hạn (theo tài nguyên)</td></tr>
+          </tbody>
+        </table></div>
+        <dl class="kv">
+          <dt>vECU ánh xạ thế nào</dt><dd>Hai hướng: (1) <strong>1 task OSEK → 1 thread host</strong>, dùng priority/affinity của OS để "gần đúng" — đơn giản nhưng mất tất định. (2) <strong>Mô phỏng scheduler OSEK</strong> ngay trong engine: một <em>"OS tick" ảo</em> đẩy thời gian, engine tự chọn task READY priority cao nhất và chạy trên (thường) một thread điều phối → <strong>tái hiện đúng hành vi lập lịch tất định</strong>, lặp lại được, không phụ thuộc scheduler GPOS.</dd>
+          <dt>Vì sao không "cứ để OS host lo"</dt><dd>GPOS công bằng/throughput, không tôn trọng priority tĩnh kiểu OSEK, có jitter → kết quả <strong>không lặp lại</strong>. Muốn vECU đáng tin cho test hành vi thời gian, phải mô phỏng scheduler + virtual time (mục 3), không giao cho scheduler host.</dd>
+        </dl>
+
+        <!-- ================= 6. BUILD & PLATFORM ================= -->
+        <h2>6. Build &amp; Platform — CMake, compiler, ABI</h2>
+        <h3>6.1 CMake — build system cross-platform</h3>
+        <p>vECU thường build trên cả Windows lẫn Linux → dùng <strong>CMake</strong> sinh project cho từng generator (Visual Studio/MSVC, Ninja, Makefiles).</p>
+        <dl class="kv">
+          <dt>Cấu trúc</dt><dd><code>CMakeLists.txt</code> khai báo target: <code>add_library</code> / <code>add_executable</code>; liên kết <code>target_link_libraries</code>; include dir <code>target_include_directories</code>.</dd>
+          <dt>Toolchain &amp; generator</dt><dd><em>Toolchain file</em> (<code>-DCMAKE_TOOLCHAIN_FILE</code>) chọn compiler/cờ (cross-compile hay MSVC/Clang); <em>generator</em> (<code>-G Ninja</code> / "Visual Studio 17") quyết định build tool.</dd>
+          <dt>Cấu hình</dt><dd><code>CMAKE_BUILD_TYPE=Debug/Release</code> (single-config generator) hoặc <code>--config</code> (multi-config như MSVC). Test qua <strong>CTest</strong> (<code>enable_testing()</code> + <code>add_test</code>, chạy <code>ctest</code>).</dd>
+        </dl>
+<pre><code class="language-text">cmake_minimum_required(VERSION 3.16)
+project(vecu LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_library(sim STATIC src/scheduler.cpp src/vtime.cpp)
+target_include_directories(sim PUBLIC include)
+
+add_executable(vecu src/main.cpp)
+target_link_libraries(vecu PRIVATE sim)
+
+enable_testing()
+add_test(NAME smoke COMMAND vecu --selftest)
+# cau hinh:  cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+# build   :  cmake --build build   |   test: ctest --test-dir build</code></pre>
+        <h3>6.2 Compiler &amp; ABI</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Compiler</th><th>Nền tảng</th><th>Cảnh báo &amp; sanitizer tiêu biểu</th></tr></thead>
+          <tbody>
+            <tr><td><strong>MSVC</strong> (<code>cl</code>)</td><td>Windows</td><td><code>/W4</code> (cảnh báo cao), <code>/fsanitize=address</code> (ASan)</td></tr>
+            <tr><td><strong>GCC</strong></td><td>Linux</td><td><code>-Wall -Wextra</code>, <code>-fsanitize=address,undefined</code></td></tr>
+            <tr><td><strong>Clang</strong></td><td>Linux/Win/mac</td><td><code>-Wall -Wextra</code>, <code>-fsanitize=address,undefined,thread</code></td></tr>
+          </tbody>
+        </table></div>
+        <dl class="kv">
+          <dt>ABI khác nhau</dt><dd>MSVC và GCC/Clang có <strong>ABI khác</strong> (name mangling, layout, thư viện chuẩn, calling convention) → object/thư viện <em>không trộn lẫn</em> giữa hai compiler; phải build đồng bộ cùng toolchain. Trên Linux GCC/Clang phần lớn tương thích ABI (Itanium C++ ABI).</dd>
+          <dt>Vì sao build cả Windows lẫn Linux</dt><dd>Chạy trên hai OS/compiler <strong>phơi bày bug ẩn</strong>: UB, phụ thuộc thứ tự init, memory-ordering (x86 TSO vs khác), khác biệt <code>size_t</code>/warning. "Sạch trên cả hai" là một dạng kiểm định chất lượng miễn phí.</dd>
+        </dl>
+
+        <!-- ================= 7. DEBUG & PROFILING ================= -->
+        <h2>7. Debug &amp; Profiling trên host</h2>
+        <p>Ưu điểm lớn của vECU: dùng được cả bộ công cụ PC mạnh hơn nhiều JTAG/target.</p>
+        <dl class="kv">
+          <dt>Visual Studio (Windows)</dt><dd><strong>Breakpoint</strong> thường &amp; <strong>conditional breakpoint</strong> (dừng khi điều kiện đúng); <strong>data breakpoint</strong> (dừng khi một địa chỉ bị ghi — bắt ai sửa biến); cửa sổ <strong>Watch/Autos/Locals</strong>, <strong>Call Stack</strong>, <strong>Threads/Parallel Stacks</strong> (gỡ đa luồng).</dd>
+          <dt>Profiling VS</dt><dd><strong>CPU Usage</strong> (hot function), <strong>Memory Usage</strong> (snapshot/leak), <strong>Concurrency Visualizer</strong> (xem thread block/contention — hữu ích cho lock/deadlock).</dd>
+          <dt>WinDbg</dt><dd>Debugger cấp thấp của Windows — phân tích crash dump, kernel/user, mạnh cho hậu kiểm (post-mortem).</dd>
+          <dt>gdb / lldb (POSIX)</dt><dd>Trên Linux: <code>gdb</code>/<code>lldb</code> — breakpoint, watchpoint (= data breakpoint), <code>bt</code> (backtrace), <code>info threads</code>, gắn vào core dump.</dd>
+          <dt>Sanitizers = debug runtime</dt><dd><strong>ASan</strong> (buffer overflow/use-after-free), <strong>UBSan</strong> (undefined behavior), <strong>TSan</strong> (<em>data race</em> — cực hợp cho phần mục 4). Là công cụ phát hiện lỗi <em>lúc chạy</em>, biên dịch kèm cờ; xem sâu ở bài <a href="C-testing.html">C</a>.</dd>
+        </dl>
+        <div class="callout callout--tip"><div class="callout__icon">🔗</div><div class="callout__body"><p class="mb-0"><strong>Mẹo:</strong> nghi ngờ data race trong vECU → build với <strong>ThreadSanitizer</strong> (<code>-fsanitize=thread</code>) và chạy test đa luồng; TSan báo đúng dòng hai thread đụng nhau — nhanh hơn "đọc code đoán" rất nhiều.</p></div></div>
+
+        <!-- ================= 8. Trước -> Nay ================= -->
+        <h2>8. Trước → Nay</h2>
+        <div class="evo">
+          <div class="evo__head">💻 <span>Từ "chạy trên target" sang "chạy trên host"</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước</div><p>Code build cho <strong>target</strong> (RH850/Cortex), nạp qua flash, gỡ lỗi qua <strong>JTAG</strong>; timing = clock phần cứng thật; đa luồng chủ yếu là ngắt xen kẽ trên lõi đơn.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p><strong>vECU</strong> chạy trên host + <strong>std C++ threading</strong> (portable) + <strong>virtual time</strong> cho tất định + <strong>sanitizer/profiler PC</strong> (ASan/TSan, VS profiler). Test sớm, song song phần cứng, CI được (gắn bài <a href="K-vecu-sil.html">K</a>).</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> nói được "đổi JTAG+target lấy host+std C+++sanitizer, giá là mất real-time nên phải mô phỏng thời gian &amp; xử lý memory model" là đúng tinh thần JD vECU.</div>
+        </div>
+
+        <!-- ================= 9. Q&A ================= -->
+        <h2>9. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">Acquire/release nghĩa là gì? Cho ví dụ. <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>store-release</strong> (trên atomic) đảm bảo mọi ghi <em>trước</em> nó hiện ra trước khi store thấy được; <strong>load-acquire</strong> đảm bảo mọi đọc <em>sau</em> nó chạy sau khi thấy giá trị. Cặp release→acquire tạo <strong>happens-before</strong> giữa hai thread. Ví dụ: producer ghi <code>payload=42</code> rồi <code>ready.store(true, release)</code>; consumer <code>while(!ready.load(acquire))</code> rồi đọc <code>payload</code> → chắc chắn thấy 42, không data race. Rẻ hơn <code>seq_cst</code>.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>relaxed khác acquire/release chỗ nào?</li><li>seq_cst đắt hơn ở đâu?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q"><code>volatile</code> có đủ để đồng bộ đa luồng không? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>Không.</strong> <code>volatile</code> chỉ chống compiler bỏ/gộp truy cập (đọc/ghi thật) — <em>không</em> nguyên tử, <em>không</em> chặn CPU reorder, <em>không</em> tạo happens-before. Dùng nó chia sẻ dữ liệu giữa thread là <strong>data race/UB</strong>. Đồng bộ đa luồng phải dùng <code>std::atomic</code> + <code>memory_order</code> (hoặc mutex). Lưu ý: <code>volatile</code> vẫn đúng cho <strong>thanh ghi HW</strong> (bài <a href="G-embedded-c.html">G</a>) — đó là vai trò khác.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Vì sao trên MCU lõi đơn ít lộ vấn đề này?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">False sharing là gì? Tránh thế nào? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Hai biến độc lập nằm cùng một <strong>cache line (~64B)</strong>; hai core ghi hai biến đó khiến line liên tục bị invalidate qua lại (ping-pong theo MESI) → chậm dù logic không hề chia sẻ. Tránh bằng <strong>tách biến sang cache line khác</strong>: <code>alignas(64)</code> (hoặc <code>std::hardware_destructive_interference_size</code>), padding, hoặc gộp dữ liệu mỗi thread vào struct riêng.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Làm sao phát hiện false sharing? (profiler/perf, cache-miss)</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">OSEK vs POSIX scheduling khác gì? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>OSEK/AUTOSAR OS</strong>: task <em>tĩnh</em>, priority cố định, non/full-preemptive, <strong>tất định cao</strong> (RTOS, phân tích WCET). <strong>POSIX/GPOS</strong>: thread/process <em>động</em>, <code>SCHED_FIFO/RR</code> (RT) hoặc CFS (công bằng), preempt theo priority/quantum, <strong>tất định thấp</strong>. vECU vì thế phải <strong>mô phỏng scheduler OSEK + virtual time</strong> chứ không phó mặc scheduler host (nếu không kết quả không lặp lại). Bài <a href="B5-os.html">B5</a>.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Ánh xạ 1 task = 1 thread có nhược điểm gì?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Vì sao đo khoảng thời gian phải dùng monotonic clock? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>Monotonic</strong> (<code>steady_clock</code>/<code>CLOCK_MONOTONIC</code>) chỉ tăng, không bị NTP chỉnh, không đổi giờ hè → hiệu hai mốc luôn ≥ 0 và đúng. <strong>Wall-clock</strong> (<code>system_clock</code>/<code>CLOCK_REALTIME</code>) có thể <em>nhảy lùi</em> khi đồng bộ giờ → đo duration bằng nó có thể ra âm/sai. Wall-clock chỉ để hiển thị/đóng dấu thời gian tuyệt đối. (vECU thì tất định hơn nữa: dùng virtual time.)</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Vì sao <code>Sleep(1)</code> Windows không mịn?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">x86 TSO vs ARM weak ordering — khác gì, ảnh hưởng ra sao? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>x86 = TSO</strong> (khá mạnh, gần như chỉ reorder store→load) nên nhiều bug ordering bị <em>che</em> khi chạy trên PC. <strong>ARM = weak</strong> (reorder tự do hơn) → cùng code có thể <strong>lỗi khi chạy trên ARM</strong>. Bài học: đừng dựa vào TSO — viết đúng <code>memory_order</code>/atomic để code portable (vECU có thể chạy cả x86 lẫn ARM). Nhớ: có <strong>hai</strong> nguồn reorder (compiler + CPU), <code>memory_order</code> chặn cả hai, <code>volatile</code> chỉ chặn compiler.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>MFENCE vs DMB/DSB/ISB?</li><li>Dùng TSan để bắt loại bug này thế nào?</li></ul></div>
+          </div></div>
+        </div>
+
+        <!-- ================= 10. Cheat-sheet ================= -->
+        <h2>10. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>Vì sao host</h4><ul>
+            <li>vECU chạy trên PC → OS API thay MCAL</li>
+            <li>Host = GPOS, KHÔNG real-time (jitter)</li>
+            <li>Đa lõi thật → race &amp; memory model</li>
+            <li>Toolchain PC + sanitizer/profiler</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Threading</h4><ul>
+            <li>POSIX pthread · Win32 · <strong>std C++</strong> (nên dùng)</li>
+            <li>mutex/shared_mutex · condition_variable · semaphore</li>
+            <li>RAII: lock_guard/unique_lock/scoped_lock</li>
+            <li>Bẫy: deadlock (lock order), spurious wakeup (predicate)</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Timer/Time</h4><ul>
+            <li>Đo duration → <strong>monotonic</strong> (steady_clock)</li>
+            <li>Wall-clock (system_clock) chỉ để hiển thị</li>
+            <li>Sleep Windows ~15ms, jitter GPOS</li>
+            <li>vECU → <strong>virtual/simulated time</strong></li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Atomics/Memory ★</h4><ul>
+            <li>Data race = UB → std::atomic + memory_order</li>
+            <li>release(store)/acquire(load) = happens-before</li>
+            <li>relaxed→acquire/release→acq_rel→seq_cst</li>
+            <li>RMW: fetch_add · CAS compare_exchange (lock-free)</li>
+            <li>x86 TSO vs ARM weak · fence: MFENCE/DMB</li>
+            <li>false sharing → alignas(64) · volatile ≠ đồng bộ</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Scheduling</h4><ul>
+            <li>OSEK: task tĩnh, priority cố định, tất định</li>
+            <li>Linux: SCHED_FIFO/RR/CFS · Win: priority class</li>
+            <li>vECU: mô phỏng scheduler OSEK + OS tick ảo</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Build/Debug</h4><ul>
+            <li>CMake: add_library/executable, target_link, ctest</li>
+            <li>MSVC /W4 /fsanitize=address · Clang/GCC -Wall -fsanitize</li>
+            <li>ABI MSVC ≠ GCC → build đồng bộ; build cả Win+Linux</li>
+            <li>VS breakpoint/data bp/profiler · gdb/lldb · ASan/UBSan/TSan</li>
+          </ul></div>
+        </div>
+
+        <!-- ================= 11. Sources ================= -->
+        <h2>11. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li>cppreference — <a href="https://en.cppreference.com/w/cpp/atomic/atomic" target="_blank" rel="noopener">std::atomic</a>, <a href="https://en.cppreference.com/w/cpp/atomic/memory_order" target="_blank" rel="noopener">std::memory_order</a> (acquire/release, seq_cst, fence).</li>
+          <li><strong>POSIX pthreads</strong> — <a href="https://man7.org/linux/man-pages/man7/pthreads.7.html" target="_blank" rel="noopener">pthreads(7)</a>, <code>clock_gettime</code>, <code>timer_create</code>/<code>timerfd</code>, <code>sched(7)</code> (SCHED_FIFO/RR/OTHER).</li>
+          <li><strong>MSDN / Microsoft Learn</strong> — <a href="https://learn.microsoft.com/en-us/windows/win32/sync/synchronization" target="_blank" rel="noopener">Synchronization</a> (CRITICAL_SECTION, SRWLOCK, CONDITION_VARIABLE), QueryPerformanceCounter, scheduling priorities.</li>
+          <li><strong>CMake</strong> — <a href="https://cmake.org/cmake/help/latest/" target="_blank" rel="noopener">CMake documentation</a> (targets, toolchain file, generators, CTest).</li>
+          <li>Sanitizers — Clang/GCC AddressSanitizer, UndefinedBehaviorSanitizer, ThreadSanitizer (đào sâu ở bài <a href="C-testing.html">C</a>).</li>
+          <li>OSEK/VDX &amp; AUTOSAR OS SWS — đối chiếu scheduling tĩnh vs GPOS (bài <a href="B5-os.html">B5</a>).</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi giải thích được acquire/release, vì sao volatile ≠ đồng bộ, false sharing, OSEK vs POSIX scheduling và vì sao dùng monotonic/virtual time.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">
+        Chủ đề M · Host Runtime — Win/POSIX &amp; Build — Interview Prep
+      </footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../assets/js/app.js?v=4"></script>
+</body>
+</html>

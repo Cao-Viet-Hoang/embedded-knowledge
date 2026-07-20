@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>L · FMI / FMU (Co-Simulation) — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/style.css?v=4" />
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="../assets/favicon.ico" />
+</head>
+<body data-page="L" data-root="../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">L</span>
+            <span class="badge badge--core">Core</span>
+            <span class="chip">Vòng 2.5 — vECU &amp; Mô phỏng (JD)</span>
+          </div>
+          <h1>FMI / FMU — Functional Mock-up Interface &amp; Co-Simulation</h1>
+          <p class="lead">Chuẩn mở <strong>tool-independent</strong> để đóng gói &amp; đồng-mô phỏng model động. Đào sâu: <strong>FMU</strong> (.fmu = zip), <strong>Model Exchange vs Co-Simulation</strong>, điểm mới <strong>FMI 3.0</strong> (Clocks, Binary, <strong>Layered Standards / LS-BUS</strong>), <code>modelDescription.xml</code>, vòng đời API CS, và vai trò trong <strong>vECU</strong> (ghép Simulink / dSPACE / CANoe / SIL Kit).</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> 🟠 Core</span>
+            <span><b>Gắn:</b> FMI ↔ SIL Kit (bài <a href="K-vecu-sil.html">K</a>), Host runtime (<a href="M-host-runtime.html">M</a>)</span>
+            <span><b>Chuẩn:</b> Modelica Association (fmi-standard.org)</span>
+          </div>
+        </div>
+
+        <div class="callout callout--note">
+          <div class="callout__icon">📌</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Nguồn:</strong> đối chiếu <strong>FMI 2.0.x</strong> &amp; <strong>FMI 3.0</strong> Specification (Modelica Association) — interface types, <code>modelDescription.xml</code>, API, Layered Standards (LS-BUS/LS-XCP) — xem cuối bài.</p>
+          </div>
+        </div>
+
+        <!-- ================= 1. FMI & FMU ================= -->
+        <h2>1. FMI &amp; FMU là gì</h2>
+        <p><strong>FMI</strong> (Functional Mock-up Interface) là một <strong>chuẩn mở, độc lập công cụ (tool-independent)</strong>, do <strong>Modelica Association</strong> quản lý, dùng để <em>trao đổi</em> và <em>đồng-mô phỏng (co-simulation)</em> các model động giữa nhiều tool khác nhau. <strong>FMU</strong> (Functional Mock-up Unit) là <em>đơn vị</em> đóng gói theo chuẩn đó: một file <code>.fmu</code> — thực chất là một file <strong>zip</strong> đổi đuôi.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 250" role="img" aria-label="Cấu trúc bên trong một file .fmu" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="lf1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="20" y="20" width="200" height="210" rx="10" fill="var(--brand-900)"/><text x="120" y="48" text-anchor="middle" class="dgm-inv" font-size="13" font-weight="800">model.fmu</text><text x="120" y="66" text-anchor="middle" class="dgm-inv-sub" font-size="9.5">= file ZIP (đổi đuôi)</text>
+            <rect x="40" y="82" width="160" height="30" rx="5" fill="var(--brand-400)"/><text x="120" y="101" text-anchor="middle" class="dgm-inv" font-size="9.5" font-weight="700">📦 tự đóng gói, di động</text>
+            <rect x="40" y="122" width="160" height="42" rx="5" fill="var(--surface-2)" class="dgm-layer"/><text x="120" y="140" text-anchor="middle" class="dgm-sub" font-size="9">độc lập tool &amp; OS</text><text x="120" y="154" text-anchor="middle" class="dgm-sub" font-size="9">(binaries theo platform)</text>
+            <line x1="220" y1="125" x2="272" y2="125" class="dgm-arrow" stroke-width="1.5" marker-end="url(#lf1)"/>
+            <rect x="278" y="28" width="422" height="46" rx="7" fill="var(--core)"/><text x="489" y="49" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="800">modelDescription.xml</text><text x="489" y="64" text-anchor="middle" class="dgm-inv-sub" font-size="9">manifest: biến, causality/variability, capability flags</text>
+            <rect x="278" y="82" width="422" height="52" rx="7" fill="var(--brand-600)"/><text x="489" y="103" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="800">binaries/</text><text x="489" y="120" text-anchor="middle" class="dgm-inv-sub" font-size="9">win64/*.dll · linux64/*.so · x86_64-linux/… (theo platform)</text>
+            <rect x="278" y="142" width="205" height="46" rx="7" fill="var(--brand-400)"/><text x="380" y="163" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="800">resources/</text><text x="380" y="178" text-anchor="middle" class="dgm-inv-sub" font-size="9">bảng tra, tham số, map…</text>
+            <rect x="495" y="142" width="205" height="46" rx="7" fill="var(--surface-2)" class="dgm-layer" stroke-dasharray="4 3"/><text x="597" y="163" text-anchor="middle" class="dgm-sub" font-size="11" font-weight="700">sources/ (tuỳ chọn)</text><text x="597" y="178" text-anchor="middle" class="dgm-sub" font-size="9">source-code FMU (build lại)</text>
+            <rect x="278" y="196" width="422" height="34" rx="7" fill="var(--defend)"/><text x="489" y="217" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">documentation/ · icons (FMI 3.0) · (tuỳ chọn)</text>
+          </svg>
+          <div class="figure__cap"><b>Bên trong .fmu.</b> Zip chứa <b>modelDescription.xml</b> (mô tả toàn bộ biến &amp; khả năng) + <b>binaries</b> (thư viện đã biên dịch theo từng platform) + <b>resources</b> + (tuỳ chọn) <b>source code</b>. Nhờ vậy FMU chạy được mà <em>không cần</em> tool gốc.</div>
+        </div>
+
+        <dl class="kv">
+          <dt>FMI (giao diện / chuẩn)</dt><dd>Là <strong>đặc tả</strong>: định nghĩa cấu trúc file, các hàm C phải có (<code>fmi2*</code>/<code>fmi3*</code>), và schema XML. Không phải phần mềm — là “hợp đồng” để các tool nói chuyện với nhau.</dd>
+          <dt>FMU (đơn vị / hiện vật)</dt><dd>Là <strong>sản phẩm</strong> tuân theo FMI: file <code>.fmu</code> đóng gói một model cụ thể (vd một vECU, hay một <em>plant model</em> — mô hình vật lý của xe/động cơ). Một tool <em>export</em> ra FMU, tool khác <em>import</em> chạy.</dd>
+          <dt>Vì sao quan trọng cho vECU / automotive</dt><dd>Đóng gói <strong>vECU hoặc plant model độc lập tool</strong>: xuất từ Simulink/dSPACE rồi chạy trong CANoe, SIL Kit, hoặc importer bất kỳ. Cho phép <strong>ghép nhiều tool</strong> vào một mô phỏng chung (controller ở tool A, plant ở tool B) → tái sử dụng model, bảo vệ IP (chỉ giao binary), và dựng SIL/MIL/HIL nhanh.</dd>
+          <dt>Bảo vệ IP</dt><dd>FMU dạng binary chỉ lộ <em>giao diện</em> (biến vào/ra) chứ không lộ phương trình/source → nhà cung cấp giao model cho OEM mà giữ bí mật thuật toán.</dd>
+        </dl>
+
+        <!-- ================= 2. Interface types ================= -->
+        <h2>2. Các loại interface — ME · CS · SE</h2>
+        <p>Một FMU khai báo (trong <code>modelDescription.xml</code>) nó hỗ trợ (các) loại giao diện nào. Khác biệt cốt lõi: <strong>solver (bộ giải số) nằm ở đâu</strong> — bên trong FMU hay do importer cấp.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 210" role="img" aria-label="Model Exchange vs Co-Simulation: vị trí solver" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="lf2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <text x="180" y="24" text-anchor="middle" class="dgm-label" font-size="12" font-weight="800">Model Exchange (ME)</text>
+            <rect x="40" y="36" width="280" height="150" rx="10" fill="var(--surface-2)" class="dgm-layer"/><text x="180" y="56" text-anchor="middle" class="dgm-sub" font-size="9.5">Importer (môi trường)</text>
+            <rect x="60" y="66" width="240" height="42" rx="7" fill="var(--must)"/><text x="180" y="87" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="800">SOLVER (ở ngoài)</text><text x="180" y="101" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">tích phân chung cho mọi FMU</text>
+            <rect x="60" y="120" width="240" height="52" rx="7" fill="var(--brand-800)"/><text x="180" y="141" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="800">FMU (ME)</text><text x="180" y="156" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">chỉ cấp đạo hàm / phương trình</text>
+            <line x1="180" y1="120" x2="180" y2="110" class="dgm-arrow" stroke-width="1.5" marker-end="url(#lf2)"/><text x="230" y="118" class="dgm-sub" font-size="8">der(x)</text>
+            <text x="540" y="24" text-anchor="middle" class="dgm-label" font-size="12" font-weight="800">Co-Simulation (CS)</text>
+            <rect x="400" y="36" width="280" height="150" rx="10" fill="var(--surface-2)" class="dgm-layer"/><text x="540" y="56" text-anchor="middle" class="dgm-sub" font-size="9.5">Master (chỉ trao đổi dữ liệu)</text>
+            <rect x="420" y="66" width="240" height="106" rx="7" fill="var(--brand-800)"/><text x="540" y="90" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="800">FMU (CS)</text>
+            <rect x="440" y="104" width="200" height="52" rx="6" fill="var(--core)"/><text x="540" y="126" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="800">SOLVER nhúng SẴN</text><text x="540" y="141" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">tự tích phân trong doStep</text>
+            <text x="540" y="200" text-anchor="middle" class="dgm-sub" font-size="9">Master chỉ set input → doStep(t,h) → get output tại “communication point”</text>
+          </svg>
+          <div class="figure__cap"><b>ME vs CS.</b> <b>ME</b>: FMU chỉ cấp đạo hàm, <b>solver nằm ngoài</b> (importer) và điều khiển bước. <b>CS</b>: FMU <b>nhúng sẵn solver</b>, master chỉ trao đổi dữ liệu tại các <b>communication point</b> (macro step).</div>
+        </div>
+
+        <dl class="kv">
+          <dt>Model Exchange (ME)</dt><dd>FMU chỉ cung cấp <strong>phương trình / đạo hàm trạng thái</strong> (<code>der(x) = f(x,u,t)</code>) và giá trị output; <strong>solver nằm ngoài</strong> (importer cấp một bộ tích phân dùng chung cho mọi FMU). Ưu: một solver duy nhất → đồng bộ chính xác, xử lý sự kiện (event/zero-crossing) tốt. Nhược: importer bắt buộc phải có solver; phức tạp hơn.</dd>
+          <dt>Co-Simulation (CS)</dt><dd>FMU <strong>nhúng sẵn solver riêng</strong>; <strong>master</strong> chỉ trao đổi dữ liệu tại các <strong>communication point</strong> (macro step) qua <code>fmi2DoStep</code>. Ưu: đóng gói kín (IP, tool khác nhau), master đơn giản. Nhược: sai số ghép nối tại communication point (input giữ hằng trong bước), khó xử lý <em>algebraic loop</em> giữa các FMU.</dd>
+          <dt>Scheduled Execution (SE) — FMI 3.0</dt><dd>Loại giao diện <strong>mới trong 3.0</strong> cho <strong>clock / real-time</strong>: môi trường (scheduler) gọi từng “model partition” theo <strong>clock</strong> (chu kỳ/sự kiện) do nó điều phối — rất hợp ghép <strong>AUTOSAR / vECU</strong> chạy theo task/tick thay vì để FMU tự tích phân.</dd>
+        </dl>
+
+        <div class="table-wrap"><table>
+          <thead><tr><th>Tiêu chí</th><th>Model Exchange (ME)</th><th>Co-Simulation (CS)</th></tr></thead>
+          <tbody>
+            <tr><td>Solver ở đâu</td><td><strong>Ngoài</strong> FMU (importer cấp)</td><td><strong>Nhúng sẵn</strong> trong FMU</td></tr>
+            <tr><td>Ai điều khiển bước</td><td>Solver chung của importer</td><td>Master chỉ định communication step <code>h</code></td></tr>
+            <tr><td>FMU cung cấp</td><td>Đạo hàm <code>der(x)</code>, output, event indicator</td><td>Kết quả sau mỗi macro step (tự tích phân micro step)</td></tr>
+            <tr><td>Xử lý event</td><td>Chính xác (solver phát hiện zero-crossing)</td><td>Hạn chế hơn (input giữ hằng trong bước)</td></tr>
+            <tr><td>Ưu điểm</td><td>Đồng bộ chặt, ghép nhiều model 1 solver</td><td>Đóng gói kín, ghép tool khác nhau dễ, master gọn</td></tr>
+            <tr><td>Nhược điểm</td><td>Importer phải có solver; phức tạp</td><td>Sai số coupling; algebraic loop khó; cần rollback</td></tr>
+          </tbody>
+        </table></div>
+
+        <!-- ================= 3. FMI 2.0 vs 3.0 ================= -->
+        <h2>3. FMI 2.0 vs 3.0 — điểm mới &amp; Layered Standards</h2>
+        <p>FMI 2.0 (2014) là phiên bản dùng rộng rãi nhất. <strong>FMI 3.0</strong> (2022) bổ sung nhiều thứ đặc biệt hữu ích cho <strong>ECU / hệ nhúng</strong>:</p>
+
+        <dl class="kv">
+          <dt>Array variables</dt><dd>Biến kiểu <strong>mảng</strong> có kích thước (dimension) khai báo trong XML — thay vì phải “bẻ” thành nhiều biến vô hướng như 2.0.</dd>
+          <dt>Kiểu Binary</dt><dd>Kiểu <code>Binary</code> (khối byte) — nền tảng để truyền <strong>frame bus</strong> (CAN/LIN/…) hay dữ liệu nhị phân qua FMU (dùng bởi LS-BUS).</dd>
+          <dt>Clocks (clocked / triggered)</dt><dd><strong>Đồng hồ</strong> mô tả <em>khi nào</em> một biến/tính toán cập nhật: <em>periodic clock</em> (định kỳ) hoặc <em>triggered/aperiodic clock</em> (theo sự kiện). Hỗ trợ mô hình <strong>event-driven / rời rạc (discrete)</strong> — rất hợp cách ECU chạy theo tick/task/ngắt.</dd>
+          <dt>Terminals &amp; Icons</dt><dd>Nhóm biến thành <strong>terminal</strong> (cổng nối có ngữ nghĩa, vd một bus) + biểu tượng đồ hoạ → nối FMU trong sơ đồ trực quan &amp; đúng ngữ nghĩa.</dd>
+          <dt>Source-code FMUs</dt><dd>Chuẩn hoá cách đóng gói <strong>source code</strong> để importer <em>build lại</em> binary cho platform target (vd cross-compile cho MCU/RTOS) — không chỉ binary dựng sẵn.</dd>
+          <dt>Intermediate Update</dt><dd>Cho phép FMU (CS) gọi callback báo giá trị <strong>giữa các communication point</strong> — master lấy được kết quả trung gian, hỗ trợ đồng bộ mịn hơn &amp; phát hiện event sớm.</dd>
+          <dt>Scheduled Execution</dt><dd>Loại interface thứ ba (xem mục 2) cho clock/real-time — ghép scheduler ngoài.</dd>
+        </dl>
+
+        <h3>3.1 Layered Standards (FMI-LS)</h3>
+        <p>FMI 3.0 tách các mở rộng chuyên biệt thành <strong>Layered Standards</strong> — “tầng phủ” trên FMI lõi (đóng gói trong thư mục <code>extra/</code> của FMU), để chuẩn hoá kịch bản dùng cụ thể mà không phình chuẩn lõi:</p>
+        <dl class="kv">
+          <dt>LS-BUS ⭐ (cực liên quan vECU)</dt><dd>Đóng gói <strong>giao tiếp bus</strong> — <strong>CAN / CAN FD / LIN / Ethernet / FlexRay</strong> — <em>bên trong</em> FMU (dùng biến kiểu <code>Binary</code> để mang frame + clock để định thời). Nhờ đó một vECU-FMU có thể “nói chuyện” qua bus ảo với FMU khác hay với bus simulation (CANoe, SIL Kit) một cách chuẩn hoá — không cần giao thức riêng mỗi tool.</dd>
+          <dt>LS-XCP</dt><dd>Chuẩn hoá <strong>XCP</strong> (đo/hiệu chỉnh — measurement &amp; calibration) qua FMU → gắn công cụ calibration (vd INCA/CANape) vào vECU-FMU.</dd>
+          <dt>LS-Measurement (Structured Measurement / Signal)</dt><dd>Chuẩn hoá mô tả &amp; xuất <strong>tín hiệu đo</strong> có cấu trúc từ FMU (đơn vị, nhóm, lịch sử) để phân tích/ghi log nhất quán.</dd>
+        </dl>
+        <div class="callout callout--tip"><div class="callout__icon">🔗</div><div class="callout__body"><p class="mb-0"><strong>Vì sao LS-BUS quan trọng với vECU:</strong> một ECU thực giao tiếp chủ yếu qua bus (CAN/LIN…). Muốn mô phỏng nhiều ECU cùng lúc (network) hoặc ghép vECU với bus simulation, ta cần cách <em>chuẩn</em> để truyền frame bus qua ranh giới FMU. LS-BUS làm đúng việc đó → vECU-FMU trở thành node bus ảo “cắm” thẳng vào SIL Kit / CANoe (bài <a href="K-vecu-sil.html">K</a>).</p></div></div>
+
+        <!-- ================= 4. modelDescription.xml ================= -->
+        <h2>4. <code>modelDescription.xml</code></h2>
+        <p>Là <strong>manifest</strong> của FMU: importer đọc nó <em>trước khi</em> nạp binary để biết FMU có những biến gì, hỗ trợ interface nào, và khả năng (capability) ra sao. Thành phần chính:</p>
+        <dl class="kv">
+          <dt>ScalarVariable (2.0) / biến (3.0)</dt><dd>Mỗi biến có: tên, <code>valueReference</code> (<strong>số ID</strong> để get/set nhanh theo kiểu — không dùng tên khi chạy), <strong>causality</strong>, <strong>variability</strong>, kiểu (Real/Integer/Boolean/String; 3.0 thêm Float32/64, Int*, Binary, Clock), giá trị khởi tạo/đơn vị.</dd>
+          <dt>valueReference</dt><dd>Định danh số của biến <em>trong phạm vi một kiểu</em>. API dùng mảng <code>valueReference[]</code> để get/set hàng loạt (vd <code>fmi2GetReal(c, vr, n, out)</code>).</dd>
+          <dt>ModelStructure</dt><dd>Khai báo quan hệ phụ thuộc: <em>outputs</em>, <em>derivatives</em> (ME), <em>initialUnknowns</em>, và <em>dependency</em> giữa chúng — giúp solver/master biết thứ tự tính &amp; phát hiện algebraic loop.</dd>
+          <dt>Capability flags</dt><dd>Cờ khả năng, vd (CS) <code>canHandleVariableCommunicationStepSize</code> (chấp nhận đổi <code>h</code> mỗi bước), <code>canGetAndSetFMUstate</code> (hỗ trợ lưu/khôi phục trạng thái → rollback), <code>canSerializeFMUstate</code>, <code>canInterpolateInputs</code>, <code>maxOutputDerivativeOrder</code>… Master phải tôn trọng các cờ này.</dd>
+        </dl>
+
+        <div class="table-wrap"><table>
+          <thead><tr><th>causality</th><th>Ý nghĩa</th><th>variability</th><th>Ý nghĩa</th></tr></thead>
+          <tbody>
+            <tr><td><code>input</code></td><td>Ngõ vào — master/other FMU set</td><td><code>constant</code></td><td>Không đổi (hằng)</td></tr>
+            <tr><td><code>output</code></td><td>Ngõ ra — kết nối sang FMU khác</td><td><code>fixed</code></td><td>Cố định sau init (không tunable)</td></tr>
+            <tr><td><code>parameter</code></td><td>Tham số cấu hình (set khi init)</td><td><code>tunable</code></td><td>Có thể chỉnh lúc chạy (calibration)</td></tr>
+            <tr><td><code>calculatedParameter</code></td><td>Tham số suy ra từ parameter khác</td><td><code>discrete</code></td><td>Chỉ đổi tại event/điểm rời rạc</td></tr>
+            <tr><td><code>local</code></td><td>Biến nội bộ (không ghép ngoài)</td><td><code>continuous</code></td><td>Biến liên tục theo thời gian (Real)</td></tr>
+            <tr><td><code>independent</code></td><td>Biến độc lập = <em>thời gian</em> (t)</td><td>—</td><td>—</td></tr>
+          </tbody>
+        </table></div>
+
+        <!-- ================= 5. Vòng đời API (CS) ================= -->
+        <h2>5. Vòng đời API (Co-Simulation, FMI 2.0)</h2>
+        <p>Master gọi các hàm C của FMU theo một trình tự cố định: <strong>khởi tạo → cấu hình → vòng lặp doStep → kết thúc → giải phóng</strong>.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 130" role="img" aria-label="Trình tự gọi API FMI 2.0 Co-Simulation" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="lf5" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="14" y="40" width="120" height="42" rx="7" fill="var(--brand-800)"/><text x="74" y="60" text-anchor="middle" class="dgm-inv" font-size="9" font-weight="700">Instantiate</text><text x="74" y="74" text-anchor="middle" class="dgm-inv-sub" font-size="7.5">SetupExperiment</text>
+            <rect x="152" y="40" width="120" height="42" rx="7" fill="var(--brand-600)"/><text x="212" y="58" text-anchor="middle" class="dgm-inv" font-size="8.5" font-weight="700">Enter→Exit</text><text x="212" y="71" text-anchor="middle" class="dgm-inv-sub" font-size="7.5">InitializationMode</text>
+            <rect x="290" y="30" width="200" height="62" rx="7" fill="var(--core)"/><text x="390" y="52" text-anchor="middle" class="dgm-inv" font-size="9.5" font-weight="800">VÒNG LẶP</text><text x="390" y="67" text-anchor="middle" class="dgm-inv-sub" font-size="7.8">SetReal → doStep(t,h) → GetReal</text><text x="390" y="80" text-anchor="middle" class="dgm-inv-sub" font-size="7.8">t += h  (tới tStop)</text>
+            <rect x="508" y="40" width="98" height="42" rx="7" fill="var(--brand-400)"/><text x="557" y="65" text-anchor="middle" class="dgm-inv" font-size="9" font-weight="700">Terminate</text>
+            <rect x="624" y="40" width="82" height="42" rx="7" fill="var(--defend)"/><text x="665" y="65" text-anchor="middle" class="dgm-inv" font-size="8.5" font-weight="700">FreeInstance</text>
+            <line x1="134" y1="61" x2="150" y2="61" class="dgm-arrow" stroke-width="1.5" marker-end="url(#lf5)"/>
+            <line x1="272" y1="61" x2="288" y2="61" class="dgm-arrow" stroke-width="1.5" marker-end="url(#lf5)"/>
+            <line x1="490" y1="61" x2="506" y2="61" class="dgm-arrow" stroke-width="1.5" marker-end="url(#lf5)"/>
+            <line x1="606" y1="61" x2="622" y2="61" class="dgm-arrow" stroke-width="1.5" marker-end="url(#lf5)"/>
+            <path d="M390,92 q0,20 -60,20 q-60,0 -60,-16" fill="none" class="dgm-arrow" stroke-width="1.4" marker-end="url(#lf5)"/><text x="330" y="126" text-anchor="middle" class="dgm-sub" font-size="8">lặp tới t ≥ tStop</text>
+          </svg>
+          <div class="figure__cap"><b>Vòng đời CS.</b> Instantiate → SetupExperiment → Enter/ExitInitializationMode → vòng lặp {SetReal · doStep · GetReal · t+=h} → Terminate → FreeInstance.</div>
+        </div>
+
+<pre><code class="language-c">#include "fmi2Functions.h"
+
+// --- 1. Nạp FMU &amp; tạo instance (CS: solver đã nhúng sẵn) ---
+fmi2Component c = fmi2Instantiate(
+    "plant",                 // instanceName
+    fmi2CoSimulation,        // fmuType = Co-Simulation
+    guid,                    // GUID phải khớp modelDescription.xml
+    resourceLocation,        // URI tới thư mục resources/
+    &amp;callbacks,              // logger / allocateMemory / freeMemory ...
+    fmi2False,               // visible
+    fmi2False);              // loggingOn
+
+// --- 2. Thiết lập experiment + khởi tạo ---
+fmi2SetupExperiment(c, fmi2False, 0.0, tStart, fmi2True, tStop);
+fmi2EnterInitializationMode(c);
+fmi2SetReal(c, &amp;vrParam, 1, &amp;paramValue);   // set parameter/initial value
+fmi2ExitInitializationMode(c);
+
+// --- 3. Vòng lặp co-simulation (master điều khiển bước) ---
+double t = tStart;
+const double h = 1e-3;                          // communication step size (macro step)
+while (t &lt; tStop) {
+    fmi2SetReal(c, vrIn, nIn, u);               // đẩy input tại communication point
+    fmi2Status s = fmi2DoStep(c, t, h, fmi2True); // FMU tự chạy solver nội bộ trên [t, t+h]
+    if (s == fmi2Discard) { /* rollback / giảm bước — xem mục 6 */ break; }
+    fmi2GetReal(c, vrOut, nOut, y);             // lấy output sau bước
+    t += h;
+}
+
+// --- 4. Kết thúc &amp; giải phóng ---
+fmi2Terminate(c);
+fmi2FreeInstance(c);</code></pre>
+
+        <div class="callout callout--note"><div class="callout__icon">🆕</div><div class="callout__body"><p class="mb-0"><strong>FMI 3.0 khác gì:</strong> đổi tiền tố <code>fmi2*</code> → <code>fmi3*</code> (vd <code>fmi3InstantiateCoSimulation</code>, <code>fmi3EnterInitializationMode</code>), và <strong>chữ ký <code>fmi3DoStep</code> khác</strong> — trả thêm cờ qua con trỏ để hỗ trợ <em>event handling</em> &amp; <em>early return</em>:</p>
+<pre class="mb-0"><code class="language-c">fmi3Status fmi3DoStep(fmi3Instance instance,
+    fmi3Float64  currentCommunicationPoint,
+    fmi3Float64  communicationStepSize,
+    fmi3Boolean  noSetFMUStatePriorToCurrentPoint,
+    fmi3Boolean* eventHandlingNeeded,     // FMU báo cần xử lý event
+    fmi3Boolean* terminateSimulation,
+    fmi3Boolean* earlyReturn,             // FMU dừng sớm giữa bước
+    fmi3Float64* lastSuccessfulTime);     // thời điểm dừng thực tế</code></pre></div></div>
+
+        <!-- ================= 6. Co-simulation master ================= -->
+        <h2>6. Co-simulation master — macro/micro step, rollback</h2>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 150" role="img" aria-label="Macro step vs micro step trong co-simulation" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="lf6" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <line x1="40" y1="96" x2="700" y2="96" class="dgm-arrow" stroke-width="1.5" marker-end="url(#lf6)"/><text x="700" y="114" text-anchor="end" class="dgm-sub" font-size="9">t</text>
+            <line x1="90" y1="40" x2="90" y2="102" stroke="var(--must)" stroke-width="1.4"/><text x="90" y="34" text-anchor="middle" class="dgm-sub" font-size="8.5">t₀</text>
+            <line x1="330" y1="40" x2="330" y2="102" stroke="var(--must)" stroke-width="1.4"/><text x="330" y="34" text-anchor="middle" class="dgm-sub" font-size="8.5">t₀+h</text>
+            <line x1="570" y1="40" x2="570" y2="102" stroke="var(--must)" stroke-width="1.4"/><text x="570" y="34" text-anchor="middle" class="dgm-sub" font-size="8.5">t₀+2h</text>
+            <text x="90" y="126" text-anchor="middle" class="dgm-sub" font-size="8">SetReal·GetReal</text>
+            <text x="330" y="126" text-anchor="middle" class="dgm-sub" font-size="8">SetReal·GetReal</text>
+            <text x="570" y="126" text-anchor="middle" class="dgm-sub" font-size="8">communication point</text>
+            <path d="M90,60 L330,60" class="dgm-arrow" stroke-width="1.3" marker-end="url(#lf6)"/><text x="210" y="54" text-anchor="middle" class="dgm-label" font-size="9.5" font-weight="700">MACRO step h (master)</text>
+            <g>
+              <line x1="110" y1="88" x2="110" y2="96" stroke="var(--brand-600)" stroke-width="1.2"/>
+              <line x1="150" y1="88" x2="150" y2="96" stroke="var(--brand-600)" stroke-width="1.2"/>
+              <line x1="200" y1="88" x2="200" y2="96" stroke="var(--brand-600)" stroke-width="1.2"/>
+              <line x1="245" y1="88" x2="245" y2="96" stroke="var(--brand-600)" stroke-width="1.2"/>
+              <line x1="295" y1="88" x2="295" y2="96" stroke="var(--brand-600)" stroke-width="1.2"/>
+            </g>
+            <text x="210" y="84" text-anchor="middle" class="dgm-sub" font-size="8">micro step (solver nhúng tự chia — master không thấy)</text>
+          </svg>
+          <div class="figure__cap"><b>Macro vs micro step.</b> Master trao đổi dữ liệu tại các <b>communication point</b> cách nhau <code>h</code> (macro step); bên trong mỗi bước, solver nhúng của FMU tự chia thành nhiều <b>micro step</b> mà master không nhìn thấy.</div>
+        </div>
+
+        <dl class="kv">
+          <dt>Macro step vs micro step</dt><dd><strong>Macro step</strong> = communication step <code>h</code> do <em>master</em> chọn (khoảng giữa hai communication point). <strong>Micro step</strong> = các bước tích phân <em>bên trong</em> FMU do solver nhúng tự chia nhỏ (master không thấy). Master chỉ “nói chuyện” tại đầu/cuối macro step.</dd>
+          <dt>Communication step size</dt><dd>Chọn <code>h</code>: nhỏ → chính xác hơn nhưng chậm &amp; overhead cao; lớn → nhanh nhưng sai số coupling tăng (input giữ hằng trong bước). Nếu FMU khai <code>canHandleVariableCommunicationStepSize</code>, master được đổi <code>h</code> động (adaptive).</dd>
+          <dt>Rollback (iterative master)</dt><dd>Nếu <code>fmi2DoStep</code> trả <code>fmi2Discard</code> (bước không hợp lệ) hoặc master muốn lặp để hội tụ, dùng <strong>lưu/khôi phục trạng thái</strong> qua <code>fmi2GetFMUstate</code>/<code>fmi2SetFMUstate</code> (cần cờ <code>canGetAndSetFMUstate</code>): quay lại đầu bước rồi thử lại với <code>h</code> nhỏ hơn.</dd>
+          <dt>Algebraic loop giữa FMU</dt><dd>Khi output FMU-A phụ thuộc trực tiếp input FMU-B và ngược lại tại cùng communication point → vòng đại số. Master phải lặp (iterate) trong một macro step (set–doStep–get lặp lại tới hội tụ), dùng rollback để thử — hoặc phá vòng bằng một khâu trễ.</dd>
+          <dt>Đồng bộ thời gian</dt><dd>Với nhiều FMU, master đảm bảo tất cả tiến cùng tới communication point tiếp theo trước khi trao đổi dữ liệu (barrier). Với real-time / bus (SIL Kit), việc đồng bộ ảo-thời-gian là then chốt để frame &amp; input đúng thứ tự nhân quả.</dd>
+        </dl>
+<pre><code class="language-c">// Iterative / rollback master (yêu cầu canGetAndSetFMUstate = true)
+fmi2FMUstate st = NULL;
+fmi2GetFMUstate(c, &amp;st);                 // lưu trạng thái trước bước
+fmi2Status s = fmi2DoStep(c, t, h, fmi2True);
+if (s == fmi2Discard) {
+    fmi2SetFMUstate(c, st);              // ROLLBACK về đầu bước
+    h *= 0.5;                            // thử lại với communication step nhỏ hơn
+    s = fmi2DoStep(c, t, h, fmi2True);
+}
+fmi2FreeFMUstate(c, &amp;st);                // giải phóng bản chụp trạng thái</code></pre>
+        <div class="callout callout--warn"><div class="callout__icon">⚠️</div><div class="callout__body"><p class="mb-0"><strong>Coupling error (ZOH):</strong> trong CS, input được giữ <em>hằng</em> suốt macro step (zero-order hold) → xuất hiện sai số ghép nối tỉ lệ với <code>h</code>. Giảm bằng <code>h</code> nhỏ hơn, nội suy input (<code>canInterpolateInputs</code>/<code>maxOutputDerivativeOrder</code>), hoặc master lặp. Với ME thì solver chung xử lý liên tục nên không có lỗi này.</p></div></div>
+
+        <!-- ================= 7. FMI trong vECU ================= -->
+        <h2>7. FMI trong vECU</h2>
+        <p><strong>Vai trò:</strong> đóng gói <strong>vECU</strong> (phần mềm ECU chạy ảo) <em>hoặc</em> <strong>plant model</strong> (mô hình vật lý xe/động cơ) thành <strong>FMU</strong>, rồi cho chúng chạy &amp; ghép trong bất kỳ môi trường nào hỗ trợ FMI.</p>
+        <div class="figure">
+          <svg viewBox="0 0 720 170" role="img" aria-label="FMU ghép trong môi trường mô phỏng vECU" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="lf7" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="30" y="50" width="150" height="66" rx="9" fill="var(--brand-800)"/><text x="105" y="76" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="800">vECU FMU</text><text x="105" y="92" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">controller (SW)</text><text x="105" y="105" text-anchor="middle" class="dgm-inv-sub" font-size="8">export từ ASW/BSW</text>
+            <rect x="540" y="50" width="150" height="66" rx="9" fill="var(--brand-600)"/><text x="615" y="76" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="800">Plant FMU</text><text x="615" y="92" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">mô hình vật lý</text><text x="615" y="105" text-anchor="middle" class="dgm-inv-sub" font-size="8">export từ Simulink</text>
+            <rect x="230" y="34" width="260" height="98" rx="10" fill="var(--surface-2)" class="dgm-layer"/><text x="360" y="54" text-anchor="middle" class="dgm-label" font-size="10.5" font-weight="800">Master / Importer</text><text x="360" y="72" text-anchor="middle" class="dgm-sub" font-size="9">SIL Kit · CANoe · dSPACE · Simulink</text>
+            <rect x="252" y="84" width="216" height="34" rx="6" fill="var(--core)"/><text x="360" y="105" text-anchor="middle" class="dgm-inv" font-size="9" font-weight="700">LS-BUS: CAN/LIN ảo · đồng bộ t</text>
+            <line x1="180" y1="72" x2="228" y2="72" class="dgm-arrow" stroke-width="1.5" marker-end="url(#lf7)"/><text x="204" y="66" text-anchor="middle" class="dgm-sub" font-size="8">actuate</text>
+            <line x1="490" y1="100" x2="538" y2="100" class="dgm-arrow" stroke-width="1.5" marker-end="url(#lf7)"/>
+            <line x1="538" y1="66" x2="490" y2="66" class="dgm-arrow" stroke-width="1.5" marker-end="url(#lf7)"/><text x="514" y="60" text-anchor="middle" class="dgm-sub" font-size="8">sensor</text>
+            <text x="360" y="152" text-anchor="middle" class="dgm-sub" font-size="9">Closed loop: controller ↔ plant, độc lập tool nhờ FMI · bus qua LS-BUS ↔ SIL Kit (bài K)</text>
+          </svg>
+          <div class="figure__cap"><b>vECU + plant qua FMI.</b> Controller (vECU) và plant model đóng gói thành FMU riêng, ghép closed-loop trong một master. Bus (CAN/LIN) đi qua LS-BUS → kết nối được với SIL Kit (bài <a href="K-vecu-sil.html">K</a>).</div>
+        </div>
+        <dl class="kv">
+          <dt>Interoperability</dt><dd>Vì FMI độc lập tool, cùng một plant-FMU chạy được trong Simulink, dSPACE, CANoe hay một master tự viết. OEM và supplier trao đổi model qua FMU thay vì buộc chung một tool → linh hoạt &amp; bảo vệ IP.</dd>
+          <dt>vECU đóng gói FMU</dt><dd>Phần mềm ECU (ASW + phần BSW cần thiết) build thành FMU (thường CS, hoặc SE/clock cho định thời task). Chạy trên <strong>host runtime</strong> (bài <a href="M-host-runtime.html">M</a>) để test SIL sớm, không cần phần cứng.</dd>
+          <dt>FMI ↔ SIL Kit</dt><dd>SIL Kit là bus/middleware mô phỏng phân tán; FMU (qua LS-BUS hoặc adapter) trở thành một <strong>participant</strong> trên bus ảo → ghép nhiều vECU thành mạng ECU đồng bộ thời gian ảo. Chi tiết ở bài <a href="K-vecu-sil.html">K</a>.</dd>
+          <dt>Ranh giới FMU vs FMI (dễ bị hỏi)</dt><dd><strong>FMI = chuẩn/giao diện</strong> (đặc tả, danh từ trừu tượng); <strong>FMU = file .fmu</strong> tuân theo chuẩn đó (hiện vật cụ thể). Nói gọn: “FMU is to FMI as an executable is to its ABI/standard.”</dd>
+        </dl>
+        <div class="callout callout--tip"><div class="callout__icon">🧩</div><div class="callout__body"><p class="mb-0"><strong>SSP đi kèm FMI:</strong> nhiều FMU được nối thành một hệ thống nhờ chuẩn <strong>SSP</strong> (System Structure &amp; Parameterization, cũng của Modelica Association) — mô tả topology kết nối &amp; bộ tham số của cả một mạng FMU (vd nhiều vECU + plant). FMI = từng khối; SSP = sơ đồ ghép các khối.</p></div></div>
+
+        <!-- ================= 8. Trước -> Nay ================= -->
+        <h2>8. Trước → Nay</h2>
+        <div class="evo">
+          <div class="evo__head">🔓 <span>Mô phỏng: khoá tool → chuẩn mở co-sim ECU/bus</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước</div><p>Mô phỏng bị <strong>khoá trong một tool</strong> (model chỉ chạy ở Simulink hoặc dSPACE…); trao đổi model giữa OEM–supplier khó, phải dùng chung công cụ &amp; lộ IP.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p>FMU là <strong>chuẩn mở</strong> — đóng gói vECU/plant độc lập tool; <strong>FMI 3.0 + LS-BUS</strong> cho co-sim cả <strong>ECU &amp; bus (CAN/LIN/Ethernet)</strong>, ghép thẳng vào SIL Kit/CANoe. Clocks/SE cho định thời tựa ECU.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> nói được “FMU độc lập tool, FMI 3.0 thêm LS-BUS để co-sim bus/ECU và Clocks cho định thời” cho thấy bạn hiểu vì sao FMI là mảnh ghép trung tâm của vECU/SIL, không chỉ là ‘một định dạng file’.</div>
+        </div>
+
+        <!-- ================= 9. Tự kiểm tra ================= -->
+        <h2>9. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">FMI và FMU khác nhau thế nào? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>FMI</strong> = chuẩn/giao diện mở, tool-independent (do Modelica Association quản lý) — đặc tả cấu trúc file, hàm C, schema XML. <strong>FMU</strong> = hiện vật: file <code>.fmu</code> (thực chất zip) tuân theo chuẩn, chứa <code>modelDescription.xml</code> + binaries (.dll/.so theo platform) + resources + (tuỳ chọn) source. FMI là “hợp đồng”, FMU là “sản phẩm”.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Bên trong .fmu có những gì?</li><li>Vì sao FMU giúp bảo vệ IP?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Model Exchange vs Co-Simulation? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>ME</strong>: FMU chỉ cấp đạo hàm/phương trình, <strong>solver nằm ngoài</strong> (importer) và điều khiển bước → đồng bộ chặt, xử lý event tốt, nhưng importer phải có solver. <strong>CS</strong>: FMU <strong>nhúng sẵn solver</strong>, master chỉ set input → <code>doStep(t,h)</code> → get output tại communication point → đóng gói kín, ghép tool khác nhau dễ, nhưng có sai số coupling &amp; khó xử lý algebraic loop.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Macro step vs micro step?</li><li>FMI 3.0 Scheduled Execution để làm gì?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">FMI 3.0 thêm gì đáng chú ý cho ECU? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Array variables, kiểu <strong>Binary</strong>, <strong>Clocks</strong> (periodic/triggered → mô hình event-driven/discrete hợp ECU), Terminals &amp; Icons, source-code FMU, Intermediate Update, và <strong>Layered Standards</strong>. Với ECU quan trọng nhất là <strong>LS-BUS</strong> — đóng gói CAN/LIN/Ethernet/FlexRay trong FMU để co-sim bus &amp; nối SIL Kit/CANoe; cùng <strong>Clocks + Scheduled Execution</strong> cho định thời tựa task/ngắt.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>LS-BUS khác LS-XCP ở đâu?</li><li>Clocks periodic vs triggered?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q"><code>modelDescription.xml</code> chứa gì? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Manifest FMU: danh sách <strong>biến</strong> (tên, <code>valueReference</code>, <strong>causality</strong> input/output/parameter/calculatedParameter/local/independent, <strong>variability</strong> constant/fixed/tunable/discrete/continuous, kiểu, đơn vị), <strong>ModelStructure</strong> (outputs/derivatives/dependency), và <strong>capability flags</strong> (<code>canHandleVariableCommunicationStepSize</code>, <code>canGetAndSetFMUstate</code>…). Importer đọc file này trước khi nạp binary.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>valueReference dùng để làm gì?</li><li>Cờ canGetAndSetFMUstate liên quan rollback thế nào?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Vòng đời gọi một FMU Co-Simulation? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><code>fmi2Instantiate</code> → <code>fmi2SetupExperiment</code> → <code>fmi2EnterInitializationMode</code> → (set params) → <code>fmi2ExitInitializationMode</code> → vòng lặp {<code>fmi2SetReal</code>(inputs); <code>fmi2DoStep</code>(t,h); <code>fmi2GetReal</code>(outputs); t+=h} → <code>fmi2Terminate</code> → <code>fmi2FreeInstance</code>. Nếu <code>doStep</code> trả <code>fmi2Discard</code>: rollback qua <code>fmi2Get/SetFMUstate</code> rồi giảm <code>h</code>. FMI 3.0 đổi tiền tố <code>fmi3</code> và <code>fmi3DoStep</code> có thêm cờ event/early-return.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Xử lý algebraic loop giữa 2 FMU thế nào?</li><li>Vì sao master cần đồng bộ thời gian?</li></ul></div>
+          </div></div>
+        </div>
+
+        <!-- ================= 10. Cheat-sheet ================= -->
+        <h2>10. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>FMI vs FMU</h4><ul>
+            <li>FMI = chuẩn mở, tool-independent (Modelica Assoc.)</li>
+            <li>FMU = file .fmu (zip)</li>
+            <li>Zip: modelDescription.xml + binaries + resources + (source)</li>
+            <li>Đóng gói vECU/plant, bảo vệ IP</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Interface types</h4><ul>
+            <li>ME: solver NGOÀI (importer), FMU cấp đạo hàm</li>
+            <li>CS: solver NHÚNG SẴN, doStep tại communication point</li>
+            <li>SE (3.0): clock/real-time, scheduler ngoài</li>
+            <li>Macro step (master) vs micro step (FMU)</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>FMI 3.0 mới</h4><ul>
+            <li>Array · Binary · Clocks (periodic/triggered)</li>
+            <li>Terminals/Icons · source-code FMU · Intermediate Update</li>
+            <li>Layered Standards: LS-BUS ⭐ · LS-XCP · LS-Measurement</li>
+            <li>LS-BUS = CAN/LIN/Eth/FlexRay trong FMU</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>modelDescription.xml</h4><ul>
+            <li>causality: input/output/parameter/calc/local/independent</li>
+            <li>variability: constant/fixed/tunable/discrete/continuous</li>
+            <li>valueReference (ID số theo kiểu)</li>
+            <li>ModelStructure · capability flags</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>API (CS 2.0)</h4><ul>
+            <li>Instantiate → SetupExperiment</li>
+            <li>Enter/ExitInitializationMode (set params)</li>
+            <li>loop: SetReal · DoStep(t,h) · GetReal · t+=h</li>
+            <li>Terminate · FreeInstance · (3.0 = fmi3*)</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Master &amp; vECU</h4><ul>
+            <li>Rollback: Get/SetFMUstate (canGetAndSetFMUstate)</li>
+            <li>Algebraic loop → iterate/hội tụ trong macro step</li>
+            <li>FMU ↔ SIL Kit qua LS-BUS (bài K)</li>
+            <li>Chạy trên host runtime (bài M)</li>
+          </ul></div>
+        </div>
+
+        <!-- ================= 11. Sources ================= -->
+        <h2>11. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li><strong>FMI Standard</strong> — <a href="https://fmi-standard.org/" target="_blank" rel="noopener">fmi-standard.org</a> (FMI 2.0.x &amp; 3.0 Specification: interface types, modelDescription.xml, API, Layered Standards).</li>
+          <li><strong>Modelica Association</strong> — <a href="https://modelica.org/" target="_blank" rel="noopener">modelica.org</a> (đơn vị quản lý chuẩn FMI/SSP).</li>
+          <li>FMI 3.0 — <a href="https://fmi-standard.org/docs/3.0/" target="_blank" rel="noopener">Layered Standards</a> (LS-BUS, LS-XCP) &amp; Clocks / Scheduled Execution.</li>
+          <li>Wikipedia — <a href="https://en.wikipedia.org/wiki/Functional_Mock-up_Interface" target="_blank" rel="noopener">Functional Mock-up Interface</a>.</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi phân biệt được FMI vs FMU, ME vs CS, nêu điểm mới FMI 3.0 (LS-BUS/Clocks) và đọc được vòng đời API CS mà không nhìn.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">
+        Chủ đề L · FMI / FMU (Co-Simulation) — Interview Prep
+      </footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../assets/js/app.js?v=4"></script>
+</body>
+</html>

@@ -8,6 +8,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../assets/css/style.css?v=4" />
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="../assets/favicon.ico" />
 </head>
 <body data-page="J" data-root="../">
   <div id="app">
@@ -228,8 +233,115 @@ resource "azurerm_app_service" "app" {
           <div class="evo__why"><b>Vì sao quan trọng:</b> nói được “git là nguồn sự thật, hạ tầng &amp; deploy đều khai báo &amp; review như code” cho thấy bạn theo kịp practice hiện đại.</div>
         </div>
 
+        <!-- 9. Jenkins & GitLab CI/CD -->
+        <h2>9. Jenkins &amp; GitLab CI/CD</h2>
+        <p>Cùng ý tưởng <strong>pipeline-as-code</strong> như Azure, chỉ khác cú pháp &amp; hệ sinh thái. Khái niệm chung cần nắm: <strong>runner/agent</strong> chạy job; <strong>stage/job</strong> tổ chức các bước; <strong>artifact</strong> lưu &amp; truyền sản phẩm; <strong>cache</strong> tái dùng dependency; <strong>trigger</strong> (webhook / SCM poll / schedule) khởi động pipeline; <strong>quality gate</strong> chặn merge khi test/coverage/phân tích không đạt.</p>
+        <div class="callout callout--key"><div class="callout__icon">⚖️</div><div class="callout__body"><p class="mb-0"><strong>Azure ↔ Jenkins ↔ GitLab: giống concept, khác cú pháp.</strong> Đều là runner + stage/job + artifact + trigger + quality gate. Học một cái, cái còn lại chỉ là ánh xạ từ khoá.</p></div></div>
+
+        <h3>Jenkins</h3>
+        <div class="kv">
+          <dt>Controller + Agent/Node</dt><dd>Controller điều phối, job thực thi trên <strong>agent/node</strong>; dùng <em>label</em> để chọn máy phù hợp (OS, toolchain).</dd>
+          <dt>Pipeline (Jenkinsfile)</dt><dd>Pipeline-as-code trong repo. <strong>Declarative</strong> (<code>pipeline{ stages{} }</code>, dễ đọc) vs <strong>scripted</strong> (Groovy tự do). Cấu trúc <code>stages{}</code> → <code>steps</code>.</dd>
+          <dt>Plugins &amp; Blue Ocean</dt><dd>Mở rộng gần như mọi thứ (git, warnings-ng cho static analysis, junit…). <strong>Blue Ocean</strong> = UI trực quan cho pipeline.</dd>
+          <dt>Artifacts &amp; credentials</dt><dd><code>archiveArtifacts</code> lưu sản phẩm; credentials store giữ secret (token, khoá) tách khỏi code.</dd>
+          <dt>Trigger &amp; matrix</dt><dd>Poll SCM / webhook (GitHub, GitLab) / schedule (cron). <strong>Matrix build</strong> chạy tổ hợp axis (compiler × OS).</dd>
+        </div>
+
+        <h3>GitLab CI</h3>
+        <div class="kv">
+          <dt>.gitlab-ci.yml</dt><dd>File pipeline ở gốc repo: khai báo <code>stages</code> &amp; các <code>job</code>.</dd>
+          <dt>GitLab Runner</dt><dd>Tiến trình chạy job; <strong>executor</strong> shell hoặc docker (mỗi job một container sạch).</dd>
+          <dt>artifacts / cache</dt><dd><code>artifacts</code> lưu &amp; truyền output giữa stage; <code>cache</code> tái dùng dependency giữa các lần chạy.</dd>
+          <dt>needs: (DAG)</dt><dd>Chạy job theo đồ thị phụ thuộc, không phải chờ hết cả stage → pipeline nhanh hơn.</dd>
+          <dt>rules / only-except</dt><dd>Điều kiện chạy job (theo branch, MR, biến). <strong>environments</strong> quản lý deploy; <strong>container registry</strong> tích hợp sẵn.</dd>
+        </div>
+
+        <div class="table-wrap"><table>
+          <thead><tr><th>Khái niệm</th><th>Azure Pipelines</th><th>Jenkins</th><th>GitLab CI</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Đơn vị pipeline</strong></td><td>Pipeline→Stage→Job→Step</td><td>Pipeline→Stage→Step (Jenkinsfile)</td><td>Pipeline→Stage→Job</td></tr>
+            <tr><td><strong>Runner</strong></td><td>Agent (MS-hosted / self-hosted)</td><td>Agent/Node (chọn qua label)</td><td>GitLab Runner (shell / docker)</td></tr>
+            <tr><td><strong>File định nghĩa</strong></td><td>azure-pipelines.yml</td><td>Jenkinsfile (Groovy)</td><td>.gitlab-ci.yml</td></tr>
+            <tr><td><strong>Nơi lưu artifact</strong></td><td>Pipeline artifacts</td><td>archiveArtifacts (trên controller)</td><td>artifacts: (job → project)</td></tr>
+          </tbody>
+        </table></div>
+
+        <p>Hai pipeline tương đương cho build C/C++ dưới đây: cấu hình → build → chạy <a href="C-testing.html">ctest + sanitizer &amp; static analysis (bài C)</a>, dùng toolchain dựng ở <a href="M-host-runtime.html">bài M</a>. Không đạt gate thì chặn MR.</p>
+
+<pre><code class="language-yaml">stages: [build, test, analyze]
+
+build:
+  stage: build
+  script:
+    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+    - cmake --build build -j
+  artifacts:
+    paths: [build/]                 # truyen sang stage sau
+
+test:
+  stage: test
+  needs: [build]                    # DAG: chay ngay khi build xong
+  script:
+    - ctest --test-dir build --output-on-failure   # xem bai C
+    - ./build/tests_asan            # binary build kem -fsanitize=address
+
+analyze:
+  stage: analyze
+  script:
+    - clang-tidy -p build src/*.c   # static analysis = quality gate
+  allow_failure: false              # khong dat -> chan MR</code></pre>
+
+<pre><code class="language-groovy">pipeline {
+  agent { label 'linux-cpp' }        // toolchain o bai M
+  stages {
+    stage('Build') {
+      steps { sh 'cmake -S . -B build && cmake --build build -j' }
+    }
+    stage('Test') {                  // ctest + sanitizer, bai C
+      steps { sh 'ctest --test-dir build --output-on-failure' }
+    }
+    stage('Analyze') {               // static analysis gate
+      steps { sh 'clang-tidy -p build src/*.c' }
+    }
+  }
+  post { always { archiveArtifacts artifacts: 'build/**', fingerprint: true } }
+}</code></pre>
+        <div class="callout callout--tip"><div class="callout__icon">🌿</div><div class="callout__body"><p class="mb-0"><strong>Git workflow:</strong> feature branch → mở <strong>MR/PR</strong> → pipeline chạy <em>trên MR</em> làm quality gate → merge vào <strong>protected branch</strong> → gắn <strong>tag/release</strong>. Protected branch chặn push trực tiếp, buộc qua review + pipeline xanh.</p></div></div>
+
+        <!-- 10. Python automation -->
+        <h2>10. Python cho Build &amp; Test Automation</h2>
+        <p>Python là lớp <strong>orchestrate/glue</strong> phổ biến trong CI: nhanh viết, thư viện phong phú, chạy cross-platform — <strong>bổ trợ</strong> chứ không thay code sản phẩm C.</p>
+        <div class="kv">
+          <dt>Gọi build</dt><dd><code>subprocess</code> gọi <code>cmake</code>/<code>conan</code>, kiểm tra returncode, gom log.</dd>
+          <dt>Sinh/parse cấu hình</dt><dd>Đọc <strong>ARXML</strong> bằng <code>lxml</code>, sinh header/param, biến mô hình thành cấu hình build.</dd>
+          <dt>Chạy &amp; tổng hợp test</dt><dd><strong>pytest</strong> xuất <strong>JUnit XML</strong> để CI hiển thị kết quả &amp; xu hướng.</dd>
+          <dt>Điều khiển vECU/bus</dt><dd>Lái CANoe qua <strong>COM API</strong>, hoặc gửi/nhận bus bằng <code>python-can</code> — glue kiểm thử trong CI.</dd>
+        </div>
+        <div class="callout callout--note"><div class="callout__icon">🐍</div><div class="callout__body"><p class="mb-0"><strong>pytest cho SIL/HIL:</strong> <code>fixture</code> (dựng/dọn môi trường), <code>parametrize</code> + data-driven (một test, nhiều bộ dữ liệu), <code>marker</code> (gắn nhãn/lọc, vd <code>@pytest.mark.hil</code>), report JUnit cho CI.</p></div></div>
+
+<pre><code class="language-python">import subprocess, sys
+
+# goi cmake build, kiem tra returncode -> bao CI dat/that bai
+r = subprocess.run(["cmake", "--build", "build", "-j"],
+                   capture_output=True, text=True)
+if r.returncode != 0:
+    print(r.stderr, file=sys.stderr)
+    sys.exit(r.returncode)          # returncode != 0 -> CI FAIL
+print("build OK")</code></pre>
+
+<pre><code class="language-python">import can
+
+# minh hoa automation kiem thu bus: gui & nhan 1 CAN frame
+bus = can.Bus(interface="virtual", channel="A")   # hoac vector/socketcan
+msg = can.Message(arbitration_id=0x123,
+                  data=[0x11, 0x22, 0x33], is_extended_id=False)
+bus.send(msg)                       # gui 1 frame
+rx = bus.recv(timeout=1.0)          # nhan (None neu timeout)
+print(rx.arbitration_id, list(rx.data))</code></pre>
+        <div class="callout callout--tip"><div class="callout__icon">💡</div><div class="callout__body"><p class="mb-0"><strong>Vì sao Python phổ biến ở khâu automation:</strong> viết nhanh, kho thư viện lớn (lxml, pytest, python-can, requests), chạy cross-platform — lý tưởng làm “glue” nối build/test/bus/CI. Vẫn giữ code sản phẩm nhúng bằng C; Python chỉ điều phối &amp; kiểm thử, không thay thế.</p></div></div>
+
         <!-- Self test -->
-        <h2>9. Tự kiểm tra</h2>
+        <h2>11. Tự kiểm tra</h2>
         <div class="taglist">
           <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
           <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
@@ -259,9 +371,19 @@ resource "azurerm_app_service" "app" {
             <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>ConfigMap khác Secret thế nào? Sửa ConfigMap có restart pod không?</li></ul></div>
           </div></div>
         </div>
+        <div class="qa"><div class="qa__q">Jenkins vs GitLab CI vs Azure Pipelines khác/giống gì? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>Giống concept</strong>: đều là pipeline-as-code với runner/agent + stage/job + artifact + cache + trigger (webhook/poll/schedule) + quality gate. <strong>Khác cú pháp &amp; nơi định nghĩa</strong>: Azure dùng <code>azure-pipelines.yml</code> (Pipeline→Stage→Job→Step, agent MS/self-hosted); Jenkins dùng <code>Jenkinsfile</code> Groovy (declarative/scripted, controller + agent theo label, giàu plugin); GitLab dùng <code>.gitlab-ci.yml</code> (stages+jobs, GitLab Runner shell/docker, <code>needs:</code> chạy theo DAG). Học một cái, còn lại chỉ là ánh xạ từ khoá.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Declarative vs scripted Jenkinsfile? <code>needs:</code> trong GitLab để làm gì?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Python dùng vào đâu trong quy trình build/test? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Làm lớp <strong>orchestrate/glue</strong>: <code>subprocess</code> gọi cmake/conan &amp; kiểm returncode; đọc/parse <strong>ARXML</strong> (lxml) sinh cấu hình; chạy <strong>pytest</strong> xuất <strong>JUnit XML</strong> cho CI; điều khiển vECU/CANoe (COM API) hoặc bus qua <code>python-can</code>. Ưu điểm: viết nhanh, nhiều thư viện, cross-platform — nhưng chỉ <strong>bổ trợ</strong>, không thay code sản phẩm nhúng bằng C.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>pytest fixture/parametrize/marker khác nhau ra sao? Vì sao xuất JUnit XML?</li></ul></div>
+          </div></div>
+        </div>
 
-        <!-- 10. Cheat-sheet -->
-        <h2>10. Cheat-sheet 1 trang</h2>
+        <!-- 12. Cheat-sheet -->
+        <h2>12. Cheat-sheet 1 trang</h2>
         <div class="cheatsheet">
           <div class="cheatsheet__group"><h4>CI/CD</h4><ul>
             <li>CI: build+test mỗi push</li>
@@ -299,10 +421,22 @@ resource "azurerm_app_service" "app" {
             <li>Module = tái sử dụng (DRY)</li>
             <li>Nay: GitOps, IaC chuẩn, supply-chain security</li>
           </ul></div>
+          <div class="cheatsheet__group"><h4>Jenkins / GitLab CI</h4><ul>
+            <li>Giống concept: runner + stage/job + artifact + trigger + gate</li>
+            <li>Jenkins: Jenkinsfile (declarative/scripted), controller+agent, plugin</li>
+            <li>GitLab: .gitlab-ci.yml, Runner shell/docker, needs: (DAG)</li>
+            <li>Khác cú pháp, không khác ý tưởng</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Python automation</h4><ul>
+            <li>subprocess gọi cmake/conan, check returncode</li>
+            <li>lxml đọc ARXML · pytest → JUnit XML cho CI</li>
+            <li>python-can / CANoe COM điều khiển bus &amp; vECU</li>
+            <li>Glue/orchestrate — bổ trợ, không thay code C</li>
+          </ul></div>
         </div>
 
-        <!-- 11. Sources -->
-        <h2>11. Nguồn tham khảo</h2>
+        <!-- 13. Sources -->
+        <h2>13. Nguồn tham khảo</h2>
         <ul class="small text-soft">
           <li>Microsoft Learn — <a href="https://learn.microsoft.com/en-us/azure/devops/pipelines/get-started/key-pipelines-concepts?view=azure-devops" target="_blank" rel="noopener">Azure Pipelines key concepts</a> (stage/job/step/agent/artifact).</li>
           <li>Conan — <a href="https://docs.conan.io/" target="_blank" rel="noopener">Conan 2 docs</a> (profiles, lockfile, remote).</li>

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>K · vECU / MIL·SIL·HIL / SIL Kit — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/style.css?v=4" />
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="../assets/favicon.ico" />
+</head>
+<body data-page="K" data-root="../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">K</span>
+            <span class="badge badge--core">Core</span>
+            <span class="chip">Vòng 2.5 — vECU &amp; Mô phỏng (JD)</span>
+          </div>
+          <h1>Virtual ECU (vECU) · MIL/SIL/PIL/HIL · Vector SIL Kit</h1>
+          <p class="lead">Mô hình hoá phần mềm ECU chạy trên <strong>PC host</strong> để <strong>shift-left</strong>: test sớm, song song, tự động, CI-friendly mà không cần phần cứng thật. Đào sâu: <strong>vECU là gì</strong>, các <strong>cấp L1–L4</strong>, kiến trúc (virtual MCAL + co-simulation), chuỗi <strong>X-in-the-Loop (MIL→SIL→PIL→HIL)</strong>, vai trò <strong>Vector SIL Kit</strong> làm bus mô phỏng phân tán, và <strong>determinism / virtual time</strong>.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> 🎯 JD-critical (Virtual ECU)</span>
+            <span><b>Gắn:</b> FMI/FMU (bài <a href="L-fmi-fmu.html">L</a>), Host runtime (<a href="M-host-runtime.html">M</a>), Testing (<a href="C-testing.html">C</a>)</span>
+          </div>
+        </div>
+
+        <div class="callout callout--note">
+          <div class="callout__icon">📌</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Nguồn:</strong> đối chiếu <strong>Vector SIL Kit</strong> docs (open-source distributed simulation bus), phân loại vECU của <strong>prostep iVIP SmartSE</strong> (L1–L4), và thuật ngữ <strong>ASAM</strong> (MIL/SIL/HIL, XIL API) — xem cuối bài. FMI/FMU (chuẩn ghép model) tách sang bài <a href="L-fmi-fmu.html">L</a>.</p>
+          </div>
+        </div>
+
+        <!-- ================= 1. vECU LÀ GÌ ================= -->
+        <h2>1. vECU là gì &amp; vì sao cần</h2>
+        <p><strong>Định nghĩa:</strong> <strong>Virtual ECU (vECU)</strong> là một mô hình phần mềm của ECU — toàn bộ hoặc một phần code nhúng (ASW/BSW/firmware) được <strong>biên dịch &amp; chạy trên PC host</strong> (x86/Linux/Windows) <em>thay cho</em> target vi điều khiển thật. Nó cho phép chạy chức năng ECU trong môi trường mô phỏng, ghép với các model khác (plant, ECU khác) mà không cần phần cứng.</p>
+        <dl class="kv">
+          <dt>Shift-left</dt><dd>Kéo hoạt động <em>test/validate về sớm</em> trong vòng đời phát triển. Thay vì đợi có board/HIL, kỹ sư test ngay trên PC lúc code còn trên bàn → phát hiện lỗi sớm, rẻ hơn nhiều.</dd>
+          <dt>Test sớm · song song · tự động</dt><dd>Nhiều kỹ sư chạy vECU song song trên máy riêng (không tranh nhau một bench HIL khan hiếm); test <strong>tự động hoá</strong> chạy hàng loạt (hàng nghìn case qua đêm); mở rộng <em>scale-out</em> trên cloud/CI.</dd>
+          <dt>CI-friendly</dt><dd>vECU là một tiến trình phần mềm → nhét thẳng vào pipeline <strong>CI/CD</strong> (bài <a href="J-cicd-cloud.html">J</a>): mỗi commit build + chạy regression test trên vECU, không cần lab. Đây là mảnh ghép cốt lõi của DevOps ô tô.</dd>
+          <dt>Độc lập phần cứng khan hiếm</dt><dd>Prototype/board thường thiếu, đắt, tới muộn. vECU gỡ nút cổ chai đó: bắt đầu tích hợp &amp; test <em>trước khi silicon sẵn sàng</em>.</dd>
+          <dt>Bối cảnh SDV &amp; virtualization</dt><dd><strong>Software-Defined Vehicle</strong> đẩy giá trị về phần mềm, cập nhật liên tục (OTA), kiến trúc zonal/HPC. Mô phỏng &amp; ảo hoá ECU là nền để phát triển/kiểm thử phần mềm nhanh, tách khỏi chu kỳ phần cứng.</dd>
+        </dl>
+        <div class="callout callout--key">
+          <div class="callout__icon">🔑</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>PoC (Proof of Concept):</strong> chứng minh <em>tính khả thi</em> của một ý tưởng/kiến trúc ở quy mô nhỏ <strong>trước khi đầu tư lớn</strong>. Trong JD, dựng vECU thường ở giai đoạn PoC: chứng minh có thể chạy phần mềm ECU trên host + ghép vào chuỗi mô phỏng, rồi mới scale-up thành hạ tầng test đầy đủ.</p>
+          </div>
+        </div>
+
+        <!-- ================= 2. CÁC CẤP vECU ================= -->
+        <h2>2. Các cấp độ vECU (L1–L4)</h2>
+        <p><strong>Vai trò:</strong> vECU không phải "một loại" — có nhiều <em>cấp độ trưởng thành</em> tuỳ bao nhiêu tầng phần mềm được đưa vào. Phân loại phổ biến theo <strong>prostep iVIP SmartSE</strong> chia <strong>L1–L4</strong>: càng lên cao càng <em>trung thực</em> (fidelity) với target thật nhưng càng <em>chậm</em> &amp; khó dựng.</p>
+        <dl class="kv">
+          <dt>L1 — chỉ ASW / thuật toán</dt><dd>Chỉ <strong>Application Software</strong> (thuật toán điều khiển), thường là code <em>sinh từ model</em> (Simulink/TargetLink). Không có BSW/RTE. Dùng cho <strong>MIL/SIL sớm</strong> — kiểm chứng thuật toán, độc lập kiến trúc AUTOSAR. Nhanh nhất, trung thực thấp nhất.</dd>
+          <dt>L2 — ASW + RTE + một phần BSW</dt><dd>Thêm <strong>RTE</strong> &amp; một phần <strong>BSW</strong> (thường là <em>stub</em>/mock). Giao tiếp ở <strong>mức tín hiệu</strong> (signal) chứ chưa phải bit trên bus. Kiểm thử tích hợp SWC↔RTE, hành vi cấu hình. Chưa có driver thật.</dd>
+          <dt>L3 — full AUTOSAR stack (host-compiled)</dt><dd><strong>Toàn bộ stack AUTOSAR</strong> (ASW+RTE+BSW) biên dịch cho host. Lớp <strong>MCAL</strong> phụ thuộc phần cứng được thay bằng <strong>"virtual MCAL" / HAL ảo</strong> trỏ tới mô hình HW ảo hoặc <em>bus ảo</em>. Giao tiếp ở <strong>mức PDU/bus</strong> (CAN/LIN/Eth ảo). Trung thực cao về mặt phần mềm, nhưng vẫn chạy mã host, không chạy firmware nhị phân của target.</dd>
+          <dt>L4 — firmware nhị phân + ISS</dt><dd>Chạy <strong>chính binary firmware</strong> (đã build cho target) trên <strong>Instruction-Set Simulator</strong> mô phỏng vi điều khiển (vd <em>QEMU</em>, <em>Synopsys Silver</em>, <em>Vector vVIRTUALtarget</em>). Đây là <strong>"virtual target"</strong> — trung thực nhất, gần HIL nhất (mô phỏng cả timing/thanh ghi/ngắt ở mức lệnh), nhưng chậm &amp; nặng nhất.</dd>
+        </dl>
+
+        <div class="table-wrap"><table>
+          <thead><tr><th>Cấp</th><th>Bao gồm</th><th>Giao tiếp</th><th>Fidelity (trung thực)</th><th>Tốc độ</th></tr></thead>
+          <tbody>
+            <tr><td><strong>L1</strong></td><td>ASW / thuật toán (code từ model)</td><td>Mức model/signal</td><td>Thấp</td><td>Rất nhanh</td></tr>
+            <tr><td><strong>L2</strong></td><td>ASW + RTE + BSW một phần (stub)</td><td>Mức tín hiệu</td><td>Trung bình</td><td>Nhanh</td></tr>
+            <tr><td><strong>L3</strong></td><td>Full AUTOSAR stack, virtual MCAL/HAL</td><td>Mức PDU / bus ảo</td><td>Cao (phần mềm)</td><td>Trung bình</td></tr>
+            <tr><td><strong>L4</strong></td><td>Firmware nhị phân + ISS (virtual target)</td><td>Mức thanh ghi/lệnh + bus ảo</td><td>Rất cao (gần HW)</td><td>Chậm</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout callout--tip"><div class="callout__icon">💡</div><div class="callout__body"><p class="mb-0"><strong>Chọn cấp theo mục đích:</strong> validate <em>thuật toán</em> → L1/L2 (nhanh, chạy nhiều case); kiểm thử <em>tích hợp BSW/giao tiếp bus</em> → L3; kiểm thử <em>firmware/timing sát HW</em> hoặc không có mã nguồn (supplier binary) → L4. Không phải lúc nào cũng cần cấp cao nhất — đánh đổi tốc độ ⇄ trung thực.</p></div></div>
+
+        <!-- ================= 3. KIẾN TRÚC vECU ================= -->
+        <h2>3. Kiến trúc vECU</h2>
+        <p><strong>Vai trò:</strong> hiểu <em>tầng nào giữ nguyên, tầng nào bị thay</em>. Điểm mấu chốt: <strong>MCAL thật (driver phần cứng) được thay bằng lớp ảo</strong>, phía trên (RTE/BSW/ASW) giữ nguyên như trên target → chạy đúng logic phần mềm sản phẩm mà không cần chip.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 250" role="img" aria-label="Kiến trúc vECU trên host" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="vk1" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="30" y="18" width="300" height="200" rx="10" fill="var(--surface-2)" class="dgm-layer"/><text x="180" y="36" text-anchor="middle" class="dgm-label" font-size="10" font-weight="700">vECU (chạy trên PC host)</text>
+            <rect x="55" y="46" width="250" height="30" rx="6" fill="var(--brand-800)"/><text x="180" y="65" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">App (SWC)</text>
+            <rect x="55" y="82" width="250" height="28" rx="6" fill="var(--brand-600)"/><text x="180" y="100" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">RTE</text>
+            <rect x="55" y="116" width="250" height="28" rx="6" fill="var(--brand-600)"/><text x="180" y="134" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">BSW</text>
+            <rect x="55" y="150" width="250" height="30" rx="6" fill="var(--must)"/><text x="180" y="166" text-anchor="middle" class="dgm-inv" font-size="9.5" font-weight="700">Virtual MCAL / HAL</text><text x="180" y="177" text-anchor="middle" class="dgm-inv-sub" font-size="7.5">thay MCAL thật</text>
+            <rect x="55" y="186" width="250" height="26" rx="6" fill="var(--brand-400)"/><text x="180" y="203" text-anchor="middle" class="dgm-inv" font-size="9.5" font-weight="700">Bus abstraction</text>
+            <rect x="390" y="86" width="140" height="80" rx="10" fill="var(--core)"/><text x="460" y="120" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Co-simulation</text><text x="460" y="136" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">bus</text><text x="460" y="152" text-anchor="middle" class="dgm-inv-sub" font-size="8">CAN/LIN/Eth ảo</text>
+            <rect x="580" y="24" width="120" height="58" rx="9" fill="var(--surface)" class="dgm-layer"/><text x="640" y="48" text-anchor="middle" class="dgm-text" font-size="9.5" font-weight="700">vECU khác</text><text x="640" y="64" text-anchor="middle" class="dgm-sub" font-size="8">/ model</text>
+            <rect x="580" y="96" width="120" height="58" rx="9" fill="var(--surface)" class="dgm-layer"/><text x="640" y="120" text-anchor="middle" class="dgm-text" font-size="9.5" font-weight="700">Plant model</text><text x="640" y="136" text-anchor="middle" class="dgm-sub" font-size="8">môi trường/xe</text>
+            <rect x="580" y="168" width="120" height="52" rx="9" fill="var(--surface)" class="dgm-layer"/><text x="640" y="190" text-anchor="middle" class="dgm-text" font-size="9.5" font-weight="700">Scheduler ảo</text><text x="640" y="205" text-anchor="middle" class="dgm-sub" font-size="8">OS tick + time</text>
+            <line x1="330" y1="126" x2="388" y2="126" class="dgm-arrow" stroke-width="1.5" marker-end="url(#vk1)"/>
+            <line x1="530" y1="110" x2="578" y2="60" class="dgm-arrow" stroke-width="1.4" marker-end="url(#vk1)"/>
+            <line x1="530" y1="126" x2="578" y2="126" class="dgm-arrow" stroke-width="1.4" marker-end="url(#vk1)"/>
+            <line x1="530" y1="142" x2="578" y2="190" class="dgm-arrow" stroke-width="1.4" marker-end="url(#vk1)"/>
+          </svg>
+          <div class="figure__cap"><b>Kiến trúc vECU.</b> App→RTE→BSW giữ nguyên; <b>Virtual MCAL/HAL</b> thay driver thật, nối qua <b>bus abstraction</b> tới <b>co-simulation bus</b> (CAN/LIN/Eth ảo) để ghép các vECU/model khác + <b>plant model</b>. Một <b>scheduler ảo</b> cấp OS tick &amp; điều phối thời gian mô phỏng.</div>
+        </div>
+
+        <dl class="kv">
+          <dt>MCAL thật → lớp ảo</dt><dd>Trên target, MCAL truy cập <em>thanh ghi phần cứng thật</em>. Trên host không có phần cứng đó → thay bằng <strong>virtual MCAL / HAL</strong> trỏ tới <em>mô hình HW ảo</em> hoặc <em>bus ảo</em>. Ví dụ: gọi "gửi CAN frame" không đẩy ra transceiver mà đẩy vào <strong>bus mô phỏng</strong>.</dd>
+          <dt>Simulated time vs wall-clock</dt><dd><strong>Simulated (virtual) time</strong> là "thời gian trong mô phỏng" do scheduler ảo điều khiển — có thể chạy <em>nhanh hơn</em> (faster-than-real-time) hoặc <em>chậm hơn</em> wall-clock (đồng hồ tường thật). Tách biệt hai đồng hồ này là chìa khoá cho determinism (mục 6).</dd>
+          <dt>Scheduler ảo tạo OS tick</dt><dd>Trên target, OS tick sinh từ timer phần cứng. Trên host, một <strong>scheduler ảo</strong> phát tick &amp; điều phối các MainFunction/Runnable theo simulated time → tái tạo hành vi lập lịch của AUTOSAR OS (bài <a href="B5-os.html">B5</a>) mà không cần HW timer.</dd>
+          <dt>Co-simulation</dt><dd>Ghép nhiều đơn vị mô phỏng (nhiều vECU + plant model) chạy cùng nhau, trao đổi dữ liệu &amp; đồng bộ thời gian qua một <em>bus/khung điều phối</em>. Model plant thường đóng gói theo chuẩn <strong>FMI/FMU</strong> (bài <a href="L-fmi-fmu.html">L</a>).</dd>
+        </dl>
+
+        <!-- ================= 4. X-in-the-Loop ================= -->
+        <h2>4. X-in-the-Loop: MIL → SIL → PIL → HIL</h2>
+        <p><strong>Vai trò:</strong> chuỗi <strong>XIL</strong> mô tả <em>cùng một chức năng được kiểm thử ở các dạng ngày càng gần thực tế</em>. Câu hỏi cốt lõi mỗi cấp: <strong>"code gì chạy ở đâu?"</strong></p>
+        <dl class="kv">
+          <dt>MIL — Model-in-the-Loop</dt><dd><em>Cái gì:</em> <strong>model</strong> (Simulink) của thuật toán chạy trong <strong>công cụ mô hình trên host</strong>, ghép với model plant. <em>Mục đích:</em> kiểm chứng thuật toán/logic điều khiển ở mức thiết kế. <em>Ưu:</em> sớm nhất, sửa nhanh, không cần code. <em>Nhược:</em> chưa phải mã sản phẩm.</dd>
+          <dt>SIL — Software-in-the-Loop</dt><dd><em>Cái gì:</em> <strong>mã nguồn/mã sinh ra</strong> (C, đã compile cho host) chạy trên PC host, ghép plant. <em>Mục đích:</em> kiểm chứng <em>chính code</em> sẽ chạy trên xe (không phải model). <em>Ưu:</em> test code thật, nhanh, tự động, CI. <em>Nhược:</em> chạy trên host nên timing/ngắt không giống target bit-chính-xác. <strong>vECU chủ yếu nằm ở đây.</strong></dd>
+          <dt>PIL — Processor-in-the-Loop</dt><dd><em>Cái gì:</em> mã biên dịch cho <strong>target processor</strong>, chạy trên <em>chip target thật</em> (eval board) hoặc <em>ISS</em>, nhưng phần còn lại (plant) vẫn mô phỏng trên host, nối qua debug/comm. <em>Mục đích:</em> kiểm số học/định thời trên đúng bộ xử lý (fixed-point overflow, cycle count). <em>Ưu:</em> bắt lỗi phụ thuộc compiler/CPU. <em>Nhược:</em> chậm hơn SIL, cần chip.</dd>
+          <dt>HIL — Hardware-in-the-Loop</dt><dd><em>Cái gì:</em> <strong>ECU thật</strong> (phần cứng + firmware production) nối vào một hệ <strong>real-time</strong> mô phỏng plant qua tín hiệu điện/bus thật. <em>Mục đích:</em> kiểm thử tích hợp cuối, I/O điện, timing thực. <em>Ưu:</em> trung thực nhất trước xe thật. <em>Nhược:</em> đắt, khan hiếm, khó song song/tự động hoá quy mô lớn.</dd>
+        </dl>
+
+        <div class="table-wrap"><table>
+          <thead><tr><th>Loại</th><th>Cái gì chạy</th><th>Chạy ở đâu</th><th>Plant</th><th>Real-time?</th><th>Dùng khi</th></tr></thead>
+          <tbody>
+            <tr><td><strong>MIL</strong></td><td>Model thuật toán</td><td>Host (tool mô hình)</td><td>Model</td><td>Không</td><td>Thiết kế thuật toán sớm</td></tr>
+            <tr><td><strong>SIL</strong></td><td>Mã C (host-compiled)</td><td>Host (vECU)</td><td>Model</td><td>Không (virtual time)</td><td>Test code thật, CI, hàng loạt</td></tr>
+            <tr><td><strong>PIL</strong></td><td>Mã cho target</td><td>Chip target / ISS</td><td>Model trên host</td><td>Một phần</td><td>Kiểm số học/timing trên CPU thật</td></tr>
+            <tr><td><strong>HIL</strong></td><td>Firmware production</td><td>ECU thật</td><td>Real-time simulator</td><td>Có (bắt buộc)</td><td>Tích hợp cuối, I/O điện</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout callout--note"><div class="callout__icon">📌</div><div class="callout__body"><p class="mb-0"><strong>vECU ↔ XIL:</strong> vECU (L1–L3) về bản chất là công cụ làm <strong>SIL</strong>. <strong>Virtual target (vECU L4 trên ISS)</strong> nằm <em>giữa SIL và HIL</em>: chạy đúng binary như PIL/HIL nhưng không có phần cứng vật lý — "gần HIL nhất mà vẫn hoàn toàn ảo".</p></div></div>
+
+        <!-- ================= 5. VECTOR SIL KIT ================= -->
+        <h2>5. Vector SIL Kit</h2>
+        <p><strong>Vai trò:</strong> <strong>SIL Kit</strong> là một <strong>middleware / bus mô phỏng phân tán mã nguồn mở</strong> (open-source) của Vector. Nó cho phép ghép nhiều <em>participant</em> (vECU, CANoe, model, script test...) vào một <strong>virtual bus</strong> để <strong>đồng-mô phỏng</strong> — thay bus vật lý bằng bus phần mềm, trên một máy hoặc <em>trải nhiều máy</em>.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 210" role="img" aria-label="Vector SIL Kit connecting participants" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="sk1" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="250" y="150" width="220" height="42" rx="9" fill="var(--core)"/><text x="360" y="169" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">SIL Kit — Virtual Bus</text><text x="360" y="184" text-anchor="middle" class="dgm-inv-sub" font-size="8">CAN/LIN/Ethernet/FlexRay · pub/sub · time sync</text>
+            <rect x="30" y="26" width="140" height="44" rx="9" fill="var(--brand-800)"/><text x="100" y="44" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">vECU A</text><text x="100" y="59" text-anchor="middle" class="dgm-inv-sub" font-size="8">participant</text>
+            <rect x="290" y="26" width="140" height="44" rx="9" fill="var(--brand-800)"/><text x="360" y="44" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">vECU B</text><text x="360" y="59" text-anchor="middle" class="dgm-inv-sub" font-size="8">participant</text>
+            <rect x="550" y="26" width="140" height="44" rx="9" fill="var(--brand-600)"/><text x="620" y="44" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">CANoe / model</text><text x="620" y="59" text-anchor="middle" class="dgm-inv-sub" font-size="8">participant</text>
+            <rect x="290" y="92" width="140" height="34" rx="8" fill="var(--brand-400)"/><text x="360" y="113" text-anchor="middle" class="dgm-inv" font-size="9.5" font-weight="700">Registry</text>
+            <line x1="100" y1="70" x2="290" y2="150" class="dgm-arrow" stroke-width="1.4" marker-end="url(#sk1)"/>
+            <line x1="360" y1="126" x2="360" y2="148" class="dgm-arrow" stroke-width="1.4" marker-end="url(#sk1)"/>
+            <line x1="620" y1="70" x2="440" y2="150" class="dgm-arrow" stroke-width="1.4" marker-end="url(#sk1)"/>
+            <text x="360" y="206" text-anchor="middle" class="dgm-sub" font-size="9">Registry lo khám phá/lifecycle · virtual time sync giữ tất định &amp; reproducible · chạy 1 hay nhiều máy</text>
+          </svg>
+          <div class="figure__cap"><b>SIL Kit.</b> Nhiều <b>participant</b> (vECU, CANoe, model) nối vào <b>virtual bus</b>; một <b>registry</b> lo khám phá &amp; vòng đời (lifecycle); virtual bus mang CAN/LIN/Eth/FlexRay + publish/subscribe + đồng bộ thời gian.</div>
+        </div>
+
+        <dl class="kv">
+          <dt>Participant</dt><dd>Mỗi thành phần tham gia mô phỏng (một vECU, một model, CANoe, script test) là một <strong>participant</strong> nối vào bus. SIL Kit không quan tâm participant viết bằng gì — miễn dùng API/lib của nó.</dd>
+          <dt>Virtual bus (network abstraction)</dt><dd>Mô phỏng các mạng ô tô: <strong>CAN / LIN / Ethernet / FlexRay</strong>. Participant gửi/nhận frame như trên bus thật, nhưng qua phần mềm → thay hoàn toàn dây/transceiver vật lý.</dd>
+          <dt>Publish / Subscribe</dt><dd>Ngoài bus mạng, còn có kênh <strong>pub/sub</strong> dữ liệu (data) &amp; RPC để trao đổi giá trị tuỳ ý giữa participant (vd tín hiệu plant) không nhất thiết map vào một frame bus.</dd>
+          <dt>Registry + lifecycle</dt><dd>Một <strong>registry</strong> (dịch vụ khám phá) giúp participant tìm nhau &amp; kết nối. Mỗi participant có <strong>lifecycle</strong> (created → communication ready → running → stopped) &amp; có thể tham gia <em>lifecycle phối hợp</em> để start/stop đồng bộ cả hệ.</dd>
+          <dt>Time synchronization (virtual time)</dt><dd>SIL Kit cung cấp <strong>đồng bộ thời gian ảo</strong>: mọi participant tiến theo cùng một simulated time → mô phỏng <strong>tất định &amp; reproducible</strong> (chạy lại cho kết quả y hệt), độc lập tốc độ máy. Đây là điểm phân biệt cốt lõi với "chỉ nối socket".</dd>
+        </dl>
+
+        <div class="table-wrap"><table>
+          <thead><tr><th>Tiêu chí</th><th>Vector SIL Kit</th><th>CANoe</th></tr></thead>
+          <tbody>
+            <tr><td>Bản chất</td><td>Bus tích hợp mở (open-source) để <em>ghép nhiều sim/vECU</em></td><td>Công cụ test/simulation thương mại (all-in-one)</td></tr>
+            <tr><td>Vai trò chính</td><td>Middleware kết nối &amp; đồng bộ nhiều participant</td><td>Mô phỏng phần dư, gửi/nhận, phân tích, viết test (CAPL/.NET)</td></tr>
+            <tr><td>Phân tán đa máy</td><td>Có (thiết kế cho distributed co-simulation)</td><td>Chủ yếu công cụ trên một trạm (có thể ghép SIL Kit)</td></tr>
+            <tr><td>Mã nguồn</td><td>Mở, miễn phí</td><td>Thương mại, có license</td></tr>
+            <tr><td>Quan hệ</td><td colspan="2">Bổ trợ nhau — CANoe có thể là một <em>participant</em> trên SIL Kit; SIL Kit là "xương sống" nối các vECU/model/CANoe lại.</td></tr>
+          </tbody>
+        </table></div>
+
+        <!-- ================= 6. DETERMINISM & TIME ================= -->
+        <h2>6. Determinism &amp; thời gian mô phỏng</h2>
+        <p><strong>Vai trò:</strong> test chỉ hữu ích khi <em>lặp lại được</em>. Nhưng host là <strong>OS thường (không real-time)</strong> — Windows/Linux có thể trì hoãn tiến trình bất kỳ lúc nào (scheduling jitter, GC, page fault). Nếu để mô phỏng chạy theo <em>đồng hồ tường</em>, kết quả sẽ đổi giữa các lần chạy → không reproducible.</p>
+        <dl class="kv">
+          <dt>Virtual / simulated time</dt><dd>Giải pháp: dùng một <strong>đồng hồ mô phỏng</strong> do framework điều khiển, <em>không</em> gắn với đồng hồ tường. Thời gian chỉ tiến khi tất cả participant đã xử lý xong bước hiện tại → thứ tự sự kiện <strong>tất định</strong>, không phụ thuộc máy nhanh/chậm.</dd>
+          <dt>Time synchronization</dt><dd>Các participant phải <strong>đồng bộ</strong> để không ai "vượt" thời gian của người khác. SIL Kit điều phối bước thời gian (time step) &amp; chỉ cho tiến khi mọi bên sẵn sàng → cùng một chuỗi sự kiện mỗi lần chạy = <strong>reproducible</strong> (quan trọng cho debug &amp; test hồi quy).</dd>
+          <dt>Monotonic vs wall-clock</dt><dd><strong>Monotonic clock</strong> chỉ tăng đều, không nhảy lùi (dùng đo <em>khoảng thời gian</em>); <strong>wall-clock</strong> là giờ thực, có thể bị chỉnh (NTP)/nhảy. Trong mô phỏng, dùng đồng hồ <em>đơn điệu/ảo</em> cho định thời nội bộ, tránh phụ thuộc wall-clock. Liên hệ chi tiết host runtime ở bài <a href="M-host-runtime.html">M</a>.</dd>
+          <dt>Faster / slower than real-time</dt><dd>Vì tách khỏi wall-clock, mô phỏng có thể chạy <strong>nhanh hơn thực</strong> (batch test qua đêm) hoặc <strong>chậm hơn</strong> (khi model nặng) mà kết quả logic không đổi — điều HIL (bị ràng buộc real-time) không làm được.</dd>
+        </dl>
+        <div class="callout callout--warn"><div class="callout__icon">⚠️</div><div class="callout__body"><p class="mb-0"><strong>Bẫy hay gặp:</strong> code vECU vô tình gọi thẳng <em>wall-clock</em> host (<code>time()</code>/<code>QueryPerformanceCounter</code>) thay vì đồng hồ mô phỏng → mất tất định (kết quả đổi theo tải máy). Nguyên tắc: mọi định thời trong vECU phải lấy từ <em>simulated time</em> do framework cấp.</p></div></div>
+
+        <!-- ================= 7. TRƯỚC -> NAY ================= -->
+        <h2>7. Trước (~2020) → Nay</h2>
+        <div class="evo">
+          <div class="evo__head">🖥️ <span>Từ HIL nặng → SIL/vECU + CI shift-left (SDV)</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>Test tích hợp dựa nhiều vào <strong>HIL</strong> bench đắt, phần cứng khan hiếm, khó song song; phải đợi board/silicon mới bắt đầu → phản hồi chậm, nghẽn cuối chu kỳ.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p><strong>SIL/vECU</strong> chạy trên host + <strong>CI</strong> shift-left: test tự động mỗi commit, scale-out trên cloud, đồng-mô phỏng nhiều ECU qua <strong>SIL Kit</strong>. HIL vẫn cần cho I/O điện &amp; tích hợp cuối, nhưng phần lớn regression chuyển sang ảo. Là trụ cột của <strong>SDV</strong> &amp; virtualization.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> nói được "đẩy phần lớn test xuống SIL/vECU trong CI để shift-left, chỉ giữ HIL cho cái buộc phải real-time/I/O điện" cho thấy hiểu cả kỹ thuật lẫn chiến lược test hiện đại.</div>
+        </div>
+
+        <!-- ================= 8. Q&A ================= -->
+        <h2>8. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">vECU là gì? Khác HIL ở điểm nào? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>vECU</strong> = mô hình phần mềm của ECU, biên dịch &amp; chạy trên <strong>PC host</strong> thay cho target thật → cho phép test <em>sớm, song song, tự động, trong CI</em> mà không cần phần cứng (shift-left). <strong>HIL</strong> ngược lại dùng <em>ECU thật</em> nối hệ real-time mô phỏng plant qua I/O điện — trung thực nhất nhưng đắt, khan hiếm, ràng buộc real-time. vECU về bản chất là công cụ <strong>SIL</strong> (software trên host, dùng virtual time).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Shift-left nghĩa là gì?</li><li>Virtual target khác vECU thường ra sao?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Các cấp vECU L1–L4 khác nhau thế nào? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>L1</strong>: chỉ ASW/thuật toán (code từ model), không BSW — MIL/SIL sớm. <strong>L2</strong>: + RTE + BSW một phần (stub), giao tiếp mức tín hiệu. <strong>L3</strong>: full AUTOSAR stack host-compiled, MCAL thay bằng <em>virtual MCAL/HAL</em> trỏ bus ảo, giao tiếp mức PDU. <strong>L4</strong>: chạy <em>firmware nhị phân</em> trên <strong>ISS</strong> (QEMU/Silver/vVIRTUALtarget) = <em>virtual target</em>, gần HIL nhất. Càng lên cao càng trung thực nhưng càng chậm.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>ISS là gì, kể vài công cụ?</li><li>Virtual MCAL thay cái gì?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">SIL Kit làm gì? Khác CANoe ở đâu? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>SIL Kit</strong> là <em>middleware/bus mô phỏng phân tán mã nguồn mở</em>: nối nhiều <strong>participant</strong> (vECU, model, CANoe) qua <strong>virtual bus</strong> (CAN/LIN/Eth/FlexRay) + pub/sub + <strong>time sync</strong>, có <em>registry</em> &amp; lifecycle, chạy được trên nhiều máy → đồng-mô phỏng nhiều ECU tất định. <strong>CANoe</strong> là công cụ test/simulation thương mại all-in-one (mô phỏng phần dư, phân tích, viết test). Chúng bổ trợ: CANoe có thể là <em>một participant</em> trên SIL Kit; SIL Kit là xương sống ghép các sim lại.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Participant &amp; registry là gì?</li><li>Vì sao cần time sync trong SIL Kit?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Vì sao cần virtual time / determinism? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Host chạy OS <strong>không real-time</strong> → nếu bám đồng hồ tường (wall-clock), jitter/tải máy làm thứ tự sự kiện đổi giữa các lần chạy = <em>không reproducible</em>. Dùng <strong>simulated/virtual time</strong> do framework điều khiển + <strong>time sync</strong> giữa participant: thời gian chỉ tiến khi mọi bên xử lý xong bước → chuỗi sự kiện <strong>tất định &amp; lặp lại được</strong>, độc lập tốc độ máy; còn cho chạy nhanh/chậm hơn real-time. Dùng đồng hồ <em>monotonic/ảo</em>, tránh wall-clock cho định thời nội bộ.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Monotonic vs wall-clock khác gì?</li><li>Faster-than-real-time có lợi gì?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Khi nào chọn SIL (vECU) vs HIL? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Chọn <strong>SIL/vECU</strong> khi cần test <em>sớm, hàng loạt, tự động trong CI</em>, không có/không cần phần cứng, muốn regression nhanh &amp; reproducible, chạy song song trên nhiều máy/cloud. Chọn <strong>HIL</strong> khi cần <em>I/O điện thật</em>, timing real-time chính xác, tích hợp cuối với ECU vật lý, hoặc chứng nhận cần phần cứng. Thực tế: kết hợp — đẩy phần lớn functional/regression xuống SIL, giữ HIL cho tích hợp cuối. <strong>Virtual target (L4/ISS)</strong> là bước trung gian khi cần chạy đúng binary nhưng chưa có/không muốn dùng bench HIL.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>PIL chèn vào chỗ nào giữa SIL và HIL?</li><li>PoC vECU nên bắt đầu ở cấp nào?</li></ul></div>
+          </div></div>
+        </div>
+
+        <!-- ================= 9. Cheat-sheet ================= -->
+        <h2>9. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>vECU — vì sao</h4><ul>
+            <li>Phần mềm ECU chạy trên host (không target)</li>
+            <li>Shift-left: test sớm/song song/tự động</li>
+            <li>CI-friendly · độc lập HW khan hiếm</li>
+            <li>Bối cảnh SDV/virtualization · PoC = chứng minh khả thi</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Cấp L1–L4</h4><ul>
+            <li>L1 ASW/thuật toán (model)</li>
+            <li>L2 +RTE +BSW một phần (signal)</li>
+            <li>L3 full stack + virtual MCAL (bus ảo)</li>
+            <li>L4 firmware + ISS = virtual target (gần HIL)</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>XIL</h4><ul>
+            <li>MIL: model trên host</li>
+            <li>SIL: mã C trên host (← vECU ở đây)</li>
+            <li>PIL: mã trên target/ISS</li>
+            <li>HIL: ECU thật + plant real-time</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>SIL Kit</h4><ul>
+            <li>Bus mô phỏng phân tán open-source</li>
+            <li>Participant · virtual bus (CAN/LIN/Eth/FlexRay)</li>
+            <li>pub/sub · registry · lifecycle</li>
+            <li>Time sync → tất định; vs CANoe (tool thương mại)</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Time / determinism</h4><ul>
+            <li>Host không real-time → cần virtual time</li>
+            <li>Time sync → reproducible</li>
+            <li>Monotonic vs wall-clock</li>
+            <li>Faster/slower than real-time</li>
+          </ul></div>
+        </div>
+
+        <!-- ================= 10. Sources ================= -->
+        <h2>10. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li><strong>Vector SIL Kit</strong> — <a href="https://github.com/vectorgrp/sil-kit" target="_blank" rel="noopener">github.com/vectorgrp/sil-kit</a> &amp; docs (participant, virtual bus, registry/lifecycle, time synchronization, pub/sub).</li>
+          <li><strong>prostep iVIP SmartSE</strong> — Recommendation vECU (phân loại cấp độ vECU L1–L4, virtual MCAL, virtual target).</li>
+          <li><strong>ASAM</strong> — thuật ngữ MIL/SIL/PIL/HIL &amp; <em>XIL API</em> (test bench framework); FMI/FMU tách ở bài <a href="L-fmi-fmu.html">L</a>.</li>
+          <li>ISS: <strong>QEMU</strong>, <strong>Synopsys Silver</strong>, <strong>Vector vVIRTUALtarget</strong> (mô phỏng vi điều khiển cho vECU L4).</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi giải thích được vECU là gì, các cấp vECU, chuỗi xIL, và vai trò SIL Kit.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">Chủ đề K · vECU / SIL Kit — Interview Prep</footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../assets/js/app.js?v=4"></script>
+</body>
+</html>

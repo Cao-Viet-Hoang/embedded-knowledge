@@ -8,6 +8,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../assets/css/style.css?v=4" />
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="../assets/favicon.ico" />
 </head>
 <body data-page="B3" data-root="../">
   <div id="app">
@@ -187,8 +192,108 @@
           <div class="evo__why"><b>Vì sao quan trọng:</b> nói được “PduR là tổng đài route giữa CAN/Ethernet, CanTp cho diag-on-CAN còn DoIP cho diag-on-IP” cho thấy bạn hiểu kiến trúc mạng hiện đại.</div>
         </div>
 
+        <!-- ================= Can Driver (MCAL) ================= -->
+        <h2>9. Can Driver (MCAL) — chi tiết &amp; Polling vs Interrupt</h2>
+        <p><strong>Vai trò:</strong> module <strong>Can</strong> là <em>MCAL driver</em> nằm <strong>ngay dưới CanIf</strong>, trực tiếp điều khiển <strong>CAN controller HW</strong> (mailbox, baudrate, mode). CanIf gọi xuống; Can báo ngược lên qua callback <code>CanIf_TxConfirmation</code> / <code>CanIf_RxIndication</code> / <code>CanIf_ControllerBusOff</code> / <code>CanIf_ControllerModeIndication</code>. Mục 3 chỉ tả tầng CanIf — đây là tầng driver thuần (JD hay hỏi).</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 300" role="img" aria-label="Can driver và CanIf: HTH/HRH, Tx/Rx, polling vs interrupt" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="cd1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="260" y="14" width="200" height="40" rx="7" fill="var(--brand-400)"/><text x="360" y="32" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">CanIf</text><text x="360" y="46" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">PduR · CanTp · CanNm</text>
+            <rect x="250" y="100" width="220" height="96" rx="8" fill="var(--surface)" class="dgm-layer"/><text x="360" y="118" text-anchor="middle" class="dgm-text" font-size="11" font-weight="700">Can (MCAL driver)</text>
+            <rect x="266" y="132" width="88" height="50" rx="6" fill="var(--brand-800)"/><text x="310" y="153" text-anchor="middle" class="dgm-inv" font-size="9.5" font-weight="700">HTH</text><text x="310" y="167" text-anchor="middle" class="dgm-inv-sub" font-size="8">Tx mailbox</text>
+            <rect x="366" y="132" width="88" height="50" rx="6" fill="var(--brand-600)"/><text x="410" y="153" text-anchor="middle" class="dgm-inv" font-size="9.5" font-weight="700">HRH</text><text x="410" y="167" text-anchor="middle" class="dgm-inv-sub" font-size="8">Rx mailbox</text>
+            <rect x="540" y="108" width="160" height="46" rx="7" fill="var(--brand-900)"/><text x="620" y="128" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">CAN controller HW</text><text x="620" y="142" text-anchor="middle" class="dgm-inv-sub" font-size="8">TEC/REC · mailbox</text>
+            <rect x="540" y="210" width="160" height="34" rx="7" fill="var(--core)"/><text x="620" y="231" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">CAN bus</text>
+            <rect x="20" y="110" width="160" height="46" rx="7" fill="var(--surface-2)" class="dgm-layer"/><text x="100" y="130" text-anchor="middle" class="dgm-label" font-size="9.5" font-weight="700">SchM / OS</text><text x="100" y="144" text-anchor="middle" class="dgm-sub" font-size="8">gọi Can_MainFunction_*</text>
+            <line x1="325" y1="54" x2="325" y2="98" class="dgm-arrow" stroke-width="1.4" marker-end="url(#cd1)"/><text x="319" y="80" text-anchor="end" class="dgm-mono" font-size="8">Can_Write</text>
+            <line x1="400" y1="98" x2="400" y2="56" class="dgm-arrow" stroke-width="1.4" marker-end="url(#cd1)"/><text x="406" y="80" text-anchor="start" class="dgm-mono" font-size="8">callback</text>
+            <line x1="470" y1="146" x2="538" y2="130" class="dgm-arrow" stroke-width="1.4" marker-end="url(#cd1)"/><text x="504" y="128" text-anchor="middle" class="dgm-sub" font-size="8">Tx</text>
+            <line x1="538" y1="140" x2="470" y2="164" class="dgm-arrow" stroke-width="1.4" marker-end="url(#cd1)"/><text x="504" y="176" text-anchor="middle" class="dgm-sub" font-size="8">Rx</text>
+            <line x1="612" y1="154" x2="612" y2="208" class="dgm-arrow" stroke-width="1.4" marker-end="url(#cd1)"/><line x1="628" y1="208" x2="628" y2="156" class="dgm-arrow" stroke-width="1.4" marker-end="url(#cd1)"/>
+            <line x1="180" y1="132" x2="248" y2="146" class="dgm-arrow" stroke-width="1.4" marker-end="url(#cd1)" stroke-dasharray="4 3"/><text x="214" y="126" text-anchor="middle" class="dgm-sub" font-size="8">polling</text>
+            <path d="M590,108 q-30,-26 -120,-10" fill="none" class="dgm-arrow" stroke-width="1.3" marker-end="url(#cd1)" stroke-dasharray="4 3"/><text x="540" y="82" text-anchor="middle" class="dgm-sub" font-size="8">IRQ (interrupt)</text>
+            <text x="360" y="284" text-anchor="middle" class="dgm-sub" font-size="9">Thông báo Tx/Rx/BusOff/Wakeup/Mode: INTERRUPT (ISR) hoặc POLLING (SchM gọi MainFunction)</text>
+          </svg>
+          <div class="figure__cap"><b>Can (MCAL) &amp; CanIf.</b> CanIf gọi <code>Can_Write(HTH)</code> nạp mailbox Tx; frame tới rơi vào mailbox HRH. Can báo Tx/Rx lên CanIf bằng <strong>INTERRUPT</strong> (ISR) hoặc <strong>POLLING</strong> (SchM gọi <code>Can_MainFunction_*</code>).</div>
+        </div>
+
+        <h3>9.1 Khái niệm cốt lõi</h3>
+        <dl class="kv">
+          <dt>Hardware Object (mailbox)</dt><dd>Vùng đệm HW trong controller giữ một CAN frame (ID + DLC + data + control). Controller có nhiều hardware object; mỗi cái cấu hình cho Tx hoặc Rx.</dd>
+          <dt>HTH &amp; HRH</dt><dd><strong>HTH</strong> (Hardware Transmit Handle) &amp; <strong>HRH</strong> (Hardware Receive Handle) là handle Can/CanIf dùng để <em>ánh xạ tới mailbox HW</em> — HTH cho Tx, HRH cho Rx.</dd>
+          <dt>Full-CAN vs Basic-CAN</dt><dd><strong>Full-CAN</strong>: 1 mailbox phục vụ đúng <em>1 CAN ID</em> (HW lọc chính xác, nhanh). <strong>Basic-CAN</strong>: 1 mailbox nhận <em>nhiều ID</em> (HW lọc theo mask, phần dư cần <strong>software filter</strong> ở CanIf). Đánh đổi: số mailbox vs độ phủ ID.</dd>
+          <dt>Controller mode state machine</dt><dd><strong>UNINIT</strong> → (<code>Can_Init</code>) <strong>STOPPED</strong> → (<code>Can_SetControllerMode</code> START) <strong>STARTED</strong> → <strong>SLEEP</strong>. STOPPED không tham gia bus; STARTED Tx/Rx bình thường; SLEEP cho wakeup. Baudrate qua <code>Can_SetBaudrate</code>; init/deinit qua <code>Can_Init</code>/<code>Can_DeInit</code>.</dd>
+          <dt>Tx flow</dt><dd>CanIf gọi <code>Can_Write(Hth, PduInfo)</code> → Can nạp frame vào <em>mailbox HW</em>. Mailbox đang bận → trả <code>CAN_BUSY</code> → CanIf <strong>đệm (Tx buffer) &amp; thử lại</strong>. Gửi xong → Can báo <code>CanIf_TxConfirmation</code>.</dd>
+          <dt>Rx flow</dt><dd>Khung tới → <em>mailbox HW (HRH)</em> nhận → Can báo <code>CanIf_RxIndication</code> → CanIf lọc <strong>hardware/software filtering</strong> → PduR → COM/CanTp.</dd>
+          <dt>Bus-off &amp; recovery</dt><dd>Controller vào <em>bus-off</em> (TEC&gt;255) → Can báo <code>CanIf_ControllerBusOff</code> → phối hợp <strong>CanSM</strong> recovery (chờ rồi restart). Đổi/báo mode qua <code>CanIf_ControllerModeIndication</code>.</dd>
+          <dt>CAN FD ở tầng driver</dt><dd>Mailbox cấu hình <strong>FD</strong> (payload tới 64 byte) &amp; <strong>BRS</strong> (Baud Rate Switch) — arbitration phase và data phase khác baudrate; <code>Can_SetBaudrate</code> chọn cấu hình FD.</dd>
+        </dl>
+        <p class="small text-mute"><strong>API:</strong> <code>Can_Init</code>/<code>Can_DeInit</code>/<code>Can_SetControllerMode</code>/<code>Can_SetBaudrate</code>/<code>Can_Write</code>; polling: <code>Can_MainFunction_Write</code>/<code>_Read</code>/<code>_BusOff</code>/<code>_Wakeup</code>/<code>_Mode</code>.</p>
+
+        <h3>9.2 Polling vs Interrupt (trọng tâm)</h3>
+        <p>Mỗi nhóm xử lý — <strong>Tx, Rx, BusOff, Wakeup, Mode</strong> — cấu hình <em>độc lập</em> là INTERRUPT hay POLLING. Nếu POLLING → SchM/OS gọi định kỳ hàm tương ứng: <code>Can_MainFunction_Write</code> (Tx confirm), <code>Can_MainFunction_Read</code> (Rx), <code>Can_MainFunction_BusOff</code>, <code>Can_MainFunction_Wakeup</code>, <code>Can_MainFunction_Mode</code>.</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Tiêu chí</th><th>INTERRUPT</th><th>POLLING</th></tr></thead>
+          <tbody>
+            <tr><td>Độ trễ (latency)</td><td>Thấp — phản ứng gần như tức thì khi có sự kiện HW</td><td>= chu kỳ MainFunction (chờ tới lần quét kế)</td></tr>
+            <tr><td>Tính tất định (timing)</td><td>Khó hơn: ISR chen ngang gây <em>jitter</em>, phải quản lý ưu tiên/lồng ngắt</td><td>Cao: thời điểm xử lý cố định theo lịch SchM → dễ phân tích timing/WCET</td></tr>
+            <tr><td>CPU</td><td>Chỉ tốn khi có sự kiện</td><td>Tốn đều mỗi chu kỳ dù không có gì (quét lãng phí khi quét dày)</td></tr>
+            <tr><td>Độ phức tạp</td><td>Thêm ISR, tranh chấp dữ liệu → cần critical section</td><td>Đơn giản, chạy trong ngữ cảnh task</td></tr>
+            <tr><td>Dùng khi</td><td>Cần đáp ứng nhanh, tải bus cao, latency chặt</td><td>Cần tất định, dễ kiểm chứng, tải vừa</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout callout--note">
+          <div class="callout__icon">🧪</div>
+          <div class="callout__body">
+            <p class="mb-0">Trong <strong>vECU</strong> / mô phỏng thường ưu tiên <strong>POLLING</strong> để hành vi <em>tất định</em>, tái lập được &amp; dễ đồng bộ với thời gian ảo — tránh phụ thuộc ngắt HW thật (bài <a href="K-vecu-sil.html">K</a>).</p>
+          </div>
+        </div>
+
+        <!-- ================= Ethernet Stack ================= -->
+        <h2>10. Ethernet Stack (Classic) — Eth/EthIf/TcpIp/SoAd/DoIP</h2>
+        <p><strong>Vai trò:</strong> song song với CAN, AUTOSAR Classic có stack <strong>Ethernet</strong> — từ dưới lên: <strong>Eth</strong> (MCAL) → <strong>EthIf</strong> → <strong>TcpIp</strong> → <strong>SoAd</strong> → upper (SOME/IP, DoIP…). Phần <em>nice-to-have</em>: hiểu vai trò từng tầng &amp; điểm khác CAN.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 720 330" role="img" aria-label="Ethernet stack AUTOSAR Classic" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="eth1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="150" y="12" width="300" height="40" rx="7" fill="var(--brand-400)"/><text x="300" y="30" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">SOME/IP · SOME/IP-SD · DoIP · UDP-NM</text><text x="300" y="44" text-anchor="middle" class="dgm-inv-sub" font-size="8">upper layer</text>
+            <rect x="150" y="64" width="300" height="40" rx="7" fill="var(--brand-600)"/><text x="300" y="82" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">SoAd (Socket Adaptor)</text><text x="300" y="96" text-anchor="middle" class="dgm-inv-sub" font-size="8">PDU ↔ socket</text>
+            <rect x="150" y="116" width="300" height="40" rx="7" fill="var(--brand-800)"/><text x="300" y="134" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">TcpIp</text><text x="300" y="148" text-anchor="middle" class="dgm-inv-sub" font-size="8">ARP/IP/ICMP · UDP/TCP · DHCP</text>
+            <rect x="150" y="168" width="300" height="40" rx="7" fill="var(--surface)" class="dgm-layer"/><text x="300" y="186" text-anchor="middle" class="dgm-text" font-size="11" font-weight="700">EthIf</text><text x="300" y="200" text-anchor="middle" class="dgm-sub" font-size="8">abstraction · VLAN · EtherType</text>
+            <rect x="150" y="220" width="300" height="40" rx="7" fill="var(--brand-900)"/><text x="300" y="238" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Eth (MCAL driver)</text><text x="300" y="252" text-anchor="middle" class="dgm-inv-sub" font-size="8">MAC · buffer · Provide/Transmit</text>
+            <rect x="150" y="272" width="300" height="40" rx="7" fill="var(--core)"/><text x="300" y="290" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">EthTrcv (PHY) · EthSwt (switch)</text><text x="300" y="304" text-anchor="middle" class="dgm-inv-sub" font-size="8">link vật lý · switch (zonal)</text>
+            <line x1="292" y1="52" x2="292" y2="63" class="dgm-arrow" stroke-width="1.3" marker-end="url(#eth1)"/><line x1="308" y1="64" x2="308" y2="53" class="dgm-arrow" stroke-width="1.3" marker-end="url(#eth1)"/>
+            <line x1="292" y1="104" x2="292" y2="115" class="dgm-arrow" stroke-width="1.3" marker-end="url(#eth1)"/><line x1="308" y1="116" x2="308" y2="105" class="dgm-arrow" stroke-width="1.3" marker-end="url(#eth1)"/>
+            <line x1="292" y1="156" x2="292" y2="167" class="dgm-arrow" stroke-width="1.3" marker-end="url(#eth1)"/><line x1="308" y1="168" x2="308" y2="157" class="dgm-arrow" stroke-width="1.3" marker-end="url(#eth1)"/>
+            <line x1="292" y1="208" x2="292" y2="219" class="dgm-arrow" stroke-width="1.3" marker-end="url(#eth1)"/><line x1="308" y1="220" x2="308" y2="209" class="dgm-arrow" stroke-width="1.3" marker-end="url(#eth1)"/>
+            <line x1="292" y1="260" x2="292" y2="271" class="dgm-arrow" stroke-width="1.3" marker-end="url(#eth1)"/><line x1="308" y1="272" x2="308" y2="261" class="dgm-arrow" stroke-width="1.3" marker-end="url(#eth1)"/>
+            <text x="470" y="36" text-anchor="start" class="dgm-sub" font-size="8.5">RPC/event · service discovery · diag-on-IP</text>
+            <text x="470" y="88" text-anchor="start" class="dgm-sub" font-size="8.5">socket connection · route · routing group</text>
+            <text x="470" y="140" text-anchor="start" class="dgm-sub" font-size="8.5">quản lý socket</text>
+            <text x="470" y="192" text-anchor="start" class="dgm-sub" font-size="8.5">nhiều controller/transceiver</text>
+            <text x="470" y="244" text-anchor="start" class="dgm-sub" font-size="8.5">Eth_ProvideTxBuffer / Eth_Transmit</text>
+            <text x="470" y="296" text-anchor="start" class="dgm-sub" font-size="8.5">PHY link · switch driver</text>
+          </svg>
+          <div class="figure__cap"><b>Stack Ethernet (Classic).</b> Upper (SOME/IP · DoIP · UDP-NM) → <strong>SoAd</strong> (PDU↔socket) → <strong>TcpIp</strong> (IP/UDP/TCP) → EthIf → Eth (MCAL) → PHY/switch. SoAd là cầu giữa thế giới PDU và socket.</div>
+        </div>
+
+        <dl class="kv">
+          <dt>Eth (MCAL)</dt><dd>Điều khiển <em>Ethernet controller</em> (MAC), quản lý buffer Tx/Rx: <code>Eth_ProvideTxBuffer</code> → <code>Eth_Transmit</code> (Tx), nhận qua Rx indication. Phối hợp <strong>EthTrcv</strong> (PHY — lớp vật lý, link up/down) &amp; <strong>EthSwt</strong> (switch driver — switch trên board/zonal).</dd>
+          <dt>EthIf</dt><dd>Abstraction cho <em>nhiều controller/transceiver/switch</em>; xử lý <strong>VLAN</strong>; <em>dispatch</em> frame lên upper layer theo <strong>EtherType</strong>; điều khiển/đo link, buffer.</dd>
+          <dt>TcpIp</dt><dd>Chồng giao thức: <strong>ARP</strong>, <strong>IPv4/IPv6</strong>, <strong>ICMP</strong>, <strong>UDP</strong>, <strong>TCP</strong>, <strong>DHCP</strong>; quản lý <strong>socket</strong> (mở/đóng/bind). Là lớp mạng + giao vận.</dd>
+          <dt>SoAd (Socket Adaptor)</dt><dd>Nối <strong>PDU ↔ socket</strong> (UDP/TCP). Khái niệm: <em>socket connection</em>, <em>socket route</em>, <em>routing group</em>. Là <strong>cầu</strong> giữa upper layer hướng PDU và TcpIp hướng socket.</dd>
+          <dt>Upper protocols</dt><dd><strong>SOME/IP</strong> (RPC/event trên service) &amp; <strong>SOME/IP-SD</strong> (service discovery — offer/find/subscribe); <strong>DoIP</strong> (Diagnostics over IP — UDS trên TCP/UDP, bài <a href="B4-diagnostics.html">B4</a>); <strong>UDP-NM</strong> (network management trên UDP).</dd>
+        </dl>
+        <div class="callout callout--note">
+          <div class="callout__icon">↔️</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>So với CAN stack:</strong> CAN hướng <em>frame ≤8/64B</em>, broadcast theo ID, CanTp phân mảnh; Ethernet hướng <em>gói lớn</em>, switched/point-to-point, địa chỉ IP+port, socket, băng thông cao — hợp xương sống <strong>zonal/SDV</strong>.</p>
+          </div>
+        </div>
+
         <!-- ================= Q&A ================= -->
-        <h2>9. Tự kiểm tra</h2>
+        <h2>11. Tự kiểm tra</h2>
         <div class="taglist">
           <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
           <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
@@ -218,9 +323,19 @@
             <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Deadline monitoring ảnh hưởng giá trị thế nào?</li></ul></div>
           </div></div>
         </div>
+        <div class="qa"><div class="qa__q">Can driver xử lý Tx/Rx theo interrupt hay polling? Đánh đổi thế nào? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Cấu hình được cho từng nhóm (Tx/Rx/BusOff/Wakeup/Mode). <strong>INTERRUPT</strong>: ISR phản ứng ngay → latency thấp, nhưng thêm jitter, phải quản lý ưu tiên &amp; critical section. <strong>POLLING</strong>: SchM/OS gọi định kỳ <code>Can_MainFunction_Write</code>/<code>_Read</code>/<code>_BusOff</code>/<code>_Wakeup</code>/<code>_Mode</code> → thời điểm xử lý tất định, dễ phân tích timing, đơn giản, nhưng latency = chu kỳ MainFunction &amp; tốn CPU quét. vECU thường chọn polling để tất định (bài <a href="K-vecu-sil.html">K</a>).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>HTH/HRH ánh xạ gì?</li><li>Khi nào Can_Write trả CAN_BUSY?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Trong stack Ethernet, SoAd và TcpIp làm gì? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>TcpIp</strong> là chồng giao thức: ARP, IPv4/IPv6, ICMP, <strong>UDP/TCP</strong>, DHCP + quản lý socket. <strong>SoAd</strong> (Socket Adaptor) là <em>cầu</em> nối upper layer hướng <strong>PDU</strong> với TcpIp hướng <strong>socket</strong> — qua socket connection, socket route, routing group. Trên cùng có SOME/IP(-SD), <strong>DoIP</strong> (UDS-on-IP, bài <a href="B4-diagnostics.html">B4</a>), UDP-NM. Tương phản CAN: hướng gói lớn/switched/IP-port thay vì frame ≤8/64B broadcast theo ID.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>EthIf khác Eth (MCAL) chỗ nào?</li><li>DoIP dùng TCP hay UDP?</li></ul></div>
+          </div></div>
+        </div>
 
         <!-- ================= Cheat-sheet ================= -->
-        <h2>10. Cheat-sheet 1 trang</h2>
+        <h2>12. Cheat-sheet 1 trang</h2>
         <div class="cheatsheet">
           <div class="cheatsheet__group"><h4>Luồng</h4><ul>
             <li>COM↔PduR↔CanIf↔Can↔bus</li>
@@ -257,10 +372,16 @@
             <li>SecOC/IpduM/LdCom</li>
             <li>Nay: Ethernet/SOME-IP/DoIP song song</li>
           </ul></div>
+          <div class="cheatsheet__group"><h4>Can driver / Ethernet</h4><ul>
+            <li>Can (MCAL): HTH/HRH · Full-CAN vs Basic-CAN</li>
+            <li>Mode: UNINIT→STOPPED→STARTED→SLEEP</li>
+            <li>Interrupt vs Polling (Can_MainFunction_*)</li>
+            <li>Eth→EthIf→TcpIp→SoAd→SOME/IP·DoIP</li>
+          </ul></div>
         </div>
 
         <!-- ================= Sources ================= -->
-        <h2>11. Nguồn tham khảo</h2>
+        <h2>13. Nguồn tham khảo</h2>
         <ul class="small text-soft">
           <li>AUTOSAR Classic SWS — <strong>Com</strong>, <strong>PduR</strong>, <strong>CanIf</strong>, <strong>CanTp</strong>, <strong>CanSM</strong>, <strong>CanNm</strong>, <strong>ComM</strong>.</li>
           <li><strong>ISO 15765-2</strong> (CAN Transport Protocol — SF/FF/CF/FC, BS, STmin); ISO 11898 (CAN).</li>

@@ -8,6 +8,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../assets/css/style.css?v=4" />
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="../assets/favicon.ico" />
 </head>
 <body data-page="G" data-root="../">
   <div id="app">
@@ -282,8 +287,64 @@ SECTIONS {
           <div class="evo__why"><b>Vì sao quan trọng:</b> trả lời được “dùng C++ nào trong nhúng an toàn và vì sao” cho thấy bạn hiểu trade-off, không chỉ cú pháp.</div>
         </div>
 
+        <!-- 11. MISRA C -->
+        <h2>11. MISRA C — quy tắc &amp; ví dụ</h2>
+        <p><strong>MISRA C</strong> là bộ guideline lập trình C an toàn cho hệ nhúng/automotive, do <em>Motor Industry Software Reliability Association</em> phát hành. Phiên bản hiện hành là <strong>MISRA C:2012</strong> (kèm các Amendment / Technical Corrigendum), thay cho MISRA C:2004. Mục tiêu: tránh phần <em>undefined / unspecified / implementation-defined</em> của ngôn ngữ C, tăng an toàn, tính khả chuyển (portability) và khả năng phân tích tĩnh. Đây là "must" trong nhiều JD automotive (gồm cả JD này).</p>
+
+        <h3>11.1 Phân loại &amp; mức độ</h3>
+        <div class="kv">
+          <dt>Directive</dt><dd>Không thể kiểm chỉ bằng mã nguồn — cần thông tin thiết kế/tài liệu/quy trình (vd Dir 4.1).</dd>
+          <dt>Rule</dt><dd>Có thể kiểm hoàn toàn bằng mã nguồn (phân tích tĩnh).</dd>
+          <dt>Mandatory</dt><dd><strong>Không được vi phạm</strong> trong mọi trường hợp — không cho phép deviation.</dd>
+          <dt>Required</dt><dd>Bắt buộc tuân thủ, nhưng <em>được</em> vi phạm nếu có deviation hợp lệ (ghi nhận + phê duyệt).</dd>
+          <dt>Advisory</dt><dd>Khuyến nghị; nên tuân thủ nhưng linh hoạt hơn.</dd>
+          <dt>Decidable / Undecidable</dt><dd>Rule mà công cụ có thể (hoặc không thể) khẳng định chắc chắn đúng/sai — ảnh hưởng tới độ tin cậy của phân tích tĩnh.</dd>
+        </div>
+
+        <h3>11.2 Deviation process</h3>
+        <p>Khi buộc phải vi phạm một rule <strong>Required</strong> (hoặc Advisory), cần lập <strong>deviation record</strong>: nêu lý do, phân tích rủi ro, biện pháp giảm thiểu, rồi được <strong>phê duyệt và ghi nhận</strong> chính thức. Rule <strong>Mandatory</strong> thì không có ngoại lệ.</p>
+
+        <h3>11.3 Một số rule / directive kinh điển</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Rule / Directive</th><th>Nội dung</th><th>Lý do</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Dir 4.1</strong> (Required)</td><td>Giảm thiểu lỗi runtime</td><td>Chia 0, tràn số, out-of-bounds… phải được ngăn ngừa bằng thiết kế/kiểm tra.</td></tr>
+            <tr><td><strong>Rule 1.3</strong> (Required)</td><td>Không gây undefined / critical unspecified behaviour</td><td>Nền tảng an toàn — hành vi không xác định là nguồn lỗi khó lường.</td></tr>
+            <tr><td><strong>Rule 8.13</strong> (Advisory)</td><td>Con trỏ nên trỏ tới <code>const</code> khi có thể</td><td>Ngăn ghi ngoài ý muốn, rõ ý định, hỗ trợ tối ưu.</td></tr>
+            <tr><td><strong>Rule 21.3</strong> (Required)</td><td>Cấm <code>malloc/calloc/realloc/free</code> — không cấp phát động</td><td>Cấp phát động không tất định và gây phân mảnh → không dùng trong safety.</td></tr>
+            <tr><td><strong>Rule 14.4</strong> (Required)</td><td>Điều kiện của <code>if/while</code> phải là kiểu boolean</td><td>Không dùng <code>int</code> ngầm làm điều kiện → tránh nhầm lẫn ý định.</td></tr>
+            <tr><td><strong>Rule 10.x</strong> (essential type model)</td><td>Không trộn signedness/kiểu; dùng hậu tố <code>U</code> khi cần</td><td>Tránh chuyển đổi ngầm gây mất dữ liệu hoặc UB.</td></tr>
+            <tr><td><strong>Rule 15.1 / 15.5</strong> (Advisory)</td><td>Cấm <code>goto</code> / một điểm <code>return</code> duy nhất</td><td>Luồng điều khiển dễ đọc, dễ phân tích tĩnh.</td></tr>
+            <tr><td><strong>Rule 17.7</strong> (Required)</td><td>Không bỏ qua giá trị trả về của hàm non-void</td><td>Bỏ sót mã lỗi (return code) là nguồn bug phổ biến.</td></tr>
+            <tr><td><strong>Rule 11.x / 13.x</strong></td><td>Hạn chế ép kiểu con trỏ; tránh side effect &amp; thứ tự đánh giá không xác định</td><td>Ngăn truy cập sai kiểu và hành vi phụ thuộc trình biên dịch.</td></tr>
+          </tbody>
+        </table></div>
+
+        <h3>11.4 Vi phạm → Sửa</h3>
+<pre><code class="language-c">// (1) Rule 21.3 — cấm cấp phát động
+uint8_t *buf = malloc(64);         // VI PHẠM
+static uint8_t pool[64];           // SỬA: static pool / mảng tĩnh
+
+// (2) Rule 14.4 — điều kiện phải là boolean, không dùng int ngầm
+int x = read_flag();
+if (x)        { /* ... */ }        // VI PHẠM
+if (x != 0)   { /* ... */ }        // SỬA
+
+// (3) Rule 10.x — dịch bit trên kiểu có dấu / thiếu hậu tố U
+uint32_t m1 = (1  &lt;&lt; 31);           // VI PHẠM (UB: dịch vào bit dấu)
+uint32_t m2 = (1u &lt;&lt; 31u);          // SỬA
+
+// (4) Rule 17.7 — không bỏ qua giá trị trả về non-void
+fn();                              // VI PHẠM (nếu fn trả non-void)
+(void)fn();                        // SỬA: cố ý bỏ
+if (fn() != OK) { handle(); }      // hoặc kiểm tra mã lỗi</code></pre>
+
+        <h3>11.5 Công cụ &amp; tích hợp CI</h3>
+        <p>Công cụ kiểm MISRA phổ biến: <strong>PC-lint Plus</strong>, <strong>Polyspace</strong> (Bug Finder / Code Prover), <strong>Coverity</strong>, <strong>Helix QAC</strong>, <strong>LDRA</strong>, <strong>Cppcheck</strong> (<code>--addon=misra</code>), <strong>Clang-Tidy</strong>. Nên gắn thành <strong>CI gate</strong> (xem bài <a href="J-cicd-cloud.html">J</a>) và kết hợp static analysis trong quy trình test (bài <a href="C-testing.html">C</a>).</p>
+        <div class="callout callout--note"><div class="callout__icon">📌</div><div class="callout__body"><p class="mb-0">Với C++, đối chiếu <strong>MISRA C++</strong> / <strong>AUTOSAR C++14</strong> (đã đề cập ở mục “C++ trong embedded” và phần “Trước → Nay”) — cùng tinh thần: tránh phần không tất định của ngôn ngữ trong code safety/real-time.</p></div></div>
+
         <!-- Self test -->
-        <h2>11. Tự kiểm tra</h2>
+        <h2>12. Tự kiểm tra</h2>
         <div class="taglist">
           <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
           <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
@@ -318,9 +379,19 @@ SECTIONS {
             <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Bạn cô lập kiểu lỗi này thế nào? (so sánh asm, bật cảnh báo, sanitizer/MISRA)</li></ul></div>
           </div></div>
         </div>
+        <div class="qa"><div class="qa__q">MISRA C là gì và phân biệt Mandatory / Required / Advisory? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">MISRA C là bộ guideline lập trình C an toàn cho nhúng/automotive (<strong>MISRA C:2012</strong>), nhằm tránh phần undefined/unspecified/implementation-defined của ngôn ngữ. Mức: <strong>Mandatory</strong> = không được vi phạm; <strong>Required</strong> = được vi phạm nếu có deviation hợp lệ (lý do + phân tích rủi ro + phê duyệt + ghi nhận); <strong>Advisory</strong> = khuyến nghị.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Directive khác Rule ở điểm nào? (Directive không kiểm được chỉ bằng mã)</li><li>Deviation record gồm những gì?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Vì sao MISRA cấm <code>malloc</code> và thay thế thế nào trong dự án thực? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Rule 21.3 cấm <code>malloc/calloc/realloc/free</code> vì cấp phát động <strong>không tất định</strong> và gây <strong>phân mảnh</strong> — không phù hợp safety/real-time. Thay bằng <strong>static allocation</strong> hoặc <strong>memory pool</strong> cấp phát 1 lần lúc init; gắn công cụ (Cppcheck <code>--addon=misra</code>, Polyspace, Helix QAC…) thành CI gate để chặn vi phạm sớm.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul><li>Nêu vài công cụ kiểm MISRA bạn từng dùng.</li><li>Khi buộc phải vi phạm một Required rule thì làm gì?</li></ul></div>
+          </div></div>
+        </div>
 
-        <!-- 12. Cheat-sheet -->
-        <h2>12. Cheat-sheet 1 trang</h2>
+        <!-- 13. Cheat-sheet -->
+        <h2>13. Cheat-sheet 1 trang</h2>
         <div class="cheatsheet">
           <div class="cheatsheet__group"><h4>Memory layout</h4><ul>
             <li>Text/.rodata (flash, RO) · Data (init≠0) · BSS (=0)</li>
@@ -358,10 +429,17 @@ SECTIONS {
             <li>Debug -O0 -g · Release -O2/-Os</li>
             <li>Test CẢ HAI để bắt bug volatile/UB</li>
           </ul></div>
+          <div class="cheatsheet__group"><h4>MISRA C</h4><ul>
+            <li>MISRA C:2012 — C an toàn/automotive</li>
+            <li>Directive vs Rule · Mandatory/Required/Advisory</li>
+            <li>Cấm malloc (21.3) · điều kiện boolean (14.4)</li>
+            <li>Hậu tố U khi dịch bit · (void)fn() nếu bỏ return</li>
+            <li>Cppcheck/Polyspace/Helix QAC → CI gate</li>
+          </ul></div>
         </div>
 
-        <!-- 13. Sources -->
-        <h2>13. Nguồn tham khảo</h2>
+        <!-- 14. Sources -->
+        <h2>14. Nguồn tham khảo</h2>
         <ul class="small text-soft">
           <li>Barr Group — <a href="https://barrgroup.com/embedded-systems/books/embedded-c-coding-standard/general-rules/keywords-static-volatile-const" target="_blank" rel="noopener">static / volatile / const</a>.</li>
           <li>Eric S. Raymond — <a href="http://www.catb.org/esr/structure-packing/" target="_blank" rel="noopener">The Lost Art of Structure Packing</a>.</li>
