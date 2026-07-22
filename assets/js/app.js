@@ -19,6 +19,7 @@
     { id: "B3", file: "B3-communication.html",  title: "Communication Stack",          prio: "core",   group: "AUTOSAR — Module (đào sâu)", desc: "COM, PduR, CanIf, CanTp, CanSM, CanNm, ComM." },
     { id: "B4", file: "B4-diagnostics.html",    title: "Diagnostics (Dcm/Dem/UDS)",    prio: "core",   group: "AUTOSAR — Module (đào sâu)", desc: "UDS dispatch, session, security, DTC, debounce/aging." },
     { id: "B5", file: "B5-os.html",             title: "AUTOSAR OS",                   prio: "core",   group: "AUTOSAR — Module (đào sâu)", desc: "Task, Alarm, Event, Resource/OCPP, Schedule Table, MPU." },
+    { id: "B6", file: "B6-mode-management.html", title: "Mode Management (EcuM/BswM)",  prio: "core",   group: "AUTOSAR — Module (đào sâu)", desc: "EcuM state/startup/sleep/wakeup, BswM rule→action, immediate/deferred." },
     { id: "C", file: "C-testing.html",          title: "Testing Methodology & Tools", prio: "must",   group: "Vòng 1 — Phải kể được", desc: "Test levels, coverage MC/DC, Cantata, ECU-Test." },
     { id: "E", file: "E-protocols.html",        title: "Communication Protocols",     prio: "core",   group: "Vòng 2 — Core embedded", desc: "UART, SPI, I2C, CAN, SENT, UDS, LIN." },
     { id: "F", file: "F-mcu-peripherals.html",  title: "MCU Peripherals & HW Debug",  prio: "core",   group: "Vòng 2 — Core embedded", desc: "GPIO, Timer, ADC, WDG, RH850, TRACE32, UDE." },

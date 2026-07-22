@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>B6 · Mode Management — EcuM & BswM — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/style.css?v=5" />
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="../assets/favicon.ico" />
+</head>
+<body data-page="B6" data-root="../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">B6</span>
+            <span class="badge badge--core">Core</span>
+            <span class="chip">AUTOSAR — Module (đào sâu)</span>
+          </div>
+          <h1>Mode Management — EcuM &amp; BswM</h1>
+          <p class="lead">Hai module <strong>Services Layer</strong> điều phối “ECU đang ở trạng thái nào &amp; phải làm gì”. <strong>EcuM</strong> (ECU State Manager) lo <em>vòng đời nguồn</em> — startup, sleep, wakeup, shutdown &amp; thứ tự init driver. <strong>BswM</strong> (BSW Mode Manager) là <em>engine rule → action</em>: gom “mode request” từ khắp stack, so điều kiện, thực thi hành động (bật/tắt PDU group, đổi schedule, Rte_Switch…). Từ AUTOSAR 4.0, phần điều phối pha <strong>UP</strong> tách khỏi EcuM và chuyển sang BswM — đây là điểm mấu chốt khi phỏng vấn.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> 🟠 Core</span>
+            <span><b>Gắn:</b> NvM_ReadAll (bài <a href="B2-memory.html">B2</a>), StartOS (<a href="B5-os.html">B5</a>), ComM (<a href="B3-communication.html">B3</a>), RTE (<a href="B-autosar.html">B</a>)</span>
+            <span><b>Cùng nhóm:</b> module B1a–B5</span>
+          </div>
+        </div>
+
+        <div class="callout callout--note">
+          <div class="callout__icon">📌</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Nguồn:</strong> đối chiếu <strong>AUTOSAR Classic SWS — EcuM</strong> (Flexible ECU Management: startup/shutdown/sleep/wakeup, RUN request, wakeup validation) &amp; <strong>SWS — BswM</strong> (mode request port, logical expression, rule, action list, immediate/deferred). Xem cuối bài.</p>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             1. EcuM
+             ============================================================ -->
+        <h2>1. EcuM — ECU State Manager</h2>
+        <p><strong>Vai trò:</strong> là “bộ điều phối vòng đời” của ECU — từ lúc reset dứt cho tới off. EcuM (1) init &amp; de-init BSW theo <strong>thứ tự cố định</strong>, (2) khởi động OS, (3) quản lý <strong>wakeup source</strong> &amp; <strong>sleep</strong> (low-power), (4) chọn &amp; thực thi <strong>shutdown target</strong> (OFF/RESET/SLEEP). EcuM <em>không</em> chứa logic ứng dụng — nó cung cấp khung trạng thái, còn hành vi theo mode do BswM quyết.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 740 250" role="img" aria-label="EcuM state machine" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="em1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <!-- boxes -->
+            <rect x="30" y="95" width="110" height="48" rx="9" fill="var(--surface-2)" class="dgm-layer"/><text x="85" y="124" text-anchor="middle" class="dgm-label" font-size="11" font-weight="700">OFF / RESET</text>
+            <rect x="175" y="95" width="125" height="48" rx="9" fill="var(--brand-600)"/><text x="237" y="116" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">STARTUP</text><text x="237" y="131" text-anchor="middle" class="dgm-inv-sub" font-size="8">I → StartOS → II</text>
+            <rect x="335" y="95" width="125" height="48" rx="9" fill="var(--brand-800)"/><text x="397" y="116" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">UP</text><text x="397" y="131" text-anchor="middle" class="dgm-inv-sub" font-size="8">RUN/POST-RUN → BswM</text>
+            <rect x="495" y="95" width="125" height="48" rx="9" fill="var(--brand-600)"/><text x="557" y="123" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">SHUTDOWN</text>
+            <rect x="335" y="185" width="125" height="46" rx="9" fill="var(--brand-400)"/><text x="397" y="205" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">SLEEP</text><text x="397" y="220" text-anchor="middle" class="dgm-inv-sub" font-size="8">MCU HALT / POLL</text>
+            <rect x="175" y="185" width="125" height="46" rx="9" fill="var(--core)"/><text x="237" y="205" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">WAKEUP</text><text x="237" y="220" text-anchor="middle" class="dgm-inv-sub" font-size="8">validate</text>
+            <!-- arrows -->
+            <line x1="140" y1="119" x2="172" y2="119" class="dgm-arrow" stroke-width="1.4" marker-end="url(#em1)"/><text x="156" y="111" text-anchor="middle" class="dgm-sub" font-size="8">reset</text>
+            <line x1="300" y1="119" x2="332" y2="119" class="dgm-arrow" stroke-width="1.4" marker-end="url(#em1)"/><text x="316" y="111" text-anchor="middle" class="dgm-sub" font-size="8">init OK</text>
+            <line x1="460" y1="112" x2="492" y2="112" class="dgm-arrow" stroke-width="1.4" marker-end="url(#em1)"/><text x="476" y="104" text-anchor="middle" class="dgm-sub" font-size="8">go down</text>
+            <path d="M557,95 L557,58 L85,58 L85,93" fill="none" class="dgm-arrow" stroke-width="1.3" marker-end="url(#em1)"/><text x="321" y="50" text-anchor="middle" class="dgm-sub" font-size="8.5">shutdown target = OFF / RESET → cắt nguồn / reset MCU</text>
+            <line x1="397" y1="143" x2="397" y2="183" class="dgm-arrow" stroke-width="1.4" marker-end="url(#em1)"/><text x="432" y="167" text-anchor="middle" class="dgm-sub" font-size="8">target = SLEEP</text>
+            <line x1="333" y1="208" x2="302" y2="208" class="dgm-arrow" stroke-width="1.4" marker-end="url(#em1)"/><text x="317" y="200" text-anchor="middle" class="dgm-sub" font-size="8">event</text>
+            <path d="M300,196 Q 355,188 383,145" fill="none" class="dgm-arrow" stroke-width="1.3" marker-end="url(#em1)"/><text x="345" y="182" text-anchor="middle" class="dgm-sub" font-size="8">validated</text>
+          </svg>
+          <div class="figure__cap"><b>EcuM state machine (Flex).</b> OFF →reset→ STARTUP →init OK→ UP. Từ UP có thể <b>go down</b> → SHUTDOWN (chọn target OFF/RESET) hoặc vào <b>SLEEP</b> (MCU low-power). Trong SLEEP, một <b>wakeup event</b> → WAKEUP → <b>validate</b> (lọc nhiễu) → nếu hợp lệ quay lại UP. Pha UP (RUN/POST-RUN) do <b>BswM</b> điều phối.</div>
+        </div>
+
+        <h3>1.1 Khái niệm cốt lõi</h3>
+        <dl class="kv">
+          <dt>EcuM Fixed vs EcuM Flexible</dt><dd><strong>Fixed</strong> (kiểu cũ, ≤ AUTOSAR 3.x): EcuM chứa <em>toàn bộ</em> state machine kể cả pha UP (RUN/POST_RUN) &amp; tự quản RUN request — cứng, khó tuỳ biến. <strong>Flexible (Flex)</strong> (từ 4.0, mặc định hiện nay): EcuM chỉ định nghĩa các <em>sequence</em> STARTUP/SHUTDOWN/SLEEP/WAKEUP; còn <strong>arbitration pha UP giao cho BswM</strong>. Đây là điểm phỏng vấn hay hỏi — “ai quản RUN/POST_RUN?” → BswM (Flex).</dd>
+          <dt>Các pha</dt><dd><strong>STARTUP</strong> (I: trước StartOS · II: sau StartOS) → init driver theo list. <strong>UP</strong>: chạy bình thường (RUN có ứng dụng, POST_RUN dọn dẹp) — do BswM điều khiển. <strong>SHUTDOWN</strong>: đi tới OFF hoặc RESET. <strong>SLEEP</strong>: low-power. <strong>WAKEUP</strong>: xử lý &amp; xác thực nguồn đánh thức.</dd>
+          <dt>Thứ tự init driver</dt><dd>EcuM gọi callout theo giai đoạn: <code>EcuM_AL_DriverInitZero</code> (driver <em>không</em> cần config post-build, chạy trước khi biết cấu hình), <code>EcuM_DeterminePbConfiguration</code> (chọn post-build config), <code>EcuM_AL_DriverInitOne</code> (phần lớn MCAL/BSW), rồi <code>StartOS</code>. Sau OS: <code>EcuM_StartupTwo</code> → <code>NvM_ReadAll</code> (bài <a href="B2-memory.html">B2</a>), chờ NvM xong rồi mới init phần còn lại. Thứ tự <strong>tất định</strong> vì driver phụ thuộc nhau (clock/PLL trước, rồi mới tới module dùng clock).</dd>
+          <dt>Wakeup source &amp; validation</dt><dd>Mỗi nguồn đánh thức (CAN, pin, WDG, timer…) có một <em>wakeup source ID</em>. Luồng 2 bước chống nhiễu: <code>EcuM_SetWakeupEvent</code> (phát hiện thô, vd cạnh trên bus) → <code>EcuM_ValidateWakeupEvent</code> (<strong>xác thực</strong> trong một cửa sổ thời gian, vd nhận được frame CAN hợp lệ). Không validate kịp → coi là nhiễu, quay lại SLEEP. Nguồn có thể <em>polling</em> (EcuM đọc định kỳ) hoặc <em>interrupt</em>.</dd>
+          <dt>Sleep: HALT vs POLL</dt><dd>SLEEP gắn với một <strong>MCU mode</strong> giảm nguồn (bài <a href="B1c-mcal-system.html">B1c</a>). <strong>HALT</strong>: CPU dừng hẳn, chỉ ngắt (wakeup) đánh thức — tiết kiệm nhất. <strong>POLL</strong>: CPU chạy chậm, chủ động đọc các wakeup source không có ngắt riêng. Cấu hình qua <code>EcuMSleepMode</code>.</dd>
+          <dt>Shutdown target &amp; cause</dt><dd>3 target: <strong>OFF</strong> (cắt nguồn), <strong>RESET</strong> (reset MCU), <strong>SLEEP</strong>. Chọn bằng <code>EcuM_SelectShutdownTarget</code>, đọc lại <code>EcuM_GetShutdownTarget</code>/<code>GetLastShutdownTarget</code>. Kèm <strong>shutdown cause</strong> (<code>EcuM_SelectShutdownCause</code>) để log lý do (vd lỗi, yêu cầu diag). RESET có thể có nhiều <em>reset mode</em> cấu hình được.</dd>
+          <dt>RUN / POST_RUN request</dt><dd>Cơ chế “ai đó cần ECU tiếp tục chạy”: module/SWC gọi <code>EcuM_RequestRUN(user)</code> giữ RUN; <code>EcuM_ReleaseRUN(user)</code> nhả. Khi <em>mọi</em> RUN request nhả hết → chuyển <strong>POST_RUN</strong> (làm việc dọn dẹp: ghi NvM, lưu DTC) → nhả nốt POST_RUN request → mới đi SHUTDOWN/SLEEP. Ở Flex, việc chuyển RUN↔POST_RUN do <strong>BswM rule</strong> điều khiển dựa trên các request này.</dd>
+          <dt>Alarm Clock (Flex)</dt><dd>EcuM Flex cho phép hẹn “đồng hồ báo thức”: ECU đang SLEEP tự dậy sau một khoảng thời gian đặt trước (vd wake định kỳ để đo cảm biến rồi ngủ lại) — không cần nguồn đánh thức ngoài.</dd>
+          <dt>Multicore</dt><dd>Flex hỗ trợ đa lõi: một <strong>master core</strong> chạy state machine chính; các lõi khác đồng bộ startup/shutdown qua cơ chế EcuM multicore (barrier). Quan trọng để tất cả lõi cùng ngủ/dậy nhất quán.</dd>
+        </dl>
+
+        <h3>1.2 Container cấu hình (ARXML)</h3>
+        <dl class="kv">
+          <dt>EcuMCommonConfiguration</dt><dd>Chứa <code>EcuMDriverInitListZero</code> / <code>EcuMDriverInitListOne</code> (danh sách &amp; thứ tự gọi init driver), <code>EcuMDriverRestartList</code>, và tham chiếu các module BSW.</dd>
+          <dt>EcuMWakeupSource</dt><dd><code>EcuMWakeupSourceId</code>, <code>EcuMWakeupSourcePolling</code> (polling hay interrupt), <code>EcuMValidationTimeout</code> (cửa sổ validate), <code>EcuMComMChannelRef</code> (nối wakeup ↔ kênh ComM để đánh thức giao tiếp).</dd>
+          <dt>EcuMSleepMode</dt><dd><code>EcuMSleepModeId</code>, tham chiếu <code>McuMode</code> (mức nguồn), tập wakeup source cho phép trong mode ngủ đó.</dd>
+          <dt>EcuMFlexConfiguration / EcuMDefaultShutdownTarget</dt><dd>Cấu hình riêng cho Flex: shutdown target/cause mặc định, cấu hình Alarm Clock, danh sách user của RUN request.</dd>
+        </dl>
+
+        <h3>1.3 API &amp; pseudo-code</h3>
+        <pre><code class="language-c">/* --- STARTUP (do khung khởi động gọi, thường trong main()) --- */
+int main(void) {
+    EcuM_Init();          /* DriverInitZero -> DeterminePbConfiguration
+                             -> DriverInitOne -> StartOS(app_mode) */
+    /* StartOS không trả về; task khởi động gọi tiếp: */
+    /* EcuM_StartupTwo(): NvM_ReadAll(), chờ xong, init BSW còn lại */
+    return 0;
+}
+
+/* --- Giữ ECU chạy khi còn việc --- */
+EcuM_RequestRUN(ECUM_USER_APP);      /* app cần chạy */
+/* ... làm việc ... */
+EcuM_ReleaseRUN(ECUM_USER_APP);      /* nhả -> khi hết request => POST_RUN */
+
+/* --- Ngủ &amp; thức --- */
+EcuM_SelectShutdownTarget(ECUM_STATE_SLEEP, sleepModeId);
+/* Khi có sự kiện trên bus (ISR/polling): */
+EcuM_SetWakeupEvent(ECUM_WKSOURCE_CAN);        /* phát hiện thô */
+EcuM_ValidateWakeupEvent(ECUM_WKSOURCE_CAN);   /* xác thực -> nếu ok, lên UP */
+
+/* --- Tắt máy --- */
+EcuM_SelectShutdownTarget(ECUM_STATE_OFF, 0);
+EcuM_SelectShutdownCause(ECUM_CAUSE_ECU_STATE);
+/* EcuM_GoDown()/Shutdown chạy sequence SHUTDOWN */</code></pre>
+
+        <!-- ============================================================
+             2. BswM
+             ============================================================ -->
+        <h2>2. BswM — BSW Mode Manager</h2>
+        <p><strong>Vai trò:</strong> trung tâm điều phối <strong>hành vi theo mode</strong> cho toàn stack, hiện thực bằng một <strong>engine “rules → actions”</strong> hoàn toàn <em>cấu hình được</em> (không cần sửa code). Trước 4.0, logic “khi X thì làm Y” nằm rải rác &amp; hard-code trong EcuM/ComM/Com… BswM gom hết lại: nhận “mode request” từ mọi nơi → so <strong>rule</strong> (biểu thức logic) → chạy <strong>action list</strong>.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 740 300" role="img" aria-label="BswM rule to action engine" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="bm1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <!-- sources -->
+            <text x="90" y="20" text-anchor="middle" class="dgm-sub" font-size="9" font-weight="700">Mode request sources</text>
+            <rect x="20" y="30"  width="140" height="32" rx="6" fill="var(--surface-2)" class="dgm-layer"/><text x="90" y="50" text-anchor="middle" class="dgm-label" font-size="9.5">EcuM current state</text>
+            <rect x="20" y="72"  width="140" height="32" rx="6" fill="var(--surface-2)" class="dgm-layer"/><text x="90" y="92" text-anchor="middle" class="dgm-label" font-size="9.5">ComM mode / PNC</text>
+            <rect x="20" y="114" width="140" height="32" rx="6" fill="var(--surface-2)" class="dgm-layer"/><text x="90" y="134" text-anchor="middle" class="dgm-label" font-size="9.5">Dcm comm-control</text>
+            <rect x="20" y="156" width="140" height="32" rx="6" fill="var(--surface-2)" class="dgm-layer"/><text x="90" y="176" text-anchor="middle" class="dgm-label" font-size="9.5">NvM job result</text>
+            <rect x="20" y="198" width="140" height="32" rx="6" fill="var(--surface-2)" class="dgm-layer"/><text x="90" y="218" text-anchor="middle" class="dgm-label" font-size="9.5">Generic (SWC/Rte)</text>
+            <!-- source arrows -->
+            <line x1="160" y1="46"  x2="246" y2="120" class="dgm-arrow" stroke-width="1.2" marker-end="url(#bm1)"/>
+            <line x1="160" y1="88"  x2="246" y2="130" class="dgm-arrow" stroke-width="1.2" marker-end="url(#bm1)"/>
+            <line x1="160" y1="130" x2="246" y2="140" class="dgm-arrow" stroke-width="1.2" marker-end="url(#bm1)"/>
+            <line x1="160" y1="172" x2="246" y2="150" class="dgm-arrow" stroke-width="1.2" marker-end="url(#bm1)"/>
+            <line x1="160" y1="214" x2="246" y2="160" class="dgm-arrow" stroke-width="1.2" marker-end="url(#bm1)"/>
+            <!-- engine -->
+            <rect x="250" y="55" width="230" height="170" rx="11" fill="var(--brand-800)"/>
+            <text x="365" y="80" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">BswM Arbitration</text>
+            <rect x="272" y="95" width="186" height="46" rx="7" fill="var(--brand-600)"/><text x="365" y="115" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Rule = Logical Expression</text><text x="365" y="130" text-anchor="middle" class="dgm-inv-sub" font-size="8">AND / OR / NOT trên mode</text>
+            <line x1="365" y1="141" x2="365" y2="157" class="dgm-arrow" stroke-width="1.3" marker-end="url(#bm1)"/>
+            <rect x="272" y="160" width="186" height="48" rx="7" fill="var(--brand-400)"/><text x="365" y="180" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Action List (ordered)</text><text x="365" y="195" text-anchor="middle" class="dgm-inv-sub" font-size="8">true-list / false-list</text>
+            <!-- outputs -->
+            <text x="645" y="20" text-anchor="middle" class="dgm-sub" font-size="9" font-weight="700">Actions</text>
+            <rect x="565" y="34"  width="155" height="30" rx="6" fill="var(--surface-2)" class="dgm-layer"/><text x="642" y="53" text-anchor="middle" class="dgm-label" font-size="9">Com PDU group on/off</text>
+            <rect x="565" y="74"  width="155" height="30" rx="6" fill="var(--surface-2)" class="dgm-layer"/><text x="642" y="93" text-anchor="middle" class="dgm-label" font-size="9">Schedule Table start/stop</text>
+            <rect x="565" y="114" width="155" height="30" rx="6" fill="var(--surface-2)" class="dgm-layer"/><text x="642" y="133" text-anchor="middle" class="dgm-label" font-size="9">Rte_Switch (mode)</text>
+            <rect x="565" y="154" width="155" height="30" rx="6" fill="var(--surface-2)" class="dgm-layer"/><text x="642" y="173" text-anchor="middle" class="dgm-label" font-size="9">PduR routing path</text>
+            <rect x="565" y="194" width="155" height="30" rx="6" fill="var(--surface-2)" class="dgm-layer"/><text x="642" y="213" text-anchor="middle" class="dgm-label" font-size="9">NvM write · EcuM go-down</text>
+            <!-- output arrows -->
+            <line x1="480" y1="184" x2="563" y2="49"  class="dgm-arrow" stroke-width="1.2" marker-end="url(#bm1)"/>
+            <line x1="480" y1="184" x2="563" y2="89"  class="dgm-arrow" stroke-width="1.2" marker-end="url(#bm1)"/>
+            <line x1="480" y1="184" x2="563" y2="129" class="dgm-arrow" stroke-width="1.2" marker-end="url(#bm1)"/>
+            <line x1="480" y1="184" x2="563" y2="169" class="dgm-arrow" stroke-width="1.2" marker-end="url(#bm1)"/>
+            <line x1="480" y1="184" x2="563" y2="209" class="dgm-arrow" stroke-width="1.2" marker-end="url(#bm1)"/>
+            <text x="370" y="255" text-anchor="middle" class="dgm-sub" font-size="9">Request đến → lưu mode → arbitration (immediate ngay, hoặc deferred tới BswM_MainFunction) → chạy action list</text>
+          </svg>
+          <div class="figure__cap"><b>BswM = engine rule→action.</b> Trái: các nguồn “mode request”. Giữa: mỗi <b>rule</b> là một biểu thức logic trên tập mode đang lưu; đúng → chạy <b>true action list</b>, sai → <b>false action list</b>. Phải: hành động cụ thể (bật/tắt PDU group, schedule table, Rte_Switch, PduR, NvM, EcuM). Toàn bộ là <b>cấu hình</b>, không sửa code.</div>
+        </div>
+
+        <h3>2.1 Khái niệm cốt lõi</h3>
+        <dl class="kv">
+          <dt>Mode Request Source / Port</dt><dd>“Đầu vào” của BswM. Mỗi nguồn có một <strong>request port</strong> &amp; hàm callback riêng do module kia gọi: <code>BswM_EcuM_CurrentState</code>, <code>BswM_ComM_CurrentMode</code>, <code>BswM_Dcm_CommunicationMode_CurrentState</code>, <code>BswM_NvM_CurrentJobMode</code>, <code>BswM_CanSM_CurrentState</code>, <code>BswM_RequestMode</code> (generic từ SWC/RTE)… BswM <strong>lưu</strong> giá trị mode mới nhất của mỗi nguồn.</dd>
+          <dt>Logical Expression &amp; Mode Condition</dt><dd><strong>Mode condition</strong>: so một mode đang lưu với hằng (vd <em>ComM == FULL_COM</em>). <strong>Logical expression</strong>: ghép nhiều condition bằng toán tử <code>AND</code>/<code>OR</code>/<code>NOT</code> (và biến thể NAND/NOR), có thể <em>lồng</em> (nested) — biểu diễn điều kiện phức tạp mà vẫn khai báo thuần cấu hình.</dd>
+          <dt>Rule</dt><dd>Đơn vị quyết định: gắn một logical expression với <strong>hai</strong> action list — <code>BswMRuleTrueActionList</code> (khi biểu thức đúng) &amp; <code>BswMRuleFalseActionList</code> (khi sai). Có <em>init state</em> để xử lý lần đánh giá đầu. Rule có thể tham chiếu rule khác (nested expression) để tái dùng.</dd>
+          <dt>Action &amp; Action List</dt><dd><strong>Action</strong> = một thao tác nguyên tử; <strong>action list</strong> = chuỗi action chạy <em>theo thứ tự</em>. Action có sẵn (available actions), tiêu biểu: <em>PDU group switch</em> (<code>Com_IpduGroupControl</code>), <em>schedule table switch</em>, <em>Rte mode switch</em> (<code>Rte_Switch</code>), <em>PduR routing path group</em> enable/disable, <em>NvM single-block / write RAM block</em>, <em>EcuM state switch / go-down</em>, <em>trigger IPDU send</em>, <em>partial-networking state</em>, và <strong>user callout</strong> (gọi hàm tự viết).</dd>
+          <dt>Action List Execution Type: CONDITION vs TRIGGER</dt><dd><strong>CONDITION</strong>: action list chỉ chạy khi kết quả rule <em>đổi</em> so với lần trước (level-based — tránh chạy lặp mỗi chu kỳ). <strong>TRIGGER</strong>: chạy <em>mỗi lần</em> rule đúng, kể cả kết quả không đổi (edge/event-based, vd mỗi request là một sự kiện cần phản ứng).</dd>
+          <dt>Immediate vs Deferred processing</dt><dd>Cấu hình trên request port. <strong>Immediate</strong>: request tới → arbitration + action chạy <em>ngay</em> trong ngữ cảnh lời gọi (độ trễ thấp, dùng cho phản ứng gấp như tắt comm khi bus-off). <strong>Deferred (queued)</strong>: chỉ <em>lưu</em> request; arbitration chạy ở chu kỳ <code>BswM_MainFunction</code> kế tiếp — gộp nhiều request, tải CPU đều hơn, nhưng có độ trễ tới 1 chu kỳ main function.</dd>
+          <dt>Khởi tạo &amp; MainFunction</dt><dd><code>BswM_Init</code> nạp mode ban đầu &amp; chạy rule init. <code>BswM_MainFunction</code> (gọi định kỳ bởi BSW Scheduler) xử lý các request deferred. Chu kỳ main function ảnh hưởng trực tiếp độ trễ của mode deferred.</dd>
+          <dt>Quan hệ với RTE</dt><dd>SWC có thể <strong>yêu cầu</strong> mode (qua port ⇒ <code>BswM_RequestMode</code>) và <strong>nhận</strong> mode qua <code>Rte_Switch</code> (một action của BswM) → SWC chạy đúng runnable theo mode. Nhờ đó ứng dụng &amp; BSW đồng bộ trạng thái mà không gọi trực tiếp nhau.</dd>
+        </dl>
+
+        <h3>2.2 Container cấu hình (ARXML)</h3>
+        <dl class="kv">
+          <dt>BswMModeRequestPort</dt><dd>Khai báo từng nguồn request (EcuM/ComM/Dcm/NvM/CanSM/Generic…) + cờ <em>immediate</em> hay không. Là nơi map callback → biến mode nội bộ.</dd>
+          <dt>BswMLogicalExpression / BswMModeCondition</dt><dd><code>BswMArgumentRef</code> (mode nào), <code>BswMLogicalOperator</code> (AND/OR/NOT…), điều kiện so sánh. Ghép thành biểu thức của rule.</dd>
+          <dt>BswMRule</dt><dd><code>BswMRuleTrueActionList</code>, <code>BswMRuleFalseActionList</code>, <code>BswMRuleInitState</code>, tham chiếu logical expression / nested rule.</dd>
+          <dt>BswMActionList / BswMAction</dt><dd><code>BswMActionListItem</code> (thứ tự), <code>BswMActionListExecutionType</code> (CONDITION/TRIGGER), và từng <code>BswMAction</code> chọn từ tập available actions (PduGroupSwitch, ScheduleTableSwitch, RteModeRequest, PduRoutingPathGroupSwitch, NvMSingleBlockRequest, EcuMStateSwitch, UserCallout…).</dd>
+        </dl>
+
+        <h3>2.3 Ví dụ rule + API</h3>
+        <pre><code class="language-c">/* Ví dụ khái niệm một rule (biểu diễn logic, thực tế cấu hình bằng ARXML):
+
+   RULE "Enable app Tx when full comm + NvM ready"
+     EXPR = (ComM_Ch0 == FULL_COMMUNICATION) AND (NvM_ReadAll == DONE)
+     TRUE  action list:
+        - Com_IpduGroupControl(TX_APP_GROUP, ENABLE)   // bật gửi
+        - Rte_Switch(mode_app, RUN)                    // báo SWC
+     FALSE action list:
+        - Com_IpduGroupControl(TX_APP_GROUP, DISABLE)  // tắt gửi
+     ExecutionType = CONDITION   // chỉ chạy khi kết quả rule đổi
+*/
+
+/* --- Các module BSW "đẩy" mode vào BswM (callback) --- */
+BswM_EcuM_CurrentState(ECUM_STATE_APP_RUN);   /* EcuM báo state */
+BswM_ComM_CurrentMode(0, COMM_FULL_COMMUNICATION);
+BswM_NvM_CurrentJobMode(NVM_READ_ALL, NVM_REQ_OK);
+
+/* --- SWC/ứng dụng yêu cầu mode chung --- */
+BswM_RequestMode(BSWM_USER_APP, MY_APP_MODE_ACTIVE);
+
+/* --- BSW Scheduler gọi định kỳ để xử lý request deferred --- */
+void BswM_MainFunction(void) { /* arbitrate queued requests -> run action lists */ }</code></pre>
+
+        <!-- ============================================================
+             3. Phối hợp EcuM + BswM + ComM
+             ============================================================ -->
+        <h2>3. EcuM ↔ BswM ↔ ComM — phối hợp lúc startup</h2>
+        <p>Ba module chia vai rõ: <strong>EcuM</strong> lo trình tự nguồn/init; <strong>BswM</strong> quyết “khi trạng thái thế này thì bật/tắt gì”; <strong>ComM</strong> (bài <a href="B3-communication.html">B3</a>) gom nhu cầu giao tiếp &amp; điều CanSM bật bus. Sơ đồ dưới là chuỗi khởi động điển hình.</p>
+
+        <div class="figure">
+          <svg viewBox="0 0 740 200" role="img" aria-label="Startup sequence timeline" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="tl1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <line x1="30" y1="150" x2="712" y2="150" class="dgm-arrow" stroke-width="1.5" marker-end="url(#tl1)"/><text x="710" y="168" text-anchor="end" class="dgm-sub" font-size="9">thời gian</text>
+            <!-- tick1 -->
+            <line x1="75" y1="129" x2="75" y2="150" class="dgm-arrow" stroke-width="1.2"/>
+            <rect x="22" y="95" width="106" height="34" rx="6" fill="var(--brand-800)"/><text x="75" y="109" text-anchor="middle" class="dgm-inv" font-size="9" font-weight="700">EcuM_Init</text><text x="75" y="122" text-anchor="middle" class="dgm-inv-sub" font-size="7.5">DriverInitZero</text>
+            <!-- tick2 -->
+            <line x1="195" y1="84" x2="195" y2="150" class="dgm-arrow" stroke-width="1.2"/>
+            <rect x="140" y="50" width="120" height="34" rx="6" fill="var(--brand-600)"/><text x="200" y="64" text-anchor="middle" class="dgm-inv" font-size="9" font-weight="700">DriverInitOne</text><text x="200" y="77" text-anchor="middle" class="dgm-inv-sub" font-size="7.5">+ PbConfig</text>
+            <!-- tick3 -->
+            <line x1="315" y1="129" x2="315" y2="150" class="dgm-arrow" stroke-width="1.2"/>
+            <rect x="265" y="95" width="100" height="34" rx="6" fill="var(--core)"/><text x="315" y="116" text-anchor="middle" class="dgm-inv" font-size="9" font-weight="700">StartOS</text>
+            <!-- tick4 -->
+            <line x1="435" y1="82" x2="435" y2="150" class="dgm-arrow" stroke-width="1.2"/>
+            <rect x="372" y="46" width="128" height="38" rx="6" fill="var(--brand-600)"/><text x="436" y="62" text-anchor="middle" class="dgm-inv" font-size="9" font-weight="700">StartupTwo</text><text x="436" y="76" text-anchor="middle" class="dgm-inv-sub" font-size="7.5">NvM_ReadAll (chờ)</text>
+            <!-- tick5 -->
+            <line x1="558" y1="129" x2="558" y2="150" class="dgm-arrow" stroke-width="1.2"/>
+            <rect x="508" y="95" width="100" height="34" rx="6" fill="var(--brand-400)"/><text x="558" y="116" text-anchor="middle" class="dgm-inv" font-size="9" font-weight="700">BswM_Init</text>
+            <!-- tick6 -->
+            <line x1="668" y1="84" x2="668" y2="150" class="dgm-arrow" stroke-width="1.2"/>
+            <rect x="612" y="50" width="112" height="34" rx="6" fill="var(--brand-800)"/><text x="668" y="64" text-anchor="middle" class="dgm-inv" font-size="9" font-weight="700">RTE → UP</text><text x="668" y="77" text-anchor="middle" class="dgm-inv-sub" font-size="7.5">BswM arbitrate</text>
+            <text x="370" y="192" text-anchor="middle" class="dgm-sub" font-size="9">EcuM init tuần tự → StartOS → nạp NvM (cấu hình) → BswM nạp mode ban đầu → RTE chạy SWC; từ UP, BswM tiếp quản arbitration (comm on/off, RUN/POST_RUN)</text>
+          </svg>
+          <div class="figure__cap"><b>Chuỗi startup.</b> EcuM điều phối init &amp; StartOS; <code>NvM_ReadAll</code> nạp cấu hình/hiệu chỉnh; <code>BswM_Init</code> đặt mode khởi đầu; RTE chạy SWC. Vào pha <b>UP</b>, BswM đảm nhận arbitration — vd khi ComM báo FULL_COM thì bật Tx PDU group, khi tất cả RUN request nhả thì cho EcuM go-down.</div>
+        </div>
+
+        <dl class="kv">
+          <dt>Ai làm gì (một câu)</dt><dd><strong>EcuM</strong> = “bật/tắt &amp; ngủ/dậy ECU + thứ tự init”. <strong>BswM</strong> = “luật: trạng thái nào thì bật/tắt cái gì”. <strong>ComM</strong> = “gom yêu cầu giao tiếp của user (App/Dcm/NM) → điều CanSM bật/tắt bus”. BswM có thể phản ứng theo mode của ComM (vd bật PDU group), còn ComM lo mức bus/network.</dd>
+          <dt>Ví dụ dòng chảy “tắt giao tiếp để ngủ”</dt><dd>App nhả mọi ComM request → ComM chuyển <em>No Communication</em> → gọi <code>BswM_ComM_CurrentMode(NO_COM)</code> → rule BswM tắt Tx/Rx PDU group, dừng schedule table, cho phép <code>EcuM go-down</code> → EcuM chọn target SLEEP/OFF.</dd>
+        </dl>
+
+        <!-- ============================================================
+             4. Bẫy & test
+             ============================================================ -->
+        <h2>4. Bẫy thường gặp &amp; cách test</h2>
+        <dl class="kv">
+          <dt>Nhầm EcuM Fixed vs Flex</dt><dd>Nói “EcuM quản RUN/POST_RUN” là kiểu <em>Fixed</em>. Với Flex (mặc định 4.x) phần đó là <strong>BswM</strong>. Trả lời sai điểm này lộ ngay là chưa nắm kiến trúc hiện đại.</dd>
+          <dt>Quên wakeup validation</dt><dd>Chỉ <code>SetWakeupEvent</code> mà không <code>ValidateWakeupEvent</code> → ECU tỉnh vì nhiễu rồi ngủ lại liên tục (ping-pong), hao pin. Luôn có bước validate trong cửa sổ timeout.</dd>
+          <dt>Immediate vs Deferred đặt sai</dt><dd>Phản ứng an toàn/gấp (bus-off, tắt comm) mà để <em>deferred</em> → trễ tới 1 chu kỳ MainFunction. Ngược lại để <em>immediate</em> quá nhiều → arbitration chạy trong ngữ cảnh caller, dễ tăng latency/độ phức tạp. Chọn đúng theo yêu cầu thời gian.</dd>
+          <dt>CONDITION vs TRIGGER nhầm</dt><dd>Dùng CONDITION cho việc cần chạy mỗi sự kiện (vd mỗi request gửi 1 frame) → chỉ chạy khi mode <em>đổi</em>, bỏ lỡ sự kiện lặp. Và ngược lại TRIGGER cho việc set-once → chạy dư mỗi chu kỳ.</dd>
+          <dt>Cách test</dt><dd><strong>State transition testing</strong> (bài <a href="C-testing.html">C</a>): liệt kê state EcuM &amp; kiểm tra transition hợp lệ/không hợp lệ, wakeup/sleep. Với BswM: bảng <em>quyết định</em> (decision table) map tổ hợp mode-input → action mong đợi; test cả immediate &amp; deferred (kiểm tra sau 1 chu kỳ MainFunction). Dùng đo <em>schedule/latency</em> để xác nhận thời điểm bật comm đúng.</dd>
+        </dl>
+
+        <!-- ============================================================
+             5. Trước -> Nay
+             ============================================================ -->
+        <h2>5. Trước (~2020) → Nay</h2>
+        <div class="evo">
+          <div class="evo__head">🔀 <span>Mode management: từ EcuM đơn khối → EcuM Flex + BswM</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước</div><p>EcuM “Fixed” ôm cả state machine lẫn logic pha UP (RUN/POST_RUN); hành vi theo mode hard-code, rải rác trong nhiều module → sửa hành vi = sửa &amp; build lại code.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p><strong>EcuM Flex</strong> chỉ lo sequence startup/shutdown/sleep/wakeup; <strong>BswM</strong> gom toàn bộ arbitration theo mode thành <em>rule→action cấu hình được</em>. Đổi hành vi = đổi ARXML, không đụng code. Thêm <strong>partial networking</strong>, <strong>alarm clock</strong>, <strong>multicore</strong>.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> nói được “Flex tách UP-arbitration sang BswM để cấu hình hành vi mà không sửa code, EcuM chỉ còn lo vòng đời nguồn” cho thấy hiểu <em>tại sao</em> AUTOSAR tách hai module, không chỉ thuộc tên.</div>
+        </div>
+
+        <!-- ============================================================
+             6. Q&A
+             ============================================================ -->
+        <h2>6. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+
+        <div class="qa"><div class="qa__q">EcuM và BswM khác nhau chỗ nào? Ai quản pha UP (RUN/POST_RUN)? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>EcuM</strong> lo <em>vòng đời nguồn</em>: startup (thứ tự init driver), sleep/wakeup, shutdown target. <strong>BswM</strong> là <em>engine rule→action</em> điều phối hành vi theo mode. Ở <strong>EcuM Flex</strong> (mặc định 4.x), pha <strong>UP</strong> (RUN/POST_RUN) do <strong>BswM</strong> quản qua rule dựa trên RUN request; còn EcuM Fixed (cũ) tự ôm phần này.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Vì sao AUTOSAR tách UP-arbitration sang BswM?</li><li>RUN request/POST_RUN hoạt động thế nào?</li></ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">Mô tả cơ chế rule → action của BswM. Immediate vs deferred? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">BswM nhận <strong>mode request</strong> từ nhiều nguồn (EcuM/ComM/Dcm/NvM/generic), <strong>lưu</strong> lại, rồi đánh giá các <strong>rule</strong> = biểu thức logic (AND/OR/NOT) trên tập mode; đúng → chạy <em>true action list</em>, sai → <em>false action list</em> (Com PDU group, schedule table, Rte_Switch, PduR, NvM, EcuM…). <strong>Immediate</strong>: arbitration + action chạy ngay khi request tới (độ trễ thấp). <strong>Deferred</strong>: chỉ lưu, xử lý ở <code>BswM_MainFunction</code> kế (gộp request, đều tải, trễ tới 1 chu kỳ).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>ExecutionType CONDITION vs TRIGGER?</li><li>Khi nào bắt buộc immediate?</li></ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">Wakeup validation là gì, vì sao cần? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Hai bước: <code>EcuM_SetWakeupEvent</code> phát hiện thô (vd cạnh trên bus), rồi <code>EcuM_ValidateWakeupEvent</code> <strong>xác thực</strong> trong cửa sổ timeout (vd nhận được frame CAN hợp lệ). Cần để <strong>lọc nhiễu</strong>: nếu không có tín hiệu thật, ECU ngủ lại thay vì tỉnh giả rồi ping-pong tốn pin.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Nguồn polling vs interrupt?</li><li>SLEEP HALT vs POLL?</li></ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">Kể chuỗi startup của EcuM đến khi lên UP. <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><code>EcuM_Init</code> → <code>EcuM_AL_DriverInitZero</code> (driver không cần post-build) → <code>EcuM_DeterminePbConfiguration</code> → <code>EcuM_AL_DriverInitOne</code> (phần lớn MCAL/BSW) → <code>StartOS</code>. Sau OS, task khởi động gọi <code>EcuM_StartupTwo</code> → <code>NvM_ReadAll</code> (chờ nạp cấu hình/hiệu chỉnh) → <code>BswM_Init</code> đặt mode ban đầu → RTE chạy SWC → pha <strong>UP</strong>, BswM tiếp quản arbitration. Thứ tự tất định vì driver phụ thuộc nhau (clock/PLL trước).</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Vì sao NvM_ReadAll phải xong trước khi bật comm?</li><li>DriverInitZero khác DriverInitOne ở đâu?</li></ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">Cho ví dụ một rule BswM thực tế &amp; cách test module này. <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Ví dụ: <em>“khi ComM kênh 0 = FULL_COM VÀ NvM_ReadAll = DONE → bật Tx app PDU group + Rte_Switch(RUN); ngược lại tắt Tx”</em> (ExecutionType CONDITION để chỉ chạy khi kết quả đổi). <strong>Test</strong>: state-transition testing cho EcuM (transition hợp lệ/không hợp lệ, sleep/wakeup); decision table cho BswM (tổ hợp mode-input → action mong đợi), kiểm tra cả immediate &amp; deferred (sau 1 chu kỳ MainFunction), và đo latency thời điểm bật comm.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Partial networking liên quan BswM thế nào?</li><li>Vì sao đổi hành vi chỉ cần đổi ARXML?</li></ul></div>
+          </div></div>
+        </div>
+
+        <!-- ============================================================
+             7. Cheat-sheet
+             ============================================================ -->
+        <h2>7. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>EcuM — pha</h4><ul>
+            <li>STARTUP (I→StartOS→II) · UP · SHUTDOWN · SLEEP · WAKEUP</li>
+            <li>Init: DriverInitZero → PbConfig → DriverInitOne → StartOS → StartupTwo(NvM_ReadAll)</li>
+            <li>Fixed (ôm UP) vs <b>Flex</b> (UP → BswM)</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>EcuM — nguồn/ngủ</h4><ul>
+            <li>Wakeup: SetWakeupEvent → ValidateWakeupEvent (lọc nhiễu)</li>
+            <li>Sleep: HALT (CPU dừng) / POLL (chạy chậm) — MCU mode</li>
+            <li>Shutdown target: OFF / RESET / SLEEP (+ cause)</li>
+            <li>RUN/POST_RUN request → hết request thì go-down</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>BswM — engine</h4><ul>
+            <li>Mode request source → lưu mode → rule → action list</li>
+            <li>Rule = logical expr (AND/OR/NOT) → true/false action list</li>
+            <li>Action: PDU group · schedule table · Rte_Switch · PduR · NvM · EcuM</li>
+            <li>Cấu hình ARXML, không sửa code</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>BswM — timing</h4><ul>
+            <li>Immediate (ngay) vs Deferred (BswM_MainFunction)</li>
+            <li>ExecType: CONDITION (khi đổi) vs TRIGGER (mỗi lần)</li>
+            <li>BswM_Init đặt mode ban đầu</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Phối hợp</h4><ul>
+            <li>EcuM = vòng đời nguồn · BswM = luật mode · ComM = nhu cầu giao tiếp</li>
+            <li>ComM NO_COM → BswM tắt PDU group → EcuM go-down</li>
+            <li>SWC: BswM_RequestMode (yêu cầu) / Rte_Switch (nhận)</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Bẫy phỏng vấn</h4><ul>
+            <li>Ai quản UP? → BswM (Flex), không phải EcuM</li>
+            <li>Quên wakeup validation → ping-pong hao pin</li>
+            <li>Immediate/Deferred &amp; CONDITION/TRIGGER đặt đúng</li>
+          </ul></div>
+        </div>
+
+        <!-- ============================================================
+             8. Sources
+             ============================================================ -->
+        <h2>8. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li><strong>AUTOSAR Classic SWS — EcuM</strong> (Flexible ECU Management): pha STARTUP/UP/SHUTDOWN/SLEEP/WAKEUP, driver init list, wakeup source &amp; validation, RUN/POST_RUN request, shutdown target/cause, alarm clock, multicore.</li>
+          <li><strong>AUTOSAR Classic SWS — BswM</strong> (Basic Software Mode Manager): mode request port, logical expression, rule, action &amp; action list, execution type CONDITION/TRIGGER, immediate/deferred, available actions.</li>
+          <li><strong>AUTOSAR Layered Software Architecture</strong> &amp; <strong>SWS ComM</strong> — quan hệ EcuM/BswM/ComM/CanSM (đối chiếu bài <a href="B3-communication.html">B3</a>).</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi giải thích được EcuM Flex vs Fixed, chuỗi startup, wakeup validation, và cơ chế rule→action + immediate/deferred của BswM.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">
+        Chủ đề B6 · Mode Management (EcuM &amp; BswM) — Interview Prep
+      </footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../assets/js/app.js?v=5"></script>
+</body>
+</html>
