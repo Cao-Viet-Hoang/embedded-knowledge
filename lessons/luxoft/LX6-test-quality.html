@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LX6 · Testing · VectorCAST · MISRA — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/css/style.css?v=7" />
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../../assets/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../../assets/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="../../assets/favicon.ico" />
+</head>
+<body data-page="LX6" data-root="../../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">LX6</span>
+            <span class="badge badge--must">Must-tell</span>
+            <span class="chip">Luxoft — TCU · CI &amp; Integration</span>
+          </div>
+          <h1>Testing Strategy · VectorCAST · MISRA C · Static Analysis</h1>
+          <p class="lead">JD yêu cầu: <em>"White-box, grey-box, black-box testing… component and bench level verification… VectorCAST… coding standards such as MISRA"</em>. CV bạn mạnh về test (Cantata, Pytest, ECU-Test, MCAL validation, coverage), nên phần này chủ yếu là <strong>đổi tên tool</strong> (Cantata → VectorCAST) và <strong>cập nhật MISRA</strong> (MISRA C:2025 đã ra). Góc nhìn CI: test và static analysis là <strong>gate</strong> trong pipeline, không phải việc làm cuối.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> ✅ Điểm mạnh (Cantata, Pytest, ECU-Test, coverage, MISRA): ôn chắc. ➕ VectorCAST optional</span>
+            <span><b>Bài gốc:</b> <a href="../C-testing.html">C</a>, <a href="../G-embedded-c.html">G</a> (§11 MISRA)</span>
+          </div>
+
+        </div>
+
+        <div class="callout callout--key">
+          <div class="callout__icon">🧭</div>
+          <div class="callout__body">
+            <div class="callout__title">Chế độ "ôn cái đã biết trước"</div>
+            <p class="mb-0">Ôn chắc các mục ✅: box testing, MC/DC, MISRA và static analysis, test trong pipeline. Đây là kinh nghiệm MCAL validation của bạn. Mục 2 VectorCAST (➕) chỉ cần biết "giống Cantata".</p>
+            <p class="mb-0" style="margin-top:6px"><strong>Ký hiệu trên tiêu đề mục:</strong> ✅ đã biết theo CV, ôn cho thật chắc · 🎯 chưa biết nhưng JD gần như chắc hỏi, học mức tối thiểu · ➕ mới, optional.</p>
+          </div>
+        </div>
+
+        <!-- ================= 1 BOX ================= -->
+        <h2>✅ 1. White / grey / black box và các mức test</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Kiểu</th><th>Người test biết gì</th><th>Dựa vào</th><th>Ví dụ trong ECU</th></tr></thead>
+          <tbody>
+            <tr><td><strong>White-box</strong></td><td>Toàn bộ code bên trong</td><td>Cấu trúc code: nhánh, điều kiện, đường đi</td><td>Unit test hàm AT parser với VectorCAST/Cantata, đo statement/branch/MC/DC coverage</td></tr>
+            <tr><td><strong>Grey-box</strong></td><td>Biết kiến trúc, interface, một phần nội bộ</td><td>Thiết kế, interface spec, có thể đọc biến nội bộ qua debugger/XCP</td><td>Component/integration test: gửi CAN vào, đọc biến nội bộ qua TRACE32 hoặc CANape để xác nhận trạng thái</td></tr>
+            <tr><td><strong>Black-box</strong></td><td>Chỉ input/output ngoài</td><td>Requirement</td><td>Bench/HIL: kích eCall qua nút, kiểm tra modem gọi đi và MSD gửi đúng; test qua UDS</td></tr>
+          </tbody>
+        </table></div>
+        <dl class="kv">
+          <dt>Unit (SWE.4)</dt><dd>Một hàm/module cô lập, phụ thuộc được stub. Chạy trên host hoặc simulator, sau đó có thể chạy trên target để phát hiện khác biệt compiler.</dd>
+          <dt>Component / integration (SWE.5)</dt><dd>Nhiều unit ghép lại, kiểm tra interface. Có thể trên vECU/SIL hoặc target.</dd>
+          <dt>Bench / HIL (SWE.6, SYS)</dt><dd>ECU thật, môi trường giả lập (nguồn, CAN/LIN, anten, SIM giả, network simulator). Kiểm tra requirement phần mềm và hệ thống.</dd>
+          <dt>Kỹ thuật thiết kế test</dt><dd>Phân lớp tương đương, giá trị biên, bảng quyết định, chuyển trạng thái (hợp với AT FSM và mode management), error guessing, fault injection.</dd>
+        </dl>
+
+        <!-- ================= 2 VECTORCAST ================= -->
+        <h2>➕ 2. VectorCAST</h2>
+        <div class="figure">
+          <svg viewBox="0 0 720 270" role="img" aria-label="Kiến trúc test harness của VectorCAST" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="lx6a" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="10" y="20" width="700" height="160" rx="12" fill="none" stroke="var(--brand-400)" stroke-width="1.4" stroke-dasharray="5 4"/>
+            <text x="24" y="40" class="dgm-layer" font-size="10">TEST HARNESS (VectorCAST sinh tự động)</text>
+            <rect x="30" y="60" width="150" height="100" rx="9" fill="var(--brand-800)"/><text x="105" y="88" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Test Driver</text><text x="105" y="106" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">đặt input · gọi hàm</text><text x="105" y="122" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">so expected</text><text x="105" y="138" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">ghi kết quả</text>
+            <rect x="270" y="60" width="180" height="100" rx="9" fill="var(--core)"/><text x="360" y="88" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Unit Under Test</text><text x="360" y="106" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">code thật của bạn</text><text x="360" y="122" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">được instrument</text><text x="360" y="138" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">để đo coverage</text>
+            <rect x="540" y="60" width="150" height="100" rx="9" fill="var(--defend)"/><text x="615" y="88" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Stubs</text><text x="615" y="106" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">thay hàm phụ thuộc</text><text x="615" y="122" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">trả giá trị cấu hình</text><text x="615" y="138" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">đếm lần gọi, kiểm tham số</text>
+            <path d="M180,110 L266,110" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx6a)"/>
+            <path d="M450,110 L536,110" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx6a)"/>
+            <rect x="30" y="200" width="200" height="56" rx="9" fill="var(--brand-600)"/><text x="130" y="224" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Chạy ở đâu</text><text x="130" y="241" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">host · simulator · target qua debugger</text>
+            <rect x="260" y="200" width="200" height="56" rx="9" fill="var(--ok)"/><text x="360" y="224" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Kết quả</text><text x="360" y="241" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">pass/fail · statement/branch/MC/DC</text>
+            <rect x="490" y="200" width="200" height="56" rx="9" fill="var(--brand-900)"/><text x="590" y="224" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">CI</text><text x="590" y="241" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">clicast · Jenkins plugin · report</text>
+          </svg>
+          <div class="figure__cap"><b>Giống Cantata về khái niệm.</b> Tool sinh driver và stub từ code, bạn chỉ khai báo test case (input, expected, hành vi stub). Code dưới test được instrument để đo coverage.</div>
+        </div>
+        <dl class="kv">
+          <dt>Sản phẩm</dt><dd>VectorCAST (Vector, trước là Vector Software) có các phần chính: <strong>VectorCAST/C++</strong> (unit/integration test cho C/C++), <strong>VectorCAST/QA</strong> (đo coverage cho test hệ thống/bench đang có), <strong>VectorCAST/Manage</strong> (quản lý nhiều environment, regression, xu hướng), cộng thêm tính năng change-based testing (chỉ chạy lại test bị ảnh hưởng bởi thay đổi).</dd>
+          <dt>Environment</dt><dd>Mỗi đơn vị test là một <em>environment</em>: chọn file nguồn (UUT), cách xử lý phụ thuộc (stub tất cả / stub theo chỉ định / dùng code thật), compiler và cờ biên dịch. Tạo bằng GUI hoặc file <code>.env</code> / script.</dd>
+          <dt>Test case</dt><dd>Nhập giá trị cho tham số, biến toàn cục, giá trị trả về của stub; đặt expected cho output. Có hỗ trợ test case kiểu range/list, test sinh tự động (basis path) để tăng coverage nhanh, và user code khi cần logic phức tạp.</dd>
+          <dt>Coverage</dt><dd>Statement, branch, MC/DC, function, function call. ISO 26262-6 khuyến nghị cao: statement (ASIL A–B), branch (B–D), MC/DC (D) ở mức unit.</dd>
+          <dt>Chạy trên target</dt><dd>Harness được biên dịch bằng cross-compiler, nạp qua debugger (ví dụ TRACE32) hoặc simulator, kết quả đọc về qua debugger hoặc UART. Phát hiện lỗi chỉ xuất hiện trên compiler/CPU thật (kích thước kiểu, căn chỉnh, tối ưu).</dd>
+          <dt>CLI &amp; CI</dt><dd><code>clicast</code> là giao diện dòng lệnh; <code>manage</code> cho project VectorCAST/Manage. Biến môi trường <code>VECTORCAST_DIR</code> trỏ tới thư mục cài đặt. Có <strong>Jenkins plugin</strong> sinh job từ project Manage, chạy song song các environment, và xuất báo cáo (JUnit XML cho kết quả, coverage report) lên Jenkins.</dd>
+        </dl>
+<pre><code class="language-bash"># Chạy regression VectorCAST trong CI (minh hoạ; tên project theo dự án)
+export VECTORCAST_DIR=/opt/vcast
+$VECTORCAST_DIR/manage -p TcuUnitTests --build-execute --level=HOST/GNU/UnitSuite
+$VECTORCAST_DIR/manage -p TcuUnitTests --full-status=report.html
+# Xuất JUnit XML + coverage cho Jenkins: dùng script đi kèm VectorCAST Jenkins plugin
+# (tên script/tham số khác nhau theo phiên bản; tra tài liệu của phiên bản dự án đang dùng)</code></pre>
+        <div class="callout callout--tip"><div class="callout__icon">💡</div><div class="callout__body"><p class="mb-0"><strong>Nói về Cantata → VectorCAST:</strong> <em>"I used Cantata for unit and component tests with stubbing, fault injection and coverage. VectorCAST follows the same model: environment, generated harness and stubs, test cases, MC/DC coverage. I'd need a few days on the tool specifics, not on the method."</em></p></div></div>
+
+        <h3>✅ 2.1 MC/DC nhắc nhanh</h3>
+        <p>Mỗi điều kiện con trong một quyết định phải được chứng minh <strong>độc lập ảnh hưởng tới kết quả</strong>: có hai test chỉ khác nhau ở điều kiện đó mà kết quả quyết định đổi. Với n điều kiện cần tối thiểu n+1 test.</p>
+<pre><code class="language-c">if ((regStatus == REG_HOME || regStatus == REG_ROAMING) &amp;&amp; (signalDbm &gt; -110))
+/*   A                          B                             C                          */
+/*  Test | A B C | kết quả   Cặp độc lập:                                               */
+/*   1   | 1 0 1 |   1       A: 1 vs 4                                                  */
+/*   2   | 0 1 1 |   1       B: 2 vs 4                                                  */
+/*   3   | 1 0 0 |   0       C: 1 vs 3                                                  */
+/*   4   | 0 0 1 |   0       → 4 test = n+1                                             */</code></pre>
+
+        <!-- ================= 3 MISRA ================= -->
+        <h2>✅ 3. MISRA C — bản cập nhật tới 2025</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Phiên bản</th><th>Năm</th><th>Điểm chính</th></tr></thead>
+          <tbody>
+            <tr><td>MISRA C:2004</td><td>2004</td><td>C90/C99 một phần; nhiều dự án legacy vẫn theo.</td></tr>
+            <tr><td>MISRA C:2012</td><td>2012</td><td>Cấu trúc hiện đại: <em>directive</em> + <em>rule</em>, phân loại mandatory/required/advisory, decidable/undecidable. Amendment 1 (2016, bảo mật), Amendment 2 (2020, C11/C18), Amendment 3/4 (2023, đa luồng, atomics).</td></tr>
+            <tr><td>MISRA C:2023</td><td>2023</td><td>Gộp C:2012 cùng các amendment thành một tài liệu (MISRA C:2012 third edition + AMD 1–4), hỗ trợ C11/C18.</td></tr>
+            <tr><td><strong>MISRA C:2025</strong></td><td>3/2025</td><td>Bản mới nhất: khoảng 225 guideline. Thêm rule mới (ví dụ 8.18, 8.19, 11.11, 19.3), gỡ bỏ một số, và <strong>Rule 15.5 (single point of exit) bị bỏ</strong>. Dự án đang chạy thường giữ phiên bản đã chốt; dự án mới cân nhắc 2023/2025.</td></tr>
+          </tbody>
+        </table></div>
+        <dl class="kv">
+          <dt>Mandatory</dt><dd>Bắt buộc tuân thủ, <strong>không được deviation</strong>. Ví dụ: không đọc biến tự động chưa khởi tạo (Rule 9.1).</dd>
+          <dt>Required</dt><dd>Phải tuân thủ, trừ khi có <strong>deviation chính thức</strong> được ghi và phê duyệt.</dd>
+          <dt>Advisory</dt><dd>Khuyến nghị; có thể bỏ qua mà không cần deviation chính thức (nhưng nên ghi lại), hoặc dự án nâng lên required.</dd>
+          <dt>Decidable / undecidable</dt><dd>Decidable: tool xác định chắc chắn đúng/sai. Undecidable: phụ thuộc giá trị lúc chạy (ví dụ tràn số, con trỏ null) nên tool có thể báo sai hoặc bỏ sót; cần review bổ sung.</dd>
+          <dt>Deviation</dt><dd>Ghi: rule nào, vị trí, lý do kỹ thuật, biện pháp bù đắp, người duyệt. Deviation lặp lại có thể thành <em>deviation permit</em> áp dụng rộng. Code vendor (MCAL/BSW) thường đi kèm danh sách deviation của vendor.</dd>
+          <dt>Compliance</dt><dd>MISRA Compliance:2020 quy định cách tuyên bố tuân thủ: GEP (Guideline Enforcement Plan: tool nào kiểm rule nào), GRP (re-categorization), danh sách deviation, và Guideline Compliance Summary.</dd>
+        </dl>
+        <h3>✅ 3.1 Rule hay bị hỏi (ví dụ quen thuộc)</h3>
+<pre><code class="language-c">/* 10.4 – toán hạng của phép toán số học phải cùng essential type category */
+uint8  u8 = 5u;  sint16 s16 = -3;
+x = u8 + s16;                         /* vi phạm: unsigned + signed */
+x = (sint16)u8 + s16;                 /* ok: ép tường minh */
+
+/* 14.4 – điều kiện if phải có kiểu essentially Boolean */
+if (ptr)          { }                  /* vi phạm */
+if (ptr != NULL)  { }                  /* ok */
+
+/* 16.4 – mọi switch phải có default; 16.3 – mỗi clause kết thúc bằng break */
+/* 17.7 – giá trị trả về của hàm non-void phải được dùng */
+(void)memcpy(dst, src, len);           /* bỏ tường minh */
+
+/* 21.3 – không dùng malloc/free của stdlib */
+/* 11.3 – không ép con trỏ sang kiểu con trỏ đối tượng khác (thường gặp khi đọc buffer CAN) */</code></pre>
+        <div class="callout callout--note"><div class="callout__icon">📝</div><div class="callout__body"><p class="mb-0"><strong>Rule 15.5 bị bỏ trong C:2025:</strong> trước đây advisory "một hàm chỉ nên có một điểm thoát". Bỏ vì early return thường làm code rõ hơn. Nếu được hỏi, trả lời: dự án theo phiên bản nào thì theo phiên bản đó; không tự ý áp rule của bản mới vào dự án đã chốt bản cũ.</p></div></div>
+
+        <!-- ================= 4 STATIC ================= -->
+        <h2>✅ 4. Static analysis như một gate trong CI</h2>
+        <dl class="kv">
+          <dt>Tool phổ biến</dt><dd>Helix QAC (Perforce), Polyspace Bug Finder / Code Prover (MathWorks), Coverity, Klocwork, PC-lint Plus, Parasoft C/C++test, Axivion, cppcheck (miễn phí, MISRA addon một phần). Polyspace Code Prover dùng abstract interpretation để <em>chứng minh</em> không có một số loại lỗi runtime.</dd>
+          <dt>Cấu hình giống build</dt><dd>Tool phải thấy đúng define, include path, kích thước kiểu của target. Thường lấy từ compile commands (<code>compile_commands.json</code>) hoặc bọc lệnh build.</dd>
+          <dt>Baseline + chặn mới</dt><dd>Codebase cũ có hàng nghìn cảnh báo. Chiến lược thực tế: chốt baseline, <strong>chặn cảnh báo mới</strong> ở từng change (quality gate "no new violations"), giảm nợ cũ dần theo kế hoạch.</dd>
+          <dt>Tách theo nguồn gốc</dt><dd>Code vendor (MCAL, BSW, thư viện modem) và code sinh ra (tresos, RTE) được phân tích riêng hoặc loại trừ, dựa vào deviation của vendor. Chỉ gate chặt code do team viết.</dd>
+          <dt>Nhanh cho pre-merge</dt><dd>Phân tích incremental file thay đổi ở gate pre-merge; full analysis chạy nightly.</dd>
+          <dt>Compiler warnings</dt><dd>Bật <code>-Wall -Wextra</code> (hoặc tương đương compiler thương mại) và coi warning mới là lỗi. Rẻ nhất và bắt nhiều lỗi thật.</dd>
+        </dl>
+
+        <!-- ================= 5 PIPELINE ================= -->
+        <h2>✅ 5. Test pyramid trong pipeline TCU</h2>
+        <ul class="steps">
+          <li><h4>Pre-merge (vài phút)</h4><p class="mb-0">Build các biến thể chính, compiler warning, static analysis incremental, unit test VectorCAST liên quan tới thay đổi (change-based), pytest cho tool/script.</p></li>
+          <li><h4>Gate (Zuul, mười mấy phút)</h4><p class="mb-0">Build đầy đủ, toàn bộ unit test, smoke test trên vECU hoặc một bench: boot, CAN alive, UDS đọc version, modem trả lời <code>AT</code>.</p></li>
+          <li><h4>Nightly</h4><p class="mb-0">Full static analysis + báo cáo MISRA, regression bench/HIL đầy đủ, coverage tổng, đo kích thước ROM/RAM, xu hướng trên Grafana.</p></li>
+          <li><h4>Release</h4><p class="mb-0">Toàn bộ test theo requirement, bằng chứng truy vết (requirement → test → kết quả), báo cáo MISRA compliance và deviation, coverage đạt mục tiêu, lưu artifact đã promote.</p></li>
+        </ul>
+
+        <!-- ================= 6 EVO ================= -->
+        <h2>6. Trước (~2020) → Nay</h2>
+        <div class="evo">
+          <div class="evo__head">🔁 <span>Test cuối dự án → shift-left, gate liên tục</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>Unit test chạy thủ công trên máy test engineer trước mốc release; MISRA check chạy cuối sprint, xuất báo cáo PDF hàng nghìn dòng; bench test lên lịch tay. MISRA C:2012 + amendment rời rạc.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p>Unit test và static analysis chạy mỗi change, change-based testing để nhanh; "no new violations" là gate; bench tự động qua CI và resource lock; SIL/vECU để test integration sớm. MISRA C:2023 gộp, rồi C:2025. Công cụ AI hỗ trợ sinh test case và giải thích vi phạm đang xuất hiện, nhưng bằng chứng vẫn phải từ tool đã qualified.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> Người phỏng vấn CI lead muốn nghe bạn đặt test ở đâu trong pipeline và làm sao để nhanh mà không bỏ bằng chứng chất lượng.</div>
+        </div>
+
+        <!-- ================= 7 QA ================= -->
+        <h2>7. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">White-box, grey-box, black-box khác nhau thế nào? Cho ví dụ trong TCU. <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">White-box dựa vào cấu trúc code, đo coverage (unit test AT parser). Grey-box biết kiến trúc và interface, có thể quan sát trạng thái nội bộ (integration test: gửi CAN, đọc biến qua TRACE32/XCP). Black-box chỉ dựa vào requirement và input/output ngoài (bench: bấm nút SOS, kiểm tra cuộc gọi và MSD).</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Mandatory, required, advisory trong MISRA khác nhau thế nào? Deviation cần gì? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Mandatory: không được deviation. Required: tuân thủ trừ khi có deviation chính thức. Advisory: khuyến nghị, không cần deviation chính thức. Deviation ghi rule, vị trí, lý do kỹ thuật, rủi ro và biện pháp bù đắp, người phê duyệt, và được lưu để truy vết. Phiên bản mới nhất là MISRA C:2025 (khoảng 225 guideline, bỏ Rule 15.5).</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Dự án có 8.000 cảnh báo MISRA cũ. Làm sao đưa static analysis vào CI mà không chặn mọi change? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Chốt baseline hiện tại; gate chỉ fail khi change <em>thêm</em> vi phạm mới (so với baseline, theo file/hàm). Loại code vendor và code sinh ra khỏi gate, dựa vào deviation của vendor. Mandatory rule chặn tuyệt đối. Lập kế hoạch giảm nợ cũ theo module ưu tiên (code an toàn trước), theo dõi xu hướng trên dashboard. Phân tích incremental ở pre-merge, full ở nightly.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Unit test pass trên host nhưng fail trên target. Nguyên nhân có thể? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Kích thước kiểu khác (<code>int</code> 16/32/64-bit, <code>long</code>), endianness, căn chỉnh và padding struct, hành vi undefined/implementation-defined (dịch bit số âm, tràn signed), tối ưu compiler (thiếu <code>volatile</code>), stack nhỏ trên target, thư viện chuẩn khác. Vì thế nên chạy ít nhất một phần test trên target hoặc simulator với đúng compiler, và dùng Platform_Types thay kiểu trần.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Làm sao để unit test nhanh trong pre-merge mà vẫn đủ? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Change-based testing (VectorCAST chỉ chạy lại environment bị ảnh hưởng), chạy song song nhiều environment trên nhiều agent, tách host test (nhanh, mỗi change) và target test (chậm, gate/nightly), cache kết quả build harness. Full regression vẫn chạy nightly để bắt ảnh hưởng gián tiếp.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Kinh nghiệm test và coverage của bạn? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Bám CV: tôi thiết kế và chạy MCAL unit/component validation cho các nhóm driver digital I/O, analog, timer, communication, watchdog trên cả target và VECU; viết test logic và automation với Pytest, Cantata và ECU-Test, gồm cô lập phụ thuộc, mocking/stubbing, fault injection, giá trị biên và test hướng coverage. Tôi chịu trách nhiệm phân tích requirement, truy vết requirement-to-test, bằng chứng test và sẵn sàng review theo ASPICE. VectorCAST là tool mới với tôi nhưng cùng mô hình với Cantata. Không nhận đã dùng VectorCAST hay Helix QAC nếu chưa dùng.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Kể một lỗi mà fault injection bắt được.</li><li>Bạn đạt MC/DC cho một hàm có nhiều điều kiện như thế nào?</li></ul></div>
+          </div></div>
+        </div>
+
+        <!-- ================= 8 CHEAT ================= -->
+        <h2>8. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>Box</h4><ul>
+            <li>white: code, coverage</li><li>grey: kiến trúc + nội bộ</li><li>black: requirement, I/O ngoài</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>VectorCAST</h4><ul>
+            <li>/C++ · /QA · /Manage</li><li>environment · driver · stub</li><li>statement · branch · MC/DC</li><li>clicast · manage · VECTORCAST_DIR</li><li>Jenkins plugin · change-based</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>MISRA</h4><ul>
+            <li>2004 → 2012 (+AMD1–4) → 2023 → 2025</li><li>~225 guideline · 15.5 bị bỏ</li><li>mandatory · required · advisory</li><li>decidable/undecidable · deviation</li><li>Compliance:2020: GEP · GRP · GCS</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Static gate</h4><ul>
+            <li>baseline + no new violations</li><li>loại vendor/generated code</li><li>incremental pre-merge · full nightly</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>MC/DC</h4><ul>
+            <li>mỗi điều kiện độc lập ảnh hưởng</li><li>n điều kiện → ≥ n+1 test</li><li>ASIL D mức unit</li>
+          </ul></div>
+        </div>
+
+        <h2>9. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li>MISRA — <a href="https://misra.org.uk/misra-c-2025-released/" target="_blank" rel="noopener">MISRA C:2025 released</a>; MISRA Compliance:2020.</li>
+          <li>Vector — <a href="https://www.vector.com/int/en/products/products-a-z/software/vectorcast/" target="_blank" rel="noopener">VectorCAST</a>; <a href="https://plugins.jenkins.io/vectorcast-execution/" target="_blank" rel="noopener">VectorCAST Execution Jenkins plugin</a>.</li>
+          <li>ISO 26262-6:2018, Bảng 9 (structural coverage ở mức unit).</li>
+          <li>Bài nội bộ: <a href="../C-testing.html">C — Testing</a>, <a href="../G-embedded-c.html">G — Embedded C (§11 MISRA)</a>, <a href="../H-iso26262.html">H — ISO 26262</a>.</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi giải thích được VectorCAST bằng khái niệm Cantata và nói đúng phiên bản MISRA mới nhất.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">Chủ đề LX6 · Testing · VectorCAST · MISRA — Interview Prep</footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../../assets/js/app.js?v=7"></script>
+</body>
+</html>

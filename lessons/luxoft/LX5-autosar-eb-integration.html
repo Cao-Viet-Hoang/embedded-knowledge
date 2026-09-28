@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LX5 · AUTOSAR Integration · EB tresos — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/css/style.css?v=7" />
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../../assets/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../../assets/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="../../assets/favicon.ico" />
+</head>
+<body data-page="LX5" data-root="../../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">LX5</span>
+            <span class="badge badge--must">Must-tell</span>
+            <span class="chip">Luxoft — TCU · CI &amp; Integration</span>
+          </div>
+          <h1>AUTOSAR Integration · EB tresos · AUTOSAR Builder</h1>
+          <p class="lead">Trách nhiệm chính trong JD: <em>"Software integration of Autosar/Non-Autosar components… Configure and develop MCAL/BSW modules… Optimize code for target hardware and compiler"</em>. Đây là mảnh <strong>khớp nhất với CV</strong> (BSW integrator trên RH850). Bài tập trung vào những gì bạn cần nói trôi chảy: luồng ARXML từ <strong>AUTOSAR Builder</strong> (SWC authoring) qua <strong>EB tresos</strong> (BSW config, validate, generate) tới RTE và build; tích hợp component <strong>non-AUTOSAR</strong>; các lỗi integration điển hình; và <strong>tối ưu code theo target/compiler</strong>.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> ✅ Điểm mạnh nhất (BSW integrator RH850): ôn chắc đầu tiên</span>
+            <span><b>Bài gốc:</b> <a href="../B-autosar.html">B</a>, <a href="../B3-communication.html">B3</a>, <a href="../B6-mode-management.html">B6</a></span>
+          </div>
+
+        </div>
+
+        <div class="callout callout--key">
+          <div class="callout__icon">🧭</div>
+          <div class="callout__body">
+            <div class="callout__title">Chế độ "ôn cái đã biết trước"</div>
+            <p class="mb-0">Gần như toàn bộ là kinh nghiệm thật của bạn: config class, MemMap, CDD, lỗi integration, debug CAN Rx, tối ưu, chiến lược integration. 🎯 Mục 1.2 chỉ là từ vựng EB tresos (tool khác RTA-CAR nhưng cùng khái niệm). ➕ Mục 1.1 AUTOSAR Builder đọc lướt.</p>
+            <p class="mb-0" style="margin-top:6px"><strong>Ký hiệu trên tiêu đề mục:</strong> ✅ đã biết theo CV, ôn cho thật chắc · 🎯 chưa biết nhưng JD gần như chắc hỏi, học mức tối thiểu · ➕ mới, optional.</p>
+          </div>
+        </div>
+
+        <div class="callout callout--interview">
+          <div class="callout__icon">🎤</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Chiến lược tool:</strong> CV ghi RTA-CAR (ETAS). EB tresos (Elektrobit) và AUTOSAR Builder (Dassault Systèmes) khác giao diện nhưng làm cùng việc trên cùng chuẩn ARXML. Câu nói: <em>"The tools differ, the ARXML and the module parameters are the same standard. I integrated BswM, Com, Can, EcuM, OS, Mem and MCAL on RH850, so I know what the parameters mean and how integration fails, not just where to click."</em></p>
+          </div>
+        </div>
+
+        <!-- ================= 1 FLOW ================= -->
+        <h2>✅ 1. Luồng ARXML end-to-end</h2>
+        <div class="figure">
+          <svg viewBox="0 0 720 320" role="img" aria-label="Luồng ARXML từ SWC authoring tới binary" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="lx5a" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="10" y="20" width="150" height="70" rx="9" fill="var(--brand-800)"/><text x="85" y="44" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">System / Network</text><text x="85" y="60" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">DBC · LDF · FIBEX · ARXML</text><text x="85" y="76" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">từ OEM</text>
+            <rect x="10" y="110" width="150" height="70" rx="9" fill="var(--brand-600)"/><text x="85" y="134" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">AUTOSAR Builder</text><text x="85" y="150" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">SWC type · port · interface</text><text x="85" y="166" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">runnable · event · composition</text>
+            <rect x="200" y="64" width="150" height="70" rx="9" fill="var(--core)"/><text x="275" y="88" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">ECU Extract</text><text x="275" y="104" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">phần hệ thống của ECU này</text><text x="275" y="120" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">signal · PDU · mapping</text>
+            <rect x="390" y="30" width="170" height="140" rx="9" fill="var(--brand-900)"/><text x="475" y="54" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">EB tresos Studio</text>
+            <text x="475" y="74" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">import ECU extract</text>
+            <text x="475" y="90" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">cấu hình BSW + MCAL (ECUC)</text>
+            <text x="475" y="106" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">importer · wizard · calc param</text>
+            <text x="475" y="122" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">VERIFY (check rule)</text>
+            <text x="475" y="138" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">GENERATE *_Cfg.c/.h, _PBcfg</text>
+            <text x="475" y="154" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">xuất BSWMD / ECUC ARXML</text>
+            <rect x="600" y="30" width="110" height="64" rx="9" fill="var(--defend)"/><text x="655" y="56" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">RTE gen</text><text x="655" y="74" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">Rte.c, Rte_&lt;Swc&gt;.h</text>
+            <rect x="600" y="110" width="110" height="60" rx="9" fill="var(--ok)"/><text x="655" y="136" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">OS gen</text><text x="655" y="152" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">task/ISR/alarm</text>
+            <rect x="200" y="220" width="510" height="80" rx="9" fill="var(--brand-400)"/><text x="455" y="244" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Build: compiler + linker cho target</text>
+            <text x="455" y="262" text-anchor="middle" class="dgm-inv-sub" font-size="9">SWC code + BSW static code + generated config + MCAL + MemMap + linker script</text>
+            <text x="455" y="280" text-anchor="middle" class="dgm-inv-sub" font-size="9">→ ELF / HEX / MAP → flash (TRACE32) → test</text>
+            <path d="M160,55 L196,90" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx5a)"/>
+            <path d="M160,145 L196,110" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx5a)"/>
+            <path d="M350,99 L386,99" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx5a)"/>
+            <path d="M560,62 L596,62" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx5a)"/>
+            <path d="M560,140 L596,140" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx5a)"/>
+            <path d="M475,170 L475,216" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx5a)"/>
+            <path d="M655,170 L655,216" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx5a)"/>
+            <path d="M85,180 L85,260 L196,260" class="dgm-arrow" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#lx5a)"/><text x="94" y="236" class="dgm-sub" font-size="8.5">SWC .c (+ contract header)</text>
+          </svg>
+          <div class="figure__cap"><b>Hai nửa gặp nhau ở RTE.</b> AUTOSAR Builder mô tả phía ứng dụng (SWC, port, runnable). EB tresos cấu hình phía nền tảng (BSW, MCAL, OS). RTE generator đọc cả hai và sinh code nối chúng. Một số dự án dùng RTE generator của tresos, số khác dùng tool RTE riêng; tuỳ bộ công cụ được mua.</div>
+        </div>
+
+        <h3>➕ 1.1 AUTOSAR Builder (Dassault Systèmes)</h3>
+        <dl class="kv">
+          <dt>Vai trò</dt><dd>Tool Eclipse-based để <strong>thiết kế SWC và mô hình hoá hệ thống</strong> AUTOSAR: tạo SWC type, port (sender/receiver, client/server, mode), interface, data type, runnable và RTE event, composition và connector. Có trình soạn thảo ARXML, kiểm tra tính hợp lệ theo schema, so sánh/merge ARXML, và thành phần sinh RTE/cấu hình (tuỳ gói bản quyền).</dd>
+          <dt>Kết quả</dt><dd>ARXML của SWC (<em>SWC description</em>), có thể sinh <em>contract header</em> <code>Rte_&lt;Swc&gt;.h</code> để developer viết code runnable trước khi có RTE thật.</dd>
+          <dt>Import từ ngoài</dt><dd>DBC/LDF/FIBEX của mạng xe được import thành signal, PDU, frame trong ARXML hệ thống.</dd>
+        </dl>
+        <h3>🎯 1.2 EB tresos Studio (Elektrobit)</h3>
+        <dl class="kv">
+          <dt>Vai trò</dt><dd>Tool cấu hình, kiểm tra và sinh code cho BSW (gói <strong>EB tresos AutoCore</strong>) và MCAL (nhiều hãng chip giao MCAL kèm plugin tresos). Mỗi module là một plugin có <em>BSWMD</em> (mô tả tham số) và generator.</dd>
+          <dt>Project &amp; module config</dt><dd>Một project chứa danh sách module (Can, CanIf, PduR, Com, EcuM, BswM, Os, Dcm, Dem, NvM, Port, Dio, Mcu…) và giá trị tham số (ECUC values). Lưu dưới dạng XDM/ARXML trong repo.</dd>
+          <dt>Importer</dt><dd>Nhập ECU extract/DBC/LDF để tạo sẵn cấu hình COM stack (I-PDU, signal, CanIf Rx/Tx PDU, PduR routing path) thay vì nhập tay hàng trăm signal.</dd>
+          <dt>Verify</dt><dd>Chạy check rule của từng plugin: tham số bắt buộc bị trống, tham chiếu sai (ví dụ PduR trỏ tới PDU không tồn tại), giá trị ngoài miền, xung đột giữa module. Lỗi phải hết trước khi generate.</dd>
+          <dt>Generate</dt><dd>Sinh <code>&lt;Mod&gt;_Cfg.h</code>, <code>&lt;Mod&gt;_Lcfg.c</code> (link-time), <code>&lt;Mod&gt;_PBcfg.c</code> (post-build), cộng file MemMap và SchM. Code sinh ra không được sửa tay.</dd>
+          <dt>Command line / CI</dt><dd>tresos có chế độ dòng lệnh (<code>tresos_cmd</code>) để import, verify, generate trong pipeline không cần GUI. Đây là điểm nối trực tiếp với vai trò CI: job <em>"config verify + generate"</em> chạy mỗi change có sửa cấu hình, lỗi verify làm fail sớm.</dd>
+          <dt>Variant</dt><dd>Hỗ trợ biến thể (post-build selectable, predefined variant) để một bản build phục vụ nhiều cấu hình xe/thị trường. TCU bán nhiều thị trường nên có biến thể theo vùng (eCall EU / ERA-GLONASS / không có eCall).</dd>
+        </dl>
+
+<pre><code class="language-bash"># Job CI: verify + generate cấu hình tresos (tham số minh hoạ, xem tài liệu tresos của dự án)
+tresos_cmd.sh -data ws legacy import  cfg/TcuProject  ecu_extract.arxml
+tresos_cmd.sh -data ws legacy verify  TcuProject     || exit 1      # fail sớm nếu cấu hình sai
+tresos_cmd.sh -data ws legacy generate TcuProject
+git diff --exit-code gen/ || echo "Generated code khác bản đã commit → cần commit lại"</code></pre>
+
+        <!-- ================= 2 CONFIG CLASS ================= -->
+        <h2>✅ 2. Configuration class &amp; các lớp code</h2>
+        <dl class="kv">
+          <dt>Pre-compile</dt><dd>Tham số trở thành <code>#define</code> trong <code>_Cfg.h</code>. Hiệu quả nhất (compiler tối ưu được, dead code bị loại) nhưng đổi là phải biên dịch lại. Ví dụ: số kênh, bật/tắt tính năng, development error detection.</dd>
+          <dt>Link-time</dt><dd>Tham số là hằng <code>const</code> trong <code>_Lcfg.c</code>. Đổi thì biên dịch lại file cấu hình và link lại, không cần build lại code module (hữu ích khi module giao dạng object/lib).</dd>
+          <dt>Post-build</dt><dd>Tham số nằm trong vùng flash riêng (<code>_PBcfg.c</code>), có thể nạp lại mà không đổi code (post-build loadable) hoặc chọn một trong nhiều bộ lúc khởi động (post-build selectable). Truyền con trỏ bộ cấu hình qua <code>&lt;Mod&gt;_Init(ConfigPtr)</code>. Dùng cho định tuyến CAN theo biến thể xe.</dd>
+          <dt>Static vs generated code</dt><dd>Code tĩnh của module (do vendor giao, không đổi theo dự án) + code sinh ra (theo cấu hình). Integration là ghép đúng phiên bản của cả hai: plugin generator phải cùng version với code tĩnh.</dd>
+          <dt>BSW Scheduler (SchM)</dt><dd>Gọi <code>&lt;Mod&gt;_MainFunction</code> theo chu kỳ cấu hình (map vào OS task) và cung cấp exclusive area (<code>SchM_Enter/Exit_&lt;Mod&gt;_&lt;EA&gt;</code>), thực hiện bằng tắt ngắt hoặc OS resource tuỳ cấu hình.</dd>
+          <dt>MemMap</dt><dd>Mỗi module bọc biến/hằng/code bằng <code>#define &lt;MOD&gt;_START_SEC_VAR_INIT_32</code> rồi <code>#include "&lt;Mod&gt;_MemMap.h"</code>. File MemMap chuyển thành <code>#pragma section</code> của compiler cụ thể để đặt vào đúng vùng nhớ (RAM nhanh, RAM giữ qua reset, flash hằng). Sai MemMap là nguồn lỗi integration rất phổ biến.</dd>
+        </dl>
+<pre><code class="language-c">#define CANIF_START_SEC_VAR_CLEARED_8
+#include "CanIf_MemMap.h"
+static uint8 CanIf_ControllerMode[CANIF_NUM_CONTROLLERS];
+#define CANIF_STOP_SEC_VAR_CLEARED_8
+#include "CanIf_MemMap.h"
+
+/* CanIf_MemMap.h (một phần) – đổi sang pragma của compiler đích */
+#if defined(CANIF_START_SEC_VAR_CLEARED_8)
+  #undef  CANIF_START_SEC_VAR_CLEARED_8
+  #pragma section ".bss.canif_8"       /* cú pháp pragma khác nhau giữa GHS / Tasking / GCC */
+#elif defined(CANIF_STOP_SEC_VAR_CLEARED_8)
+  #undef  CANIF_STOP_SEC_VAR_CLEARED_8
+  #pragma section
+#endif</code></pre>
+
+        <!-- ================= 3 NON AUTOSAR ================= -->
+        <h2>✅ 3. Tích hợp component non-AUTOSAR</h2>
+        <p>JD ghi rõ "Autosar/Non-Autosar components". Trong TCU, driver modem/AT, stack GNSS, thư viện TLS, bootloader, hoặc code legacy thường không phải SWC chuẩn.</p>
+        <dl class="kv">
+          <dt>Complex Device Driver (CDD)</dt><dd>Lối vào chính thức cho code non-AUTOSAR: CDD được truy cập trực tiếp phần cứng (hoặc qua MCAL) và có thể cung cấp port cho SWC qua RTE. AT driver của modem thường được làm thành CDD.</dd>
+          <dt>Wrapper SWC</dt><dd>Bọc thư viện legacy trong một SWC: runnable gọi hàm legacy, dữ liệu đi qua port. Giữ ranh giới rõ ràng, test được.</dd>
+          <dt>Tích hợp vào OS</dt><dd>Hàm cyclic của legacy được gọi từ một runnable hoặc từ task OS riêng; ISR của nó phải được khai báo trong cấu hình OS (cat1/cat2) chứ không cài vector trực tiếp.</dd>
+          <dt>Tài nguyên dùng chung</dt><dd>Legacy có thể tự cấu hình lại peripheral mà MCAL đang dùng (clock, pin mux, DMA). Phải thống nhất ai sở hữu peripheral nào, nếu không sẽ có lỗi "chạy riêng thì được, ghép vào thì hỏng".</dd>
+          <dt>Kiểu dữ liệu và biên dịch</dt><dd>Legacy dùng <code>int</code>, <code>unsigned long</code>, cờ compiler khác; AUTOSAR dùng <code>uint8/uint16/uint32</code> (Platform_Types.h). Kiểm tra kích thước kiểu, căn chỉnh, endianness, và các warning MISRA sẽ tăng vọt.</dd>
+        </dl>
+
+        <!-- ================= 4 ERRORS ================= -->
+        <h2>✅ 4. Lỗi integration điển hình và cách bắt</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Triệu chứng</th><th>Nguyên nhân hay gặp</th><th>Cách điều tra</th></tr></thead>
+          <tbody>
+            <tr><td>Link error: undefined reference <code>Rte_Write_...</code> / <code>XXX_MainFunction</code></td><td>Port chưa nối trong composition, runnable chưa map vào task, module chưa bật trong project, lệch version code tĩnh và generator.</td><td>Đọc lại mapping trong RTE config, verify tresos, kiểm tra danh sách file build.</td></tr>
+            <tr><td>Không nhận được message CAN</td><td>Filter/HRH của Can không khớp ID, CanIf Rx PDU sai DLC hoặc sai kiểu ID (standard/extended), PduR thiếu routing path, Com I-PDU group chưa start, controller chưa ở mode STARTED.</td><td>Đi từ dưới lên: CANoe thấy frame trên bus? → breakpoint <code>CanIf_RxIndication</code> → <code>PduR</code> → <code>Com_RxIndication</code> → giá trị signal. (Chi tiết <a href="../B3-communication.html">B3</a>.)</td></tr>
+            <tr><td>Signal sai giá trị</td><td>Byte order (Intel/Motorola), start bit, scaling/offset, packing sai giữa DBC và cấu hình.</td><td>So bit layout trong CANoe với cấu hình Com, thử giá trị biên.</td></tr>
+            <tr><td>ECU không ngủ / thức ngay</td><td>ComM user còn giữ FULL_COM, CanNm không release, wakeup source chưa được validate/clear, BswM rule sai.</td><td>Log mode transition của BswM/EcuM, xem ai giữ request (<a href="../B6-mode-management.html">B6</a>).</td></tr>
+            <tr><td>Reset ngẫu nhiên / HardFault</td><td>Stack overflow (task stack nhỏ), MemMap đặt biến vào vùng sai, truy cập ngoài MPU region, watchdog không được kích.</td><td>TRACE32: đọc thanh ghi nguyên nhân reset, call stack, stack fill pattern; map file kiểm tra section.</td></tr>
+            <tr><td>DET error lúc khởi động</td><td>Thứ tự init sai (dùng module trước khi Init), tham số NULL, init EcuM list thiếu module.</td><td>Breakpoint vào <code>Det_ReportError</code>, đọc ModuleId/ApiId/ErrorId.</td></tr>
+            <tr><td>NvM đọc về giá trị mặc định</td><td>Block ID/layout đổi giữa các bản mà không có migration, CRC sai, Fee chưa format, <code>NvM_ReadAll</code> chưa xong khi SWC đọc.</td><td>Trạng thái block qua <code>NvM_GetErrorStatus</code>, xem dữ liệu flash (<a href="../B2-memory.html">B2</a>).</td></tr>
+            <tr><td>Task overrun sau khi thêm tính năng</td><td>Runnable mới map vào task đã gần đầy tải, MainFunction chu kỳ quá nhỏ.</td><td>Đo thời gian task (trace), cân lại mapping, đổi chu kỳ.</td></tr>
+          </tbody>
+        </table></div>
+
+        <!-- ================= 5 OPTIMIZE ================= -->
+        <h2>✅ 5. Tối ưu code theo target &amp; compiler</h2>
+        <dl class="kv">
+          <dt>Mức tối ưu</dt><dd><code>-O0</code> (debug), <code>-O1/-O2</code> (cân bằng), <code>-Os</code> (kích thước, thường chọn cho MCU flash nhỏ), <code>-O3</code> (tốc độ, có thể phình code vì unroll/inline). Compiler thương mại (Green Hills, TASKING, Wind River Diab) có tuỳ chọn riêng; có thể tối ưu theo từng file/hàm (ví dụ ISR theo tốc độ, phần còn lại theo kích thước). Luôn test lại ở mức tối ưu sẽ ship: lỗi thiếu <code>volatile</code> chỉ lộ ra ở <code>-O2</code>.</dd>
+          <dt>Đọc map file</dt><dd>Map file cho biết kích thước từng section, từng object, địa chỉ symbol. Dùng để tìm ai chiếm nhiều flash/RAM nhất, kiểm tra biến đặt đúng vùng, và theo dõi tăng trưởng kích thước qua từng build (có thể đưa thành metric trong CI).</dd>
+          <dt>Đặt dữ liệu và code vào vùng nhớ nhanh</dt><dd>Code nóng (ISR, vòng lặp tính toán) vào RAM/cache-able region hoặc local RAM của core; bảng tra cứu hằng vào flash. Trên RH850: phân biệt local RAM của core với global RAM, và độ trễ truy cập flash (wait state).</dd>
+          <dt>Kiểu dữ liệu</dt><dd>Dùng kích thước tự nhiên của CPU (32-bit) cho biến đếm/vòng lặp; tránh <code>uint8</code> cho biến lặp (compiler phải thêm lệnh cắt/mở rộng). <strong>Fixed-point</strong> thay float khi không có FPU, hoặc để tránh chi phí đổi ngữ cảnh FPU trong ISR.</dd>
+          <dt>Inline và hàm nhỏ</dt><dd><code>static inline</code> cho hàm truy cập ngắn (ví dụ đọc thanh ghi) bỏ chi phí gọi hàm. Quá nhiều inline làm tăng kích thước và giảm hiệu quả cache.</dd>
+          <dt>Tránh chi phí ẩn</dt><dd>Chia/modulo số không phải luỹ thừa 2 (trên core không có lệnh chia phần cứng rất chậm), <code>memcpy</code> kích thước lớn trong ISR, sao chép struct lớn theo giá trị, <code>switch</code> thưa khiến compiler không sinh jump table.</dd>
+          <dt>Stack</dt><dd>Phân tích stack tĩnh (compiler/linker có call-graph, hoặc tool như StackAnalyzer) cộng đo động (tô pattern rồi đọc mức cao nhất bằng TRACE32). Stack task trong OS phải đủ cho đường gọi sâu nhất cộng ngữ cảnh ngắt.</dd>
+          <dt>Tối ưu có đo</dt><dd>Đo trước và sau bằng cycle counter, GPIO toggle + oscilloscope, hoặc trace của debugger. Tối ưu không có đo thường tối ưu nhầm chỗ.</dd>
+        </dl>
+<pre><code class="language-c">/* Ví dụ: modulo cho ring buffer */
+idx = (idx + 1u) % 100u;                 /* chia phần mềm nếu core không có lệnh chia nhanh */
+idx = (idx + 1u) &amp; (128u - 1u);           /* kích thước luỹ thừa 2 → một lệnh AND */
+
+/* Ví dụ: fixed-point Q8.8 thay float cho nhiệt độ */
+typedef sint16 q8_8_t;                   /* 1 LSB = 1/256 °C */
+static inline q8_8_t temp_from_adc(uint16 raw)
+{
+    return (q8_8_t)(((sint32)raw * TEMP_GAIN_Q8) &gt;&gt; 8) - TEMP_OFFSET_Q8;   /* dùng sint32 trung gian để không tràn */
+}</code></pre>
+
+        <!-- ================= 6 STRATEGY ================= -->
+        <h2>✅ 6. Chiến lược integration (vai trò Lead)</h2>
+        <ul class="steps">
+          <li><h4>Baseline có kiểm soát</h4><p class="mb-0">Mỗi đợt integration bắt đầu từ baseline đã xanh: version cụ thể của từng component (BSW vendor release, MCAL release, SWC), ghi trong manifest. Không tích hợp "nhánh đang phát triển" của component khác.</p></li>
+          <li><h4>Tích hợp từng bước</h4><p class="mb-0">Thêm một component hoặc một thay đổi lớn mỗi lần, build và smoke test ngay, để khi hỏng biết ngay do cái gì. Thứ tự thường: MCAL + OS + EcuM (boot được) → communication stack → diagnostics → memory → ứng dụng.</p></li>
+          <li><h4>Tự động hoá kiểm tra</h4><p class="mb-0">Pipeline: verify config → generate → build tất cả biến thể → static analysis → unit test → smoke trên bench. Người tích hợp không làm tay những việc máy làm được.</p></li>
+          <li><h4>Integration test theo interface</h4><p class="mb-0">Test hướng vào ranh giới giữa component: signal đi đúng từ CAN tới SWC, DTC được ghi khi lỗi, mode chuyển đúng. Liên hệ ASPICE SWE.5 (<a href="LX7-aspice-8d-cm.html">LX7</a>).</p></li>
+          <li><h4>Release note &amp; truy vết</h4><p class="mb-0">Mỗi bản tích hợp có release note: component version, lỗi đã sửa, lỗi còn tồn (known issues), kết quả test. Artifact lưu trong Artifactory kèm build info.</p></li>
+        </ul>
+
+        <!-- ================= 7 EVO ================= -->
+        <h2>7. Trước (~2020) → Nay</h2>
+        <div class="evo">
+          <div class="evo__head">🔁 <span>Từ integration bằng GUI thủ công → config as code trong CI</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>Người tích hợp mở tool cấu hình, sửa, generate, build trên máy mình, rồi gửi bản build. Cấu hình ít được review; lỗi phát hiện khi flash lên bench. Đợt integration lớn theo lịch (big-bang).</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p>Cấu hình (XDM/ARXML) nằm trong Git, được review như code. Verify/generate/build chạy bằng command line trong CI cho mọi change; biến thể build song song. Integration liên tục với gating. Xu hướng thêm: vECU/SIL để test integration sớm trước khi có bench.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> JD gộp "SW integration" và "CI" vào một vai trò. Người thắng là người nối được hai nửa: hiểu cấu hình BSW và tự động hoá được nó.</div>
+        </div>
+
+        <!-- ================= 8 QA ================= -->
+        <h2>8. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">Pre-compile, link-time, post-build khác nhau thế nào? Ví dụ khi nào dùng post-build? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Pre-compile: <code>#define</code>, tối ưu nhất, đổi là build lại. Link-time: hằng <code>const</code> trong file cấu hình riêng, đổi thì compile file đó và link lại. Post-build: bảng cấu hình ở vùng flash riêng, truyền qua con trỏ lúc Init, có thể chọn/nạp lại mà không đổi code. Dùng post-build khi một phần mềm phục vụ nhiều biến thể xe có ma trận CAN khác nhau, hoặc khi nhà cung cấp giao library mà OEM vẫn muốn đổi routing.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">EB tresos Verify báo lỗi tham chiếu PduR tới PDU không tồn tại sau khi import DBC mới. Bạn làm gì? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">DBC mới đã đổi tên hoặc xoá frame/PDU, nhưng routing path cũ vẫn trỏ tới. Bước: so sánh DBC cũ/mới (frame nào đổi), xác nhận với người quản lý communication matrix xem thay đổi có chủ ý không, cập nhật hoặc xoá routing path trong PduR, và kiểm tra các SWC còn dùng signal đó không. Đưa verify vào CI để lỗi kiểu này bị chặn ngay ở change sửa DBC, không phải lúc build tổng.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Một message CAN có trên bus nhưng SWC không nhận được giá trị. Debug từng bước? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Đi từ dưới lên, mỗi lớp có bằng chứng: (1) CANoe xác nhận frame, ID, DLC, chu kỳ. (2) Can driver: controller STARTED, filter/HRH khớp ID (standard hay extended). (3) Breakpoint <code>CanIf_RxIndication</code>: có gọi không, HRH/PDU ID đúng không, DLC check. (4) PduR có routing path tới Com. (5) <code>Com_RxIndication</code>: I-PDU group đã start chưa, deadline monitoring có đang báo timeout. (6) Unpack signal: byte order, start bit. (7) RTE: port nối chưa, runnable có chạy không. Đây đúng là việc tôi làm khi là BSW integrator trên RH850 với TRACE32.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Nếu chỉ lỗi ở extended ID thì nghi gì trước?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Tích hợp một thư viện modem non-AUTOSAR vào ECU AUTOSAR. Cách làm? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Làm thành CDD: thư viện dùng UART qua MCAL (hoặc trực tiếp nếu MCAL không hỗ trợ tính năng cần), ISR khai báo trong OS config là cat2, hàm cyclic được gọi từ task OS hoặc runnable, dữ liệu với ứng dụng đi qua port RTE. Thống nhất quyền sở hữu peripheral (pin, clock, DMA) với cấu hình MCAL. Bọc kiểu dữ liệu theo Platform_Types, đặt biến qua MemMap. Viết test ở ranh giới CDD (có thể mock UART trên host). Chạy MISRA và ghi deviation cho phần code vendor không sửa được.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">"Optimize code for target hardware and compiler": bạn làm gì cụ thể? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Đo trước bằng trace/cycle counter và map file. Sau đó: chọn mức tối ưu theo file (ISR theo tốc độ, còn lại <code>-Os</code>), đặt code/dữ liệu nóng vào RAM nhanh qua MemMap/linker script, dùng kiểu 32-bit cho biến lặp, fixed-point khi không có FPU, tránh chia không phải luỹ thừa 2 trong đường nóng, inline hàm ngắn. Kiểm tra stack bằng phân tích tĩnh và tô pattern. Theo dõi kích thước ROM/RAM mỗi build trong CI để phát hiện phình to sớm. Luôn test lại ở cấu hình compiler sẽ ship.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Kể một lần bạn giải quyết lỗi integration giữa nhiều team. <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Bám CV: trong team integration trên RH850 D3/D4/D5, tôi tích hợp và validate BswM, Diag, Can, Com, EcuM, OS, MCAL, Mem; khi integration fail thì tái hiện lỗi, phân tích phụ thuộc giữa component, dùng TRACE32 đọc register/memory và trace, rồi phối hợp với các team phát triển BSW để sửa. Tôi là đầu mối giữa stakeholder dự án và các team component để thống nhất interface. Chọn một ca cụ thể bạn nhớ rõ và kể theo STAR (xem <a href="../A-career-star.html">A</a>), đừng bịa chi tiết.</p></div></div>
+        </div>
+
+        <!-- ================= 9 CHEAT ================= -->
+        <h2>9. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>Tool</h4><ul>
+            <li>AUTOSAR Builder: SWC, port, runnable, composition</li><li>EB tresos: BSW/MCAL config → verify → generate</li><li>tresos command line → CI job</li><li>RTA-CAR (CV) ≈ cùng chuẩn ARXML</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Config</h4><ul>
+            <li>pre-compile · link-time · post-build</li><li>_Cfg.h · _Lcfg.c · _PBcfg.c</li><li>SchM: MainFunction + exclusive area</li><li>MemMap → pragma section</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Non-AUTOSAR</h4><ul>
+            <li>CDD · wrapper SWC</li><li>ISR khai báo trong OS</li><li>sở hữu peripheral rõ ràng</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Debug CAN Rx</h4><ul>
+            <li>bus → Can filter → CanIf → PduR → Com → RTE</li><li>ID std/ext · DLC · I-PDU group · byte order</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Tối ưu</h4><ul>
+            <li>đo trước (trace, map file)</li><li>-Os/-O2 theo file · RAM nhanh</li><li>32-bit loop var · fixed-point · mask thay %</li><li>stack: tĩnh + tô pattern</li>
+          </ul></div>
+        </div>
+
+        <h2>10. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li>Dassault Systèmes — <a href="https://www.3ds.com/products/catia/autosar-builder" target="_blank" rel="noopener">CATIA AUTOSAR Builder</a>.</li>
+          <li>Elektrobit — <a href="https://www.elektrobit.com/products/ecu/eb-tresos/" target="_blank" rel="noopener">EB tresos</a> (Studio, AutoCore).</li>
+          <li>AUTOSAR — Layered Software Architecture; Specification of Memory Mapping; Specification of BSW Scheduler; Methodology (configuration classes).</li>
+          <li>Bài nội bộ: <a href="../B-autosar.html">B</a>, <a href="../B3-communication.html">B3</a>, <a href="../B2-memory.html">B2</a>, <a href="../B6-mode-management.html">B6</a>.</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi kể được luồng ARXML bằng từ vựng EB tresos và debug được ca "CAN có trên bus mà SWC không nhận".</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">Chủ đề LX5 · AUTOSAR Integration · EB tresos — Interview Prep</footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../../assets/js/app.js?v=7"></script>
+</body>
+</html>

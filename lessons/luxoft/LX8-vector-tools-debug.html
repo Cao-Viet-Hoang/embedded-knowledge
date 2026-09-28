@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LX8 · CANoe · CAPL · CANape · Debuggers — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/css/style.css?v=7" />
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../../assets/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../../assets/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="../../assets/favicon.ico" />
+</head>
+<body data-page="LX8" data-root="../../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">LX8</span>
+            <span class="badge badge--core">Core</span>
+            <span class="chip">Luxoft — TCU · CI &amp; Integration</span>
+          </div>
+          <h1>Vector Tools (CANoe · CAPL · CANape) · Bus · Lauterbach / iSystem</h1>
+          <p class="lead">JD: <em>"CAN, CAN-FD, LIN, Automotive Ethernet… Vector tools: CANoe, CANalyzer, CAPL, CANape… Lauterbach, iSystem debuggers"</em>. CV có CANoe và TRACE32 (register/memory, breakpoint, trace), UDE. Phần cần bổ sung: <strong>viết CAPL</strong> trôi chảy, <strong>CANape/XCP</strong>, <strong>tự động hoá debugger</strong> (PRACTICE script, remote API) để đưa debugger vào CI, và <strong>iSystem</strong> ở mức khái niệm.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> ✅ CANoe, TRACE32, CAN/CAN FD: ôn chắc. 🎯 CAPL cơ bản. ➕ CANape/XCP, iSystem optional</span>
+            <span><b>Bài gốc:</b> <a href="../E-protocols.html">E</a>, <a href="../B3-communication.html">B3</a></span>
+          </div>
+
+        </div>
+
+        <div class="callout callout--key">
+          <div class="callout__icon">🧭</div>
+          <div class="callout__body">
+            <div class="callout__title">Chế độ "ôn cái đã biết trước"</div>
+            <p class="mb-0">Ôn chắc ✅: phân biệt tool (1), bus (3), TRACE32 (5). Đây là tool bạn đã dùng. 🎯 Mục 2: viết được CAPL cơ bản (on message, on timer, output). ➕ CANoe trong CI (2.1) và XCP/A2L (4) đọc sau.</p>
+            <p class="mb-0" style="margin-top:6px"><strong>Ký hiệu trên tiêu đề mục:</strong> ✅ đã biết theo CV, ôn cho thật chắc · 🎯 chưa biết nhưng JD gần như chắc hỏi, học mức tối thiểu · ➕ mới, optional.</p>
+          </div>
+        </div>
+
+        <!-- ================= 1 TOOLS ================= -->
+        <h2>✅ 1. CANalyzer vs CANoe vs CANape</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Tool</th><th>Mục đích chính</th><th>Điểm nhận diện</th></tr></thead>
+          <tbody>
+            <tr><td><strong>CANalyzer</strong></td><td>Phân tích bus: xem, ghi, lọc, gửi message đơn giản.</td><td>Người quan sát. Có CAPL nhưng không mô phỏng cả mạng node.</td></tr>
+            <tr><td><strong>CANoe</strong></td><td>Phát triển và test ECU/mạng: <strong>mô phỏng rest-bus</strong> (các node còn lại), test tự động, diagnostics.</td><td>Simulation setup với node CAPL, Test Module / Test Unit (vTESTstudio), Diagnostic console (CDD/ODX), panel, CANoe4SW cho SIL. Chạy được qua COM/.NET/Python API trong CI.</td></tr>
+            <tr><td><strong>CANape</strong></td><td><strong>Đo lường và hiệu chuẩn</strong> (measurement &amp; calibration) biến bên trong ECU.</td><td>Dùng XCP/CCP + file A2L để đọc biến và chỉnh tham số trong RAM lúc chạy, ghi dữ liệu đồng bộ với bus. Script bằng CASL, có API.</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout callout--tip"><div class="callout__icon">💡</div><div class="callout__body"><p class="mb-0"><strong>Câu ngắn:</strong> <em>"CANalyzer observes the bus, CANoe simulates and tests the network, CANape looks inside the ECU via XCP and A2L."</em></p></div></div>
+
+        <!-- ================= 2 CAPL ================= -->
+        <h2>🎯 2. CAPL — viết được bằng tay</h2>
+        <dl class="kv">
+          <dt>Là gì</dt><dd>CAN Access Programming Language: ngôn ngữ giống C, <strong>hướng sự kiện</strong>, chạy trong CANoe/CANalyzer. Không có <code>main</code>; code nằm trong các handler <code>on ...</code>.</dd>
+          <dt>Sự kiện chính</dt><dd><code>on start</code>, <code>on preStart</code>, <code>on stopMeasurement</code>, <code>on message X</code>, <code>on signal X</code>, <code>on timer t</code>, <code>on key 'a'</code>, <code>on sysvar</code>, <code>on diagResponse</code>, <code>on linFrame</code>, <code>on errorFrame</code>, <code>on busOff</code>.</dd>
+          <dt>Hàm hay dùng</dt><dd><code>output(msg)</code> gửi; <code>setTimer(t, ms)</code> / <code>setTimerCyclic</code> / <code>cancelTimer</code>; <code>write()</code> in ra Write window; <code>timeNow()</code> (đơn vị 10 µs); <code>this</code> là message vừa nhận; <code>$Signal</code> đọc/ghi giá trị signal; <code>@sysvar</code> biến hệ thống.</dd>
+          <dt>Test module</dt><dd>Trong test module có <code>testcase</code>, <code>testWaitForMessage(id, timeout)</code>, <code>testWaitForSignalMatch</code>, <code>testStepPass/Fail</code>, và <code>MainTest()</code> gọi các testcase. Kết quả xuất XML/HTML report, đưa vào CI được.</dd>
+        </dl>
+<pre><code class="language-c">/*@!Encoding:1252*/
+variables
+{
+  message TCU_Status  msgStatus;          // định nghĩa trong DBC
+  msTimer tCycle;
+  msTimer tTimeout;
+  int     aliveCnt = 0;
+}
+
+on start
+{
+  setTimer(tCycle, 100);                  // gửi TCU_Status mỗi 100 ms (mô phỏng TCU khi ECU thật chưa có)
+  setTimer(tTimeout, 500);
+}
+
+on timer tCycle
+{
+  msgStatus.AliveCounter = aliveCnt;
+  aliveCnt = (aliveCnt + 1) % 16;
+  output(msgStatus);
+  setTimer(tCycle, 100);                  // timer một lần → đặt lại
+}
+
+on message Gateway_Ignition               // ECU khác gửi trạng thái khoá điện
+{
+  cancelTimer(tTimeout);
+  setTimer(tTimeout, 500);                // timeout monitoring
+  if (this.IgnitionState == 0)
+    write("Ignition OFF at %.3f s", timeNow() / 100000.0);
+}
+
+on timer tTimeout
+{
+  write("ERROR: Gateway_Ignition timeout");
+}</code></pre>
+<pre><code class="language-c">// Test module: kiểm tra TCU trả lời UDS ReadDataByIdentifier F189 (SW version)
+testcase TC_ReadSwVersion()
+{
+  message DiagReq_TCU req;
+  req.dlc = 8;
+  req.byte(0) = 0x03; req.byte(1) = 0x22; req.byte(2) = 0xF1; req.byte(3) = 0x89;
+  output(req);
+  if (testWaitForMessage(DiagResp_TCU, 100) == 1)
+    testStepPass("Resp", "Positive response received");
+  else
+    testStepFail("Resp", "No response within 100 ms");
+}
+
+void MainTest()
+{
+  TC_ReadSwVersion();
+}</code></pre>
+        <div class="callout callout--note"><div class="callout__icon">📝</div><div class="callout__body"><p class="mb-0">Thực tế dự án dùng Diagnostic API của CANoe (<code>diagRequest</code>, <code>diagSendRequest</code>) với CDD/ODX thay vì ghép byte như trên, và thường viết test trong vTESTstudio. Ví dụ ghép byte để bạn nhớ cơ chế (single frame ISO-TP: byte 0 = độ dài).</p></div></div>
+        <h3>➕ 2.1 CANoe trong CI</h3>
+        <dl class="kv">
+          <dt>Tự động hoá</dt><dd>CANoe có COM interface (Windows) và API Python (thư viện của Vector hoặc gói cộng đồng như <code>py_canoe</code>) để mở config, start measurement, chạy test module, lấy kết quả. Có bản <strong>CANoe Server Edition</strong> / chế độ không GUI cho máy CI.</dd>
+          <dt>License</dt><dd>License CANoe (dongle hoặc network) là tài nguyên khan hiếm giống bench: phải lock trong CI (<code>lock()</code> Jenkins, <code>resource_group</code> GitLab, semaphore Zuul).</dd>
+          <dt>Kết quả</dt><dd>Test report XML của CANoe chuyển sang JUnit để Jenkins/Zuul hiển thị; log BLF lưu làm artifact để debug sau.</dd>
+        </dl>
+
+        <!-- ================= 3 BUS ================= -->
+        <h2>✅ 3. Bus: CAN, CAN FD, LIN, Automotive Ethernet</h2>
+        <div class="figure">
+          <svg viewBox="0 0 720 270" role="img" aria-label="Mạng trong xe quanh TCU" xmlns="http://www.w3.org/2000/svg">
+            <rect x="290" y="20" width="140" height="70" rx="10" fill="var(--brand-900)"/><text x="360" y="48" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">Central Gateway</text><text x="360" y="66" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">route · firewall</text>
+            <rect x="20" y="170" width="140" height="70" rx="10" fill="var(--core)"/><text x="90" y="198" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">TCU</text><text x="90" y="216" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">modem · GNSS · eCall</text>
+            <rect x="200" y="170" width="140" height="70" rx="10" fill="var(--brand-600)"/><text x="270" y="198" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">Body / BCM</text><text x="270" y="216" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">cửa · đèn</text>
+            <rect x="380" y="170" width="140" height="70" rx="10" fill="var(--brand-800)"/><text x="450" y="198" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">Infotainment</text><text x="450" y="216" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">màn hình · app</text>
+            <rect x="560" y="170" width="140" height="70" rx="10" fill="var(--defend)"/><text x="630" y="198" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">Airbag ECU</text><text x="630" y="216" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">crash → eCall</text>
+            <path d="M320,90 L90,170" stroke="var(--brand-400)" stroke-width="3"/><text x="160" y="128" class="dgm-label" font-size="9">CAN FD</text>
+            <path d="M345,90 L270,170" stroke="var(--brand-400)" stroke-width="2"/><text x="258" y="150" class="dgm-label" font-size="9">CAN</text>
+            <path d="M375,90 L450,170" stroke="var(--ok)" stroke-width="4"/><text x="420" y="128" class="dgm-label" font-size="9">100/1000BASE-T1</text>
+            <path d="M400,90 L630,170" stroke="var(--brand-400)" stroke-width="3"/><text x="540" y="128" class="dgm-label" font-size="9">CAN FD</text>
+            <path d="M160,215 L200,215" stroke="var(--must)" stroke-width="2" stroke-dasharray="4 3"/><text x="165" y="258" class="dgm-sub" font-size="8.5">LIN (nút SOS, đèn báo)</text>
+          </svg>
+          <div class="figure__cap"><b>Minh hoạ.</b> TCU thường nối gateway qua CAN FD hoặc Ethernet; tín hiệu crash từ airbag (qua bus hoặc dây cứng) kích eCall; nút SOS/đèn trên trần có thể qua LIN hoặc dây trực tiếp. Kiến trúc thật tuỳ OEM.</div>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr><th></th><th>CAN (Classical)</th><th>CAN FD</th><th>LIN</th><th>Automotive Ethernet</th></tr></thead>
+          <tbody>
+            <tr><td>Tốc độ</td><td>tới 1 Mbit/s (thường 500 k)</td><td>arbitration như CAN; data phase 2–5 (tới 8) Mbit/s</td><td>tới 20 kbit/s</td><td>100BASE-T1, 1000BASE-T1; 10BASE-T1S (multidrop)</td></tr>
+            <tr><td>Payload</td><td>0–8 byte</td><td>tới 64 byte (DLC 9–15 → 12…64)</td><td>0–8 byte</td><td>tới ~1500 byte</td></tr>
+            <tr><td>Truy cập</td><td>CSMA/CR, arbitration theo ID</td><td>như CAN, bit BRS chuyển tốc độ, ESI báo lỗi</td><td>master/slave, master gửi header theo schedule table</td><td>switch, full-duplex một cặp dây</td></tr>
+            <tr><td>Mô tả</td><td>DBC / ARXML</td><td>DBC / ARXML</td><td>LDF</td><td>ARXML; SOME/IP, DoIP</td></tr>
+            <tr><td>Hay hỏi</td><td>bit stuffing, error counter, bus-off</td><td>BRS, CRC dài hơn, sample point hai pha, không có remote frame</td><td>break/sync/PID, frame không điều kiện / event-triggered / sporadic, diagnostics qua master</td><td>SOME/IP (service discovery), DoIP (UDS qua IP, flash nhanh), VLAN, TSN</td></tr>
+          </tbody>
+        </table></div>
+
+        <!-- ================= 4 XCP ================= -->
+        <h2>➕ 4. XCP &amp; A2L (nền của CANape)</h2>
+        <dl class="kv">
+          <dt>XCP</dt><dd>Universal Measurement and Calibration Protocol (ASAM MCD-1 XCP), kế thừa CCP. Chạy trên CAN, CAN FD, Ethernet (UDP/TCP), FlexRay, SPI/SCI. Master (CANape) – slave (ECU có XCP driver).</dd>
+          <dt>Polling vs DAQ</dt><dd>Polling: master hỏi từng biến (chậm). <strong>DAQ</strong>: master cấu hình danh sách biến gắn với sự kiện trong ECU (ví dụ task 10 ms); ECU tự gửi đồng bộ, có timestamp. STIM là chiều ngược lại (bơm dữ liệu vào ECU).</dd>
+          <dt>Calibration</dt><dd>Ghi tham số vào RAM lúc chạy; cơ chế page switching (working page RAM / reference page flash) để thử rồi mới ghi flash.</dd>
+          <dt>A2L</dt><dd>File ASAM MCD-2 MC mô tả biến đo (MEASUREMENT) và tham số (CHARACTERISTIC): địa chỉ, kiểu, công thức đổi đơn vị (COMPU_METHOD), giới hạn. Địa chỉ phải khớp đúng ELF; <strong>CI nên cập nhật A2L từ ELF/map mỗi build</strong>, nếu không CANape đọc sai địa chỉ.</dd>
+          <dt>Bảo mật</dt><dd>XCP có seed &amp; key; trên xe sản xuất thường tắt hoặc khoá. Với TCU (cửa ngõ ra internet) đây là điểm nhạy cảm cybersecurity.</dd>
+        </dl>
+
+        <!-- ================= 5 DEBUGGERS ================= -->
+        <h2>✅ 5. Lauterbach TRACE32 &amp; iSystem</h2>
+        <dl class="kv">
+          <dt>TRACE32 (CV có)</dt><dd>Phần cứng PowerDebug + đầu JTAG/Nexus/Aurora cho từng kiến trúc (RH850, TriCore, Arm). Chức năng: flash, breakpoint (phần mềm/phần cứng), đọc/ghi register và memory, trace (on-chip hoặc off-chip), đo thời gian, phân tích OS-aware (hiển thị task của OSEK/AUTOSAR OS qua ORTI/ARTI).</dd>
+          <dt>PRACTICE (.cmm)</dt><dd>Ngôn ngữ script của TRACE32: tự động hoá chuỗi thao tác (reset, flash, chạy tới điểm, đọc biến, so sánh, ghi log). Là cách đưa debugger vào CI.</dd>
+          <dt>Remote API</dt><dd>TRACE32 mở cổng Remote API (cấu hình trong <code>config.t32</code>, ví dụ <code>RCL=NETASSIST PORT=20000</code>); điều khiển từ Python qua gói <code>lauterbach-trace32-rcl</code> (pyrcl) hoặc C API. CI job: khởi động T32 headless, flash, chạy test, đọc kết quả từ memory.</dd>
+          <dt>iSystem (nay là TASKING)</dt><dd>iSystem được TASKING mua lại (2022); debugger phần cứng BlueBox, IDE <strong>winIDEA</strong>, API <strong>isystem.connect</strong> (Python/C++) và testIDEA cho test trên target. Khái niệm tương tự TRACE32: flash, breakpoint, trace, profiling, script hoá.</dd>
+        </dl>
+<pre><code class="language-text">; flash_and_smoke.cmm  — PRACTICE script (minh hoạ)
+RESet
+SYStem.CPU R7F701Z03              ; chọn CPU (tên ví dụ)
+SYStem.Up
+FLASH.ReProgram ALL
+Data.LOAD.Elf "build/tcu_app.elf"
+FLASH.ReProgram OFF
+Go main
+WAIT !STATE.RUN() 2.s
+Go
+WAIT 3.s
+Break
+&amp;cnt=Var.VALUE(Os_Cyclic10msCounter)
+IF &amp;cnt&lt;250.
+(
+  PRINT %ERROR "Smoke FAIL: cyclic counter=" &amp;cnt
+  ENDDO FALSE()
+)
+PRINT "Smoke PASS: cyclic counter=" &amp;cnt
+ENDDO TRUE()</code></pre>
+<pre><code class="language-python"># Điều khiển TRACE32 từ Python trong CI (gói lauterbach-trace32-rcl)
+import lauterbach.trace32.rcl as t32
+
+dbg = t32.connect(node="localhost", port=20000, protocol="TCP")
+dbg.cmd('CD.DO "flash_and_smoke.cmm"')                  # chạy script PRACTICE
+ok = dbg.fnc("PRACTICE.CoMmanD.AVAILable(ENDDO)")        # tuỳ cách script trả kết quả
+counter = dbg.variable.read("Os_Cyclic10msCounter").value
+print(f"cyclic counter = {counter}")
+assert counter &gt;= 250, "smoke test failed"</code></pre>
+        <div class="callout callout--warn"><div class="callout__icon">⚠️</div><div class="callout__body"><p class="mb-0">Tên lệnh/API trong hai ví dụ là để minh hoạ cơ chế; tra tài liệu phiên bản TRACE32 của dự án trước khi dùng. Khi phỏng vấn, nói cơ chế: <em>"PRACTICE script for the sequence, Remote API from Python to drive it from Jenkins, results read from memory or returned by the script, debugger locked as a resource."</em></p></div></div>
+
+        <!-- ================= 6 EVO ================= -->
+        <h2>6. Trước (~2020) → Nay</h2>
+        <div class="evo">
+          <div class="evo__head">🔁 <span>Tool trên bàn kỹ sư → tool trong pipeline</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>CANoe và TRACE32 là tool tương tác trên laptop kỹ sư; test CAPL chạy tay; CAN 500 k là chính, CAN FD mới bắt đầu. Debug nghĩa là ngồi cạnh bench.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p>CANoe/TRACE32/winIDEA điều khiển qua API trong CI, bench chia sẻ và lock tự động; CANoe4SW và vECU cho test trước khi có phần cứng. CAN FD phổ biến, CAN XL (tới ~20 Mbit/s, payload 2048 byte) và 10BASE-T1S đang xuất hiện; Ethernet + SOME/IP/DoIP cho zonal architecture.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> Vai trò này cần người biết dùng tool và biết tự động hoá tool; câu hỏi "làm sao đưa TRACE32/CANoe vào Jenkins" rất có thể xuất hiện.</div>
+        </div>
+
+        <!-- ================= 7 QA ================= -->
+        <h2>7. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">CANalyzer, CANoe, CANape khác nhau thế nào? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">CANalyzer phân tích và quan sát bus. CANoe mô phỏng rest-bus, chạy test tự động và diagnostics. CANape đo lường và hiệu chuẩn biến trong ECU qua XCP/CCP với file A2L.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">CAN FD khác CAN cổ điển ở đâu? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Payload tới 64 byte (DLC 9–15 ánh xạ 12, 16, 20, 24, 32, 48, 64); bit BRS cho phép data phase chạy tốc độ cao hơn (thường 2–5 Mbit/s) với sample point riêng; ESI báo node đang error passive; CRC dài hơn (17/21 bit) và stuff bit count; không có remote frame. Arbitration giữ nguyên nên cùng tồn tại được, nhưng controller CAN cũ sẽ báo lỗi khi thấy frame FD.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Viết CAPL gửi một message chu kỳ 100 ms và báo lỗi nếu message phản hồi không tới trong 500 ms. <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Hai <code>msTimer</code>: timer chu kỳ gửi <code>output(msg)</code> rồi <code>setTimer</code> lại (hoặc <code>setTimerCyclic</code>); timer timeout được đặt lại mỗi khi <code>on message Resp</code> tới; nếu <code>on timer tTimeout</code> chạy thì <code>write</code> lỗi hoặc <code>testStepFail</code>. Xem ví dụ ở mục 2.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Làm sao đưa TRACE32 vào pipeline Jenkins cho smoke test trên bench? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Agent gắn với bench có TRACE32 cài sẵn và cấu hình Remote API; job <code>lock</code> bench; khởi động T32 không GUI; Python (pyrcl) chạy PRACTICE script: reset, flash ELF, chạy, đọc biến kiểm tra (counter task, trạng thái init, DET error); kết quả thành JUnit XML; luôn thu log và đóng T32 trong khối <code>post</code>; phân biệt lỗi hạ tầng (không kết nối được debugger) với lỗi sản phẩm để không đổ lỗi sai cho change. Tôi đã dùng TRACE32 để đọc register/memory, breakpoint và trace khi điều tra lỗi integration; phần script hoá qua Remote API là bước tiếp theo tự nhiên.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">CANape đọc sai giá trị biến sau khi build mới. Nghi gì? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">A2L không được cập nhật theo ELF mới nên địa chỉ biến đã dịch chuyển. Sửa: bước CI cập nhật địa chỉ A2L từ ELF/map mỗi build và lưu A2L cùng artifact với đúng version. Kiểm tra thêm COMPU_METHOD và kiểu dữ liệu nếu biến đổi kiểu.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Kinh nghiệm của bạn với CANoe và debugger? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Bám CV: CANoe và ECU-Test là tool trong kinh nghiệm test của tôi; Lauterbach TRACE32 để điều tra mức thấp (register, memory, breakpoint, trace/log) trên RH850 D3/D4/D5 khi tích hợp BSW; UDE Debugger để chẩn đoán và sửa lỗi timing SENT trên target ST và Infineon. CANape, iSystem/winIDEA và viết CAPL nâng cao: nói trung thực là mức hiểu khái niệm hoặc đang ôn, và nối với kinh nghiệm tương đương (XCP ≈ đọc biến qua debugger; winIDEA ≈ TRACE32).</p></div></div>
+        </div>
+
+        <!-- ================= 8 CHEAT ================= -->
+        <h2>8. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>Vector</h4><ul>
+            <li>CANalyzer quan sát</li><li>CANoe mô phỏng + test + diag</li><li>CANape XCP + A2L</li><li>license = tài nguyên cần lock</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>CAPL</h4><ul>
+            <li>on start · on message · on timer · on key</li><li>output · setTimer · cancelTimer · write</li><li>this · $Signal · @sysvar · timeNow (10 µs)</li><li>testcase · testWaitForMessage · MainTest</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Bus</h4><ul>
+            <li>CAN 8 B · CAN FD 64 B + BRS</li><li>LIN master/slave · LDF · schedule</li><li>100/1000BASE-T1 · SOME/IP · DoIP</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>XCP</h4><ul>
+            <li>polling vs DAQ · STIM</li><li>A2L: MEASUREMENT · CHARACTERISTIC</li><li>A2L phải khớp ELF mỗi build</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Debugger</h4><ul>
+            <li>TRACE32: .cmm PRACTICE · Remote API · pyrcl</li><li>OS-aware qua ORTI/ARTI</li><li>iSystem (TASKING): winIDEA · isystem.connect</li>
+          </ul></div>
+        </div>
+
+        <h2>9. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li>Vector — <a href="https://www.vector.com/int/en/products/products-a-z/software/canoe/" target="_blank" rel="noopener">CANoe</a>, <a href="https://www.vector.com/int/en/products/products-a-z/software/canape/" target="_blank" rel="noopener">CANape</a>; CAPL Function Reference (trong help CANoe).</li>
+          <li>Lauterbach — <a href="https://www.lauterbach.com/" target="_blank" rel="noopener">TRACE32</a> (PRACTICE reference, Remote API, <code>lauterbach-trace32-rcl</code> trên PyPI).</li>
+          <li>TASKING — <a href="https://www.tasking.com/" target="_blank" rel="noopener">winIDEA / BlueBox</a> (trước là iSystem).</li>
+          <li>ASAM — MCD-1 XCP, MCD-2 MC (A2L). ISO 11898-1 (CAN/CAN FD), ISO 17987 (LIN), IEEE 802.3bw/bp (100/1000BASE-T1).</li>
+          <li>Bài nội bộ: <a href="../E-protocols.html">E — Protocols</a>, <a href="../B3-communication.html">B3 — Communication</a>.</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi viết được CAPL gửi chu kỳ + timeout không cần xem mẫu và giải thích được cách đưa TRACE32 vào CI.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">Chủ đề LX8 · Vector Tools · Debuggers — Interview Prep</footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../../assets/js/app.js?v=7"></script>
+</body>
+</html>

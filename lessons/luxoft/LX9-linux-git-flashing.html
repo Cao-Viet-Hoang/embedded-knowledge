@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LX9 · Linux · Git · Flashing &amp; OTA — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/css/style.css?v=7" />
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../../assets/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../../assets/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="../../assets/favicon.ico" />
+</head>
+<body data-page="LX9" data-root="../../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">LX9</span>
+            <span class="badge badge--core">Core</span>
+            <span class="chip">Luxoft — TCU · CI &amp; Integration</span>
+          </div>
+          <h1>Linux troubleshooting · Git cho Integration Lead · Bootloader, UDS flashing &amp; OTA</h1>
+          <p class="lead">Ba mảng kiến thức còn mỏng sau LX0–LX8. CV ghi rõ <em>"Linux process/service handling, networking, remote debugging, and log analysis"</em> trên Raspberry Pi 4, R-Car, QNX và Embedded Linux, cùng với Git và UDS. Vai trò CI/integration lead thì hằng ngày làm việc với branch, cherry-pick, bisect. Còn TCU chính là cửa ngõ OTA của xe, nên trình tự flash qua UDS rất dễ bị hỏi.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> ✅ Linux/QNX, Git hằng ngày: đã làm. 🎯 bisect, release branch, trình tự flash. ➕ OTA, SocketCAN</span>
+            <span><b>Bài gốc:</b> <a href="../B4-diagnostics.html">B4</a>, <a href="../M-host-runtime.html">M</a>, <a href="../J-cicd-cloud.html">J</a></span>
+          </div>
+        </div>
+
+        <div class="callout callout--key">
+          <div class="callout__icon">🧭</div>
+          <div class="callout__body">
+            <div class="callout__title">Chế độ "ôn cái đã biết trước"</div>
+            <p class="mb-0">Ôn chắc ✅ mục 1, 1.1, 1.2 (Linux/QNX, đúng những gì bạn làm ở ARA) và mục 2 (Git hằng ngày). 🎯 Mục 2.1 (bisect, release branch) và mục 3, 3.1 (bootloader, trình tự flash UDS): CV có UDS và Git nhưng chưa ghi phần này, trong khi JD CI lead + TCU gần như chắc hỏi. ➕ Mục 1.3 (SocketCAN) và 3.2 (OTA, UN R156) là optional.</p>
+            <p class="mb-0" style="margin-top:6px"><strong>Ký hiệu trên tiêu đề mục:</strong> ✅ đã biết theo CV, ôn cho thật chắc · 🎯 chưa biết nhưng JD gần như chắc hỏi, học mức tối thiểu · ➕ mới, optional.</p>
+          </div>
+        </div>
+
+        <!-- ================= 1 LINUX ================= -->
+        <h2>✅ 1. Linux troubleshooting trên target</h2>
+        <p>Câu hỏi hay gặp: <em>"Service trên target không chạy / chết sau vài giây. Bạn làm gì?"</em>. Người phỏng vấn không cần bạn thuộc hết lệnh. Họ muốn thấy bạn <strong>đi có thứ tự</strong>, từ ngoài vào trong, và thu hẹp vùng nghi ngờ bằng bằng chứng.</p>
+        <div class="figure">
+          <svg viewBox="0 0 720 250" role="img" aria-label="Thứ tự khoanh vùng lỗi trên target Linux/QNX" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="lx9a" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="20" y="20" width="124" height="96" rx="9" fill="var(--brand-900)"/>
+            <text x="82" y="44" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">1. Còn chạy?</text>
+            <text x="82" y="66" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">systemctl status</text>
+            <text x="82" y="80" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">ps / pidin</text>
+            <text x="82" y="98" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">exit code, restart?</text>
+            <rect x="162" y="20" width="124" height="96" rx="9" fill="var(--brand-800)"/>
+            <text x="224" y="44" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">2. Log nói gì?</text>
+            <text x="224" y="66" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">journalctl -u svc -b</text>
+            <text x="224" y="80" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">slog2info (QNX)</text>
+            <text x="224" y="98" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">log của app</text>
+            <rect x="304" y="20" width="124" height="96" rx="9" fill="var(--brand-600)"/>
+            <text x="366" y="44" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">3. Kernel/driver?</text>
+            <text x="366" y="66" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">dmesg -T</text>
+            <text x="366" y="80" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">journalctl -k</text>
+            <text x="366" y="98" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">OOM, segfault, probe</text>
+            <rect x="446" y="20" width="124" height="96" rx="9" fill="var(--core)"/>
+            <text x="508" y="44" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">4. Tài nguyên?</text>
+            <text x="508" y="66" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">top · free -h · df -h</text>
+            <text x="508" y="80" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">quyền file, ulimit</text>
+            <text x="508" y="98" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">hogs (QNX)</text>
+            <rect x="588" y="20" width="112" height="96" rx="9" fill="var(--defend)"/>
+            <text x="644" y="44" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">5. Mạng?</text>
+            <text x="644" y="66" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">ip a · ip route</text>
+            <text x="644" y="80" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">ss -tulpn · ping</text>
+            <text x="644" y="98" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">tcpdump</text>
+            <path d="M144,68 L158,68" class="dgm-arrow" stroke-width="1.4" marker-end="url(#lx9a)"/>
+            <path d="M286,68 L300,68" class="dgm-arrow" stroke-width="1.4" marker-end="url(#lx9a)"/>
+            <path d="M428,68 L442,68" class="dgm-arrow" stroke-width="1.4" marker-end="url(#lx9a)"/>
+            <path d="M570,68 L584,68" class="dgm-arrow" stroke-width="1.4" marker-end="url(#lx9a)"/>
+            <path d="M360,120 L360,146" class="dgm-arrow" stroke-width="1.4" marker-end="url(#lx9a)"/>
+            <rect x="20" y="152" width="680" height="80" rx="10" fill="var(--ok)"/>
+            <text x="360" y="178" text-anchor="middle" class="dgm-inv" font-size="11.5" font-weight="700">6. Tái hiện có kiểm soát + debug sâu</text>
+            <text x="360" y="198" text-anchor="middle" class="dgm-inv-sub" font-size="9">chạy tay với cùng env/user · strace · gdbserver / pdebug · core dump</text>
+            <text x="360" y="216" text-anchor="middle" class="dgm-inv-sub" font-size="9">→ kết luận thuộc: ứng dụng · cấu hình/deploy · OS/BSP · phần cứng · hạ tầng bench</text>
+          </svg>
+          <div class="figure__cap"><b>Đi từ ngoài vào trong.</b> Bốn bước đầu chỉ tốn vài phút nhưng loại được phần lớn nguyên nhân (thiếu file cấu hình, sai quyền, port bị chiếm, hết bộ nhớ). Chỉ khi đó mới cần gdb.</div>
+        </div>
+        <dl class="kv">
+          <dt>Trình tự boot</dt><dd>Boot ROM → bootloader (U-Boot trên R-Car/RPi, hoặc firmware của RPi) → kernel + device tree → init (thường là <strong>systemd</strong>, PID 1) → các service theo dependency. Service không lên có thể do chính nó, hoặc do một service/mount/network mà nó phụ thuộc chưa sẵn sàng.</dd>
+          <dt>systemd</dt><dd>Quản lý service qua <em>unit file</em>. <code>systemctl status/start/stop/restart/enable</code>, <code>systemctl --failed</code> liệt kê unit lỗi, <code>systemctl list-dependencies</code> xem phụ thuộc, <code>systemd-analyze blame</code> xem service nào làm boot chậm.</dd>
+          <dt>journald</dt><dd>Log tập trung. <code>journalctl -u app.service -b</code> (log của service trong lần boot này), <code>-f</code> theo dõi trực tiếp, <code>-p err</code> lọc theo mức, <code>-b -1</code> lần boot trước (cần journal persistent), <code>--since "10 min ago"</code>.</dd>
+          <dt>Kernel log</dt><dd><code>dmesg -T</code> hoặc <code>journalctl -k</code>: driver probe fail, "Out of memory: Killed process", segfault kèm địa chỉ, lỗi CAN/Ethernet link. Service bị kill không để lại log của chính nó thì thường phải nhìn ở đây.</dd>
+          <dt>Process &amp; signal</dt><dd><code>ps aux</code>, <code>top</code>/<code>htop</code>, <code>/proc/&lt;pid&gt;/status</code>, <code>lsof -p</code> (file/socket đang mở). SIGTERM (15) xin dừng lịch sự, SIGKILL (9) không bắt được, SIGSEGV (11) truy cập bộ nhớ sai, SIGABRT (6) do <code>abort()</code>/assert. Exit code 128+N nghĩa là chết bởi signal N (137 = SIGKILL, thường do OOM).</dd>
+          <dt>Mạng</dt><dd><code>ip addr</code>, <code>ip route</code>, <code>ss -tulpn</code> (port nào đang listen, bởi process nào), <code>ping</code>, <code>tcpdump -i eth0 port 30490</code> (bắt gói, ví dụ SOME/IP-SD). Mở file pcap bằng Wireshark trên máy host.</dd>
+          <dt>Remote debug</dt><dd><code>ssh</code>/<code>scp</code> vào target; trên target <code>gdbserver :2345 ./app</code>, trên host <code>gdb-multiarch app</code> rồi <code>target remote &lt;ip&gt;:2345</code> với binary có symbol. <code>strace -f -p &lt;pid&gt;</code> xem system call (file không mở được, connect bị từ chối).</dd>
+          <dt>Core dump</dt><dd>Bật bằng <code>ulimit -c unlimited</code> hoặc <code>systemd-coredump</code> (<code>coredumpctl list</code>, <code>coredumpctl gdb</code>). Mở core bằng gdb với đúng binary và symbol để xem backtrace tại thời điểm crash.</dd>
+        </dl>
+<pre><code class="language-bash"># Service "app" chết sau vài giây. Đi theo thứ tự:
+systemctl status app.service          # Active: failed? exit code? số lần restart?
+journalctl -u app.service -b --no-pager | tail -50
+dmesg -T | tail -30                   # OOM killer? segfault at ...?
+free -h; df -h                        # hết RAM / đầy phân vùng log
+ss -tulpn | grep 8080                 # port đã bị process khác chiếm?
+# Tái hiện bằng tay với đúng user và biến môi trường của unit
+systemctl cat app.service             # xem ExecStart, User, Environment
+sudo -u appuser env $(cat /etc/app.env | xargs) /usr/bin/app --config /etc/app.conf
+strace -f -e trace=openat,connect /usr/bin/app 2&gt;&amp;1 | grep -E "ENOENT|EACCES|ECONNREFUSED"</code></pre>
+
+        <h3>✅ 1.1 Unit file systemd: đọc được và sửa được</h3>
+<pre><code class="language-ini"># /etc/systemd/system/app.service
+[Unit]
+Description=Telematics app
+After=network-online.target someip-daemon.service   # chỉ là THỨ TỰ
+Wants=network-online.target                          # kéo theo, không bắt buộc
+Requires=someip-daemon.service                       # phụ thuộc cứng: cái kia fail thì cái này dừng
+
+[Service]
+Type=simple
+User=appuser
+EnvironmentFile=/etc/app.env
+ExecStart=/usr/bin/app --config /etc/app.conf
+Restart=on-failure
+RestartSec=2
+WatchdogSec=5          # app phải gọi sd_notify("WATCHDOG=1") định kỳ
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+        <div class="callout callout--warn"><div class="callout__icon">⚠️</div><div class="callout__body"><p class="mb-0"><strong>Bẫy hay hỏi:</strong> <code>After=</code> chỉ quy định thứ tự, không kéo service kia lên. <code>Requires=</code>/<code>Wants=</code> mới kéo lên. Service chạy tay thì được nhưng chạy qua systemd thì fail: gần như luôn do khác <em>user</em>, <em>biến môi trường</em>, <em>thư mục làm việc</em> hoặc chạy <em>quá sớm</em> khi mạng/phụ thuộc chưa sẵn sàng. Sau khi sửa unit file phải chạy <code>systemctl daemon-reload</code>.</p></div></div>
+
+        <h3>✅ 1.2 QNX so với Linux</h3>
+        <p>CV có QNX (ARA trên QNX). Câu hỏi thường ở mức "khác nhau về kiến trúc" và "bạn debug trên QNX bằng gì".</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Khía cạnh</th><th>Linux</th><th>QNX Neutrino</th></tr></thead>
+          <tbody>
+            <tr><td>Kiến trúc</td><td>Kernel nguyên khối (monolithic); driver chạy trong kernel space.</td><td><strong>Microkernel</strong>: kernel chỉ lo scheduling, IPC, interrupt, timer. Driver, file system, network stack là process riêng (resource manager) ở user space. Driver chết thì có thể khởi động lại mà không sập hệ thống.</td></tr>
+            <tr><td>IPC</td><td>Socket, pipe, shared memory, D-Bus…</td><td>Message passing đồng bộ (<code>MsgSend</code>/<code>MsgReceive</code>/<code>MsgReply</code>) là nền; POSIX API xây trên đó.</td></tr>
+            <tr><td>Real-time</td><td>Không hard real-time mặc định (PREEMPT_RT cải thiện nhiều).</td><td>Hard real-time, lập lịch ưu tiên có preemption, thời gian đáp ứng xác định; có chứng nhận an toàn (bản Safety) cho ISO 26262.</td></tr>
+            <tr><td>Xem process</td><td><code>ps</code>, <code>top</code></td><td><code>pidin</code> (process/thread, trạng thái chặn), <code>hogs</code> (CPU theo process)</td></tr>
+            <tr><td>Log</td><td><code>journalctl</code>, <code>dmesg</code></td><td><code>slog2info</code> (slogger2), bản cũ dùng <code>sloginfo</code></td></tr>
+            <tr><td>Mạng</td><td><code>ip</code>, <code>ss</code></td><td><code>ifconfig</code>, <code>netstat</code></td></tr>
+            <tr><td>Remote debug</td><td>gdbserver + gdb</td><td><code>pdebug</code> + gdb, hoặc <code>qconn</code> + Momentics IDE</td></tr>
+            <tr><td>Khởi động service</td><td>systemd</td><td>Script khởi động trong image (build file), hoặc SLM (System Launch and Monitor)</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout callout--interview"><div class="callout__icon">🎤</div><div class="callout__body"><p class="mb-0"><strong>Nối về CV:</strong> "In ARA system testing I ran the stack on Raspberry Pi 4, R-Car, QNX and Embedded Linux. When a test failed at system level I checked the service/process state, the logs and the network (for example whether the SOME/IP endpoint was actually listening), then reproduced it and used remote debugging to decide whether it was the stack, the configuration, the platform or the test bench." Chi tiết cụ thể (lỗi nào, lệnh nào) bạn điền bằng trí nhớ thật ở <a href="LX10-project-deep-dive.html">LX10</a>.</p></div></div>
+
+        <h3>➕ 1.3 SocketCAN: CAN trên Linux</h3>
+        <p>TCU chạy Linux thường nói CAN qua SocketCAN. Không có trong CV; chỉ cần biết từ vựng.</p>
+<pre><code class="language-bash">ip link set can0 type can bitrate 500000     # CAN FD: thêm dbitrate 2000000 fd on
+ip link set can0 up
+candump can0                                  # xem mọi frame (can-utils)
+cansend can0 123#DEADBEEF                     # gửi frame ID 0x123
+ip -details -statistics link show can0        # bus-off? error counter?</code></pre>
+
+        <!-- ================= 2 GIT ================= -->
+        <h2>✅ 2. Git hằng ngày của người tích hợp</h2>
+        <p>CV có Git và công cụ <strong>Pullogic</strong> (review pull request, tích hợp Jira, được giải thưởng nội bộ). Người phỏng vấn CI lead sẽ hỏi nhanh: merge hay rebase, đưa bản sửa sang release branch thế nào, xử lý conflict ra sao.</p>
+        <div class="figure">
+          <svg viewBox="0 0 720 220" role="img" aria-label="Trunk, release branch, tag và cherry-pick" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="lx9b" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <text x="30" y="64" class="dgm-label" font-size="11">main</text>
+            <path d="M80,60 L690,60" class="dgm-stroke" stroke-width="3"/>
+            <circle cx="120" cy="60" r="9" fill="var(--brand-600)"/>
+            <circle cx="200" cy="60" r="9" fill="var(--brand-600)"/>
+            <circle cx="300" cy="60" r="9" fill="var(--brand-600)"/>
+            <circle cx="400" cy="60" r="9" fill="var(--must)"/>
+            <circle cx="500" cy="60" r="9" fill="var(--brand-600)"/>
+            <circle cx="600" cy="60" r="9" fill="var(--brand-600)"/>
+            <text x="400" y="36" text-anchor="middle" class="dgm-text" font-size="9.5">fix bug #412 (merge vào main trước)</text>
+            <text x="30" y="164" class="dgm-label" font-size="11">release/2.3</text>
+            <path d="M200,69 C200,110 230,160 260,160" class="dgm-stroke" stroke-width="3" fill="none"/>
+            <path d="M260,160 L690,160" class="dgm-stroke" stroke-width="3"/>
+            <circle cx="300" cy="160" r="9" fill="var(--core)"/>
+            <circle cx="440" cy="160" r="9" fill="var(--must)"/>
+            <circle cx="580" cy="160" r="9" fill="var(--core)"/>
+            <text x="300" y="192" text-anchor="middle" class="dgm-mono" font-size="9">tag R2.3.0</text>
+            <text x="440" y="192" text-anchor="middle" class="dgm-mono" font-size="9">cherry-pick -x</text>
+            <text x="580" y="192" text-anchor="middle" class="dgm-mono" font-size="9">tag R2.3.1</text>
+            <path d="M404,69 L434,148" class="dgm-arrow" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#lx9b)"/>
+            <text x="560" y="110" text-anchor="middle" class="dgm-sub" font-size="9">release branch chỉ nhận fix đã review,</text>
+            <text x="560" y="124" text-anchor="middle" class="dgm-sub" font-size="9">không nhận feature mới</text>
+          </svg>
+          <div class="figure__cap"><b>Fix vào main trước, rồi cherry-pick xuống release.</b> Làm ngược lại (sửa trên release rồi quên đưa lên main) là nguồn gốc kinh điển của lỗi "đã sửa rồi lại xuất hiện" ở bản sau.</div>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Thao tác</th><th>Làm gì</th><th>Dùng khi</th><th>Không dùng khi</th></tr></thead>
+          <tbody>
+            <tr><td><code>merge</code> (<code>--no-ff</code>)</td><td>Tạo merge commit, giữ nguyên lịch sử 2 nhánh.</td><td>Ghép feature branch vào main khi muốn thấy rõ ranh giới feature.</td><td>Muốn lịch sử thẳng, dễ bisect.</td></tr>
+            <tr><td><code>rebase</code></td><td>Viết lại commit của bạn lên đỉnh nhánh đích; lịch sử thẳng.</td><td>Cập nhật nhánh <em>của riêng bạn</em> trước khi đưa review (Gerrit dùng kiểu này).</td><td><strong>Nhánh đã chia sẻ</strong>: rebase đổi hash, người khác bị lệch lịch sử.</td></tr>
+            <tr><td>squash</td><td>Gộp nhiều commit thành một.</td><td>Dọn commit "wip, fix typo" trước khi merge.</td><td>Khi từng commit có ý nghĩa riêng cần truy vết.</td></tr>
+            <tr><td><code>cherry-pick -x</code></td><td>Chép một commit sang nhánh khác; <code>-x</code> ghi "(cherry picked from commit …)".</td><td>Đưa bug fix từ main xuống release branch.</td><td>Thay cho merge cả loạt commit phụ thuộc nhau (dễ sót).</td></tr>
+            <tr><td><code>revert</code></td><td>Tạo commit mới đảo ngược một commit.</td><td>Rút một change đã lên nhánh chung làm đỏ build.</td><td>—</td></tr>
+            <tr><td><code>reset --hard</code> + force push</td><td>Viết lại lịch sử nhánh.</td><td>Chỉ trên nhánh cá nhân.</td><td>Nhánh chung, release branch: không bao giờ.</td></tr>
+          </tbody>
+        </table></div>
+        <dl class="kv">
+          <dt>Conflict khi tích hợp</dt><dd>Người hiểu code nhất (tác giả change) giải quyết, không phải người tích hợp đoán. Sau khi giải quyết phải build và chạy lại test. Với file <strong>generated</strong> (code sinh từ tresos/RTA-CAR, ARXML sinh tự động) thì không sửa tay phần conflict mà sinh lại từ cấu hình đã merge.</dd>
+          <dt>Tag</dt><dd>Dùng annotated tag (<code>git tag -a</code>) cho baseline/release: có người tạo, ngày, thông điệp. Tag release không bao giờ bị di chuyển.</dd>
+          <dt>Commit message</dt><dd>Có ID ticket (Jira) để truy vết requirement/defect ↔ commit (nối với ASPICE SUP.8/9/10 ở <a href="LX7-aspice-8d-cm.html">LX7</a>). Hook hoặc CI có thể từ chối commit thiếu ID.</dd>
+        </dl>
+
+        <h3>🎯 2.1 git bisect và chiến lược release branch</h3>
+        <p><strong>Tình huống:</strong> baseline tuần trước pass, baseline hôm nay fail test bench, giữa hai bản có 200 commit. <code>git bisect</code> tìm kiếm nhị phân: khoảng 8 lần build/test (log₂200 ≈ 7,6) là ra commit gây lỗi.</p>
+<pre><code class="language-bash">git bisect start
+git bisect bad  HEAD                 # bản hôm nay: fail
+git bisect good TCU_SW_R2.3.0        # baseline tuần trước: pass
+git bisect run ./ci/build_and_smoke.sh
+#   exit 0      -&gt; good
+#   exit 1..127 -&gt; bad   (trừ 125)
+#   exit 125    -&gt; skip  (commit không build được, bỏ qua)
+git bisect log &gt; bisect.txt          # bằng chứng cho ticket
+git bisect reset
+
+# Đưa fix xuống release branch
+git switch release/2.3
+git cherry-pick -x 4f2a9c1
+git log --oneline release/2.3..main  # cái gì có ở main mà release chưa có</code></pre>
+        <ul class="steps">
+          <li><h4>Trunk-based + gating</h4><p class="mb-0">Mọi người đẩy change nhỏ vào main qua review và gate (test chạy trước khi merge). Main luôn build được.</p></li>
+          <li><h4>Cắt release branch</h4><p class="mb-0">Khi chốt phạm vi một bản giao khách hàng: tạo <code>release/X.Y</code>, từ đây chỉ nhận bug fix có ticket và được duyệt.</p></li>
+          <li><h4>Tag mỗi bản giao</h4><p class="mb-0"><code>R2.3.0</code>, <code>R2.3.1</code>… kèm artifact bất biến và release note.</p></li>
+          <li><h4>Bảo trì</h4><p class="mb-0">Fix vào main trước, cherry-pick <code>-x</code> xuống các release còn hỗ trợ; báo cáo định kỳ những fix còn thiếu trên từng branch.</p></li>
+        </ul>
+
+        <!-- ================= 3 FLASHING ================= -->
+        <h2>🎯 3. Bootloader và flash ECU qua UDS</h2>
+        <p>CV có "UDS diagnostic services" và module Diag. Bài <a href="../B4-diagnostics.html">B4</a> đã liệt kê service 0x34/36/37. Mục này ghép chúng thành <strong>trình tự flash hoàn chỉnh</strong>, câu hỏi rất hay gặp với TCU.</p>
+        <dl class="kv">
+          <dt>Bố cục bộ nhớ</dt><dd>Flash chia thành: vùng <strong>bootloader</strong> (không bị ghi đè khi cập nhật, thường được bảo vệ), vùng <strong>ứng dụng</strong>, vùng dữ liệu (NvM/EEPROM emulation). Một số ECU có thêm vùng dự phòng (A/B hoặc dual bank).</dd>
+          <dt>Quyết định lúc reset</dt><dd>Bootloader chạy trước. (1) Có cờ <em>yêu cầu lập trình</em> không (ứng dụng ghi vào RAM không khởi tạo hoặc NvM khi nhận 0x10 02)? Có thì ở lại bootloader. (2) Ứng dụng có <em>hợp lệ</em> không (cờ valid, CRC, chữ ký)? Hợp lệ thì đặt lại vector table và stack rồi nhảy vào ứng dụng; không thì ở lại bootloader chờ flash.</dd>
+          <dt>Vì sao an toàn khi mất điện</dt><dd>Cờ "ứng dụng hợp lệ" chỉ được ghi <strong>sau cùng</strong>, khi đã tải xong và kiểm tra CRC/chữ ký thành công. Mất điện giữa chừng thì lần khởi động sau bootloader thấy ứng dụng không hợp lệ và ở lại chờ flash lại. ECU không bị "brick".</dd>
+          <dt>Security Access 0x27</dt><dd>Sub-function lẻ xin seed, chẵn gửi key (<code>27 01</code> → seed, <code>27 02</code> + key). NRC hay gặp: 0x35 invalidKey, 0x36 exceededNumberOfAttempts, 0x37 requiredTimeDelayNotExpired. Thuật toán seed-key do OEM quy định; xe mới có xu hướng dùng xác thực dựa trên chứng chỉ (0x29 Authentication).</dd>
+          <dt>0x34 / 0x36 / 0x37</dt><dd><code>34</code> RequestDownload: địa chỉ, kích thước, định dạng; phản hồi cho biết <em>maxNumberOfBlockLength</em>. <code>36</code> TransferData: từng block, <em>block sequence counter</em> bắt đầu 0x01, tăng dần và quay vòng 0xFF → 0x00; lặp lại block cũ (do mất phản hồi) thì ECU không ghi lại. <code>37</code> RequestTransferExit kết thúc.</dd>
+          <dt>Thời gian</dt><dd>Xoá flash lâu nên ECU trả NRC <strong>0x78</strong> (responsePending) rồi mới trả kết quả; tester chuyển sang chờ theo P2*<sub>server</sub> (thường 5 s) thay vì P2 (thường 50 ms). Giữ session bằng TesterPresent <code>3E 80</code> để S3 (khoảng 5 s) không hết hạn.</dd>
+        </dl>
+
+        <h3>🎯 3.1 Trình tự flash điển hình (3 pha)</h3>
+        <div class="figure">
+          <svg viewBox="0 0 720 300" role="img" aria-label="Ba pha của trình tự flash ECU qua UDS" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="lx9c" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="20" y="20" width="200" height="260" rx="10" fill="var(--brand-800)"/>
+            <text x="120" y="44" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">Pre-programming</text>
+            <text x="120" y="60" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">ứng dụng đang chạy · thường functional</text>
+            <text x="36" y="92" class="dgm-inv" font-size="9.5">10 03  Extended session</text>
+            <text x="36" y="116" class="dgm-inv" font-size="9.5">31 01 …  kiểm điều kiện</text>
+            <text x="36" y="130" class="dgm-inv-sub" font-size="8">(xe đứng yên, điện áp; ID tuỳ OEM)</text>
+            <text x="36" y="154" class="dgm-inv" font-size="9.5">85 02  DTC setting OFF</text>
+            <text x="36" y="178" class="dgm-inv" font-size="9.5">28 03 01  tắt Tx/Rx thường</text>
+            <text x="36" y="192" class="dgm-inv-sub" font-size="8">bus yên để flash nhanh, ECU khác</text>
+            <text x="36" y="204" class="dgm-inv-sub" font-size="8">không ghi DTC mất tín hiệu</text>
+            <rect x="260" y="20" width="200" height="260" rx="10" fill="var(--brand-900)"/>
+            <text x="360" y="44" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">Programming</text>
+            <text x="360" y="60" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">bootloader · physical addressing</text>
+            <text x="276" y="88" class="dgm-inv" font-size="9.5">10 02  vào bootloader</text>
+            <text x="276" y="108" class="dgm-inv" font-size="9.5">27 xx  seed / key</text>
+            <text x="276" y="128" class="dgm-inv" font-size="9.5">2E …  ghi fingerprint</text>
+            <text x="276" y="148" class="dgm-inv" font-size="9.5">31 01 FF00  erase memory</text>
+            <text x="276" y="168" class="dgm-inv" font-size="9.5">34 → 36 × N → 37</text>
+            <text x="276" y="188" class="dgm-inv" font-size="9.5">31 01 …  kiểm CRC / chữ ký</text>
+            <text x="276" y="208" class="dgm-inv" font-size="9.5">31 01 FF01  check dependencies</text>
+            <text x="276" y="228" class="dgm-inv" font-size="9.5">11 01  ECU reset</text>
+            <text x="276" y="252" class="dgm-inv-sub" font-size="8">lặp 31 FF00 → 37 cho từng block</text>
+            <text x="276" y="264" class="dgm-inv-sub" font-size="8">(app, calibration…)</text>
+            <rect x="500" y="20" width="200" height="260" rx="10" fill="var(--ok)"/>
+            <text x="600" y="44" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">Post-programming</text>
+            <text x="600" y="60" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">ứng dụng mới đã chạy</text>
+            <text x="516" y="92" class="dgm-inv" font-size="9.5">10 03  Extended session</text>
+            <text x="516" y="116" class="dgm-inv" font-size="9.5">28 00 01  bật lại Tx/Rx</text>
+            <text x="516" y="140" class="dgm-inv" font-size="9.5">85 01  DTC setting ON</text>
+            <text x="516" y="164" class="dgm-inv" font-size="9.5">14 FF FF FF  xoá DTC</text>
+            <text x="516" y="188" class="dgm-inv" font-size="9.5">10 01  Default session</text>
+            <text x="516" y="212" class="dgm-inv" font-size="9.5">22 F1 xx  đọc lại version</text>
+            <path d="M220,150 L256,150" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx9c)"/>
+            <path d="M460,150 L496,150" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx9c)"/>
+          </svg>
+          <div class="figure__cap"><b>Khung này theo cách làm phổ biến trong ngành; chi tiết (routine ID kiểm điều kiện, DID fingerprint, cách kiểm chữ ký) do spec của OEM quy định.</b> RoutineControl 0xFF00 (eraseMemory) và 0xFF01 (checkProgrammingDependencies) là routine ID được ISO 14229-1 định nghĩa sẵn.</div>
+        </div>
+        <div class="callout callout--key"><div class="callout__icon">🔑</div><div class="callout__body"><p class="mb-0"><strong>Ba ý người phỏng vấn muốn nghe:</strong> (1) chia 3 pha, và vì sao tắt DTC/communication trước khi flash; (2) cơ chế an toàn: security access, kiểm CRC/chữ ký, cờ valid ghi sau cùng nên mất điện không làm hỏng ECU; (3) với CI: flash bench tự động bằng script (Python + thư viện UDS, hoặc TRACE32 cho lần đầu khi chưa có bootloader), đọc lại version bằng 0x22 để xác nhận đúng bản.</p></div></div>
+
+        <h3>➕ 3.2 OTA và vai trò của TCU</h3>
+        <dl class="kv">
+          <dt>TCU trong OTA</dt><dd>TCU có kết nối di động nên thường là <strong>OTA client / update master</strong>: tải gói cập nhật từ backend, kiểm chữ ký, rồi (a) tự cập nhật chính nó, và (b) đóng vai tester flash các ECU khác qua CAN hoặc DoIP bằng đúng trình tự UDS ở trên.</dd>
+          <dt>A/B (dual bank)</dt><dd>Có 2 bản phần mềm: chạy bản A trong khi ghi bản B ở nền; reboot sang B; nếu B không khởi động được hoặc không báo "healthy" thì tự quay về A (rollback). Trên Linux thường dùng A/B rootfs với các framework như SWUpdate, RAUC, Mender. Trên MCU dùng flash dual bank.</dd>
+          <dt>Quy định</dt><dd><strong>UN R156</strong> (Software Update Management System) và <strong>UN R155</strong> (Cyber Security Management System): bắt buộc với loại xe mới từ 07/2022 và mọi xe mới từ 07/2024 tại các nước áp dụng quy định UNECE (EU, Nhật, Hàn…). <strong>ISO 24089</strong> (2023) về kỹ thuật cập nhật phần mềm; <strong>ISO/SAE 21434</strong> về cybersecurity.</dd>
+          <dt>Bảo mật</dt><dd>Gói cập nhật được ký; ECU kiểm chữ ký bằng khoá công khai lưu trong HSM/secure storage; chống hạ cấp (anti-rollback) bằng số version đơn điệu. Uptane là một framework mở phổ biến cho bảo mật OTA ô tô.</dd>
+        </dl>
+
+        <!-- ================= 4 EVO ================= -->
+        <h2>4. Trước (~2020) → Nay</h2>
+        <div class="evo">
+          <div class="evo__head">🔁 <span>Flash ở xưởng, log qua serial → OTA có quy định, log và debug từ xa</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>Cập nhật phần mềm chủ yếu ở xưởng qua cổng OBD với tester. ECU một bank, mất điện giữa chừng thì phải flash lại. Nhiều target Linux vẫn dùng init script, debug bằng console serial. Tìm commit gây lỗi thường bằng cách hỏi quanh team.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p>OTA qua TCU là chuẩn, có UN R155/R156 và ISO 24089 bắt buộc quy trình. A/B và rollback phổ biến; xác thực bằng chứng chỉ (0x29) bên cạnh seed-key. systemd/journald là mặc định trên Embedded Linux. CI tự động bisect khi baseline đỏ và gắn kết quả vào ticket.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> người tích hợp TCU không chỉ build ra binary mà còn phải chứng minh binary đó flash an toàn, truy vết được và cập nhật được từ xa.</div>
+        </div>
+
+        <!-- ================= 5 QA ================= -->
+        <h2>5. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">Linux và QNX khác nhau cơ bản ở đâu? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Linux là kernel nguyên khối, driver chạy trong kernel. QNX là microkernel: kernel chỉ lo scheduling, IPC, interrupt, timer; driver, file system, network là process ở user space (resource manager), giao tiếp bằng message passing. Nhờ vậy QNX cô lập lỗi tốt hơn (driver chết có thể khởi động lại), là hard real-time và có bản chứng nhận an toàn. Công cụ: <code>pidin</code>, <code>slog2info</code>, <code>pdebug</code> thay cho <code>ps</code>, <code>journalctl</code>, <code>gdbserver</code>.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Vì sao TCU/cluster hay chọn QNX cho phần an toàn và Linux cho phần infotainment/kết nối?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Merge và rebase khác nhau thế nào? Khi nào không được rebase? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Merge giữ nguyên lịch sử và tạo merge commit. Rebase viết lại commit của bạn lên đỉnh nhánh đích nên lịch sử thẳng nhưng hash đổi. Không rebase nhánh đã chia sẻ (main, release, nhánh người khác đang dựa vào) vì sẽ làm lệch lịch sử của mọi người. Rút change khỏi nhánh chung thì dùng <code>revert</code>, không <code>reset</code> + force push.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Service trên target Linux chạy tay thì được, chạy qua systemd thì chết sau 2 giây. Bạn làm gì? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><code>systemctl status</code> xem exit code/signal và số lần restart; <code>journalctl -u … -b</code> xem log; <code>dmesg</code> xem có OOM/segfault không. Sau đó so khác biệt giữa hai cách chạy: <code>systemctl cat</code> xem User, EnvironmentFile, WorkingDirectory, ExecStart. Nguyên nhân hay gặp: khác user nên không có quyền file/device, thiếu biến môi trường, đường dẫn tương đối, chạy trước khi mạng hoặc daemon phụ thuộc sẵn sàng (chỉ có <code>After=</code> mà thiếu <code>Wants/Requires=</code>), hoặc <code>WatchdogSec</code> mà app không gửi <code>sd_notify</code>. Tái hiện bằng tay với đúng user và env, dùng <code>strace</code> nếu cần.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Exit code 137 nghĩa là gì?</li><li>Log không có gì cả thì tìm ở đâu tiếp?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Baseline tuần trước pass, hôm nay fail, giữa hai bản 200 commit. Tìm thủ phạm thế nào? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Trước hết loại trừ hạ tầng: chạy lại baseline cũ trên cùng bench, nếu nó cũng fail thì lỗi ở bench/môi trường, không phải code. Nếu baseline cũ vẫn pass thì <code>git bisect</code> giữa tag cũ và HEAD, tự động bằng <code>bisect run</code> với script build + flash + smoke test (exit 125 để bỏ qua commit không build được); khoảng 8 vòng là ra. Với lỗi chập chờn, script phải chạy lặp nhiều lần mới kết luận good. Có commit thì revert trên main để gate xanh lại, mở ticket kèm bisect log cho tác giả.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Kể trình tự flash một ECU qua UDS. Mất điện giữa lúc flash thì sao? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Pre: 10 03, kiểm điều kiện bằng 31, tắt DTC (85 02) và communication (28). Programming: 10 02 vào bootloader, 27 security access, ghi fingerprint, 31 FF00 erase, 34/36/37 tải dữ liệu, 31 kiểm CRC/chữ ký, 31 FF01 check dependencies, 11 01 reset. Post: bật lại communication và DTC, xoá DTC, về default session, đọc version bằng 22. Mất điện: cờ "ứng dụng hợp lệ" chỉ ghi sau khi kiểm tra thành công, nên lần khởi động sau bootloader thấy ứng dụng không hợp lệ, ở lại bootloader và chờ flash lại. Với A/B thì ECU vẫn chạy bản cũ.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Vì sao erase lại trả 0x78?</li><li>Block sequence counter dùng để làm gì?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Kinh nghiệm Linux/QNX của bạn cụ thể là gì? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Bám CV: ở vai trò System Test Engineer (AUTOSAR Adaptive), tôi validate stack ARA trên Raspberry Pi 4, Renesas R-Car, QNX và Embedded Linux. Khi test fail ở mức hệ thống, tôi điều tra bằng trạng thái process/service, mạng, remote debugging và phân tích log để khoanh vùng lỗi. Tôi cũng làm Docker/Kubernetes ở vai trò hiện tại nên quen làm việc trên Linux hằng ngày. Thêm một ví dụ lỗi thật (điền ở <a href="LX10-project-deep-dive.html">LX10</a>): triệu chứng → lệnh đã dùng → nguyên nhân.</p></div></div>
+        </div>
+
+        <!-- ================= 6 CHEAT ================= -->
+        <h2>6. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>Linux debug</h4><ul>
+            <li>status → journal → dmesg → tài nguyên → mạng</li><li>journalctl -u svc -b · -p err · -f</li><li>ss -tulpn · ip a · tcpdump</li><li>137 = SIGKILL (OOM) · 139 = SIGSEGV</li><li>After= chỉ là thứ tự · daemon-reload</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>QNX</h4><ul>
+            <li>microkernel · resource manager</li><li>message passing · hard RT</li><li>pidin · hogs · slog2info</li><li>pdebug / qconn + Momentics</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Git</h4><ul>
+            <li>không rebase nhánh chung · dùng revert</li><li>fix main trước → cherry-pick -x</li><li>bisect run: 0 good · 125 skip · khác bad</li><li>annotated tag · ID ticket trong message</li><li>file generated: sinh lại, không sửa tay</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Flash UDS</h4><ul>
+            <li>Pre: 10 03 · 31 · 85 02 · 28</li><li>Prog: 10 02 · 27 · 2E · 31 FF00 · 34/36/37 · 31 · 31 FF01 · 11</li><li>Post: 28 · 85 01 · 14 · 10 01 · 22</li><li>0x78 pending · P2* · 3E 80</li><li>cờ valid ghi sau cùng · A/B rollback</li>
+          </ul></div>
+        </div>
+
+        <h2>7. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li>freedesktop.org — <a href="https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html" target="_blank" rel="noopener">systemd.unit</a>, <a href="https://www.freedesktop.org/software/systemd/man/latest/journalctl.html" target="_blank" rel="noopener">journalctl</a>.</li>
+          <li>QNX — <a href="https://www.qnx.com/developers/docs/" target="_blank" rel="noopener">QNX Software Development Platform documentation</a> (pidin, slog2info, pdebug).</li>
+          <li>Git — <a href="https://git-scm.com/docs/git-bisect" target="_blank" rel="noopener">git-bisect</a>, <a href="https://git-scm.com/docs/git-cherry-pick" target="_blank" rel="noopener">git-cherry-pick</a>.</li>
+          <li>ISO 14229-1 (UDS); ISO 24089:2023; UNECE R155/R156; <a href="https://uptane.org/" target="_blank" rel="noopener">Uptane</a>.</li>
+          <li>Bài nội bộ: <a href="../B4-diagnostics.html">B4 — Diagnostics</a>, <a href="../M-host-runtime.html">M — Host Runtime</a>, <a href="LX7-aspice-8d-cm.html">LX7 — CM</a>.</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi bạn trả lời trôi câu "service chết sau 2 giây" và kể được trình tự flash 3 pha không nhìn tài liệu.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">Chủ đề LX9 · Linux · Git · Flashing &amp; OTA — Interview Prep</footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../../assets/js/app.js?v=7"></script>
+</body>
+</html>

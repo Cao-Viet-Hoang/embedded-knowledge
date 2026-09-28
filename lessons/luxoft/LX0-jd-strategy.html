@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LX0 · Luxoft JD — Gap map &amp; Chiến lược — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/css/style.css?v=7" />
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../../assets/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../../assets/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="../../assets/favicon.ico" />
+</head>
+<body data-page="LX0" data-root="../../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">LX0</span>
+            <span class="badge badge--must">Must-tell</span>
+            <span class="chip">Luxoft — TCU · CI &amp; Integration</span>
+          </div>
+          <h1>Luxoft JD — Gap map, câu hỏi rủi ro &amp; chiến lược trả lời</h1>
+          <p class="lead">Bài mở đầu của bộ ôn riêng cho <strong>Luxoft</strong> (vị trí <em>Automotive Software Integration Engineer/Lead</em>, sản phẩm <strong>Telematics Control Unit</strong>, HCMC). Bài này đọc JD đúng bản chất (<strong>CI operations + SW integration trên nền AUTOSAR Classic</strong>), đối chiếu từng dòng với kinh nghiệm thật trong CV, và chuẩn bị câu trả lời cho những câu interviewer chắc chắn sẽ hỏi. Các bài <strong>LX1–LX8</strong> đi sâu từng mảng kỹ thuật.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> 🔴 Đọc đầu tiên</span>
+            <span><b>Nguyên tắc:</b> chỉ nói điều mình thật sự đã làm; điều chưa làm → nói "chưa dùng, nhưng đã hiểu cơ chế &amp; map sang X đã làm"</span>
+          </div>
+        </div>
+
+        <div class="callout callout--note">
+          <div class="callout__icon">📌</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Phạm vi:</strong> CV đã được Luxoft xem, <em>không sửa CV</em>. Mục tiêu của bộ LX là <strong>nói</strong> được kinh nghiệm hiện có bằng ngôn ngữ của JD và lấp các lỗ hổng kiến thức trước buổi phỏng vấn. Phần kinh nghiệm cá nhân trong bài này chỉ dựa trên <code>CV_Cao_Viet_Hoang.md</code>; không bịa thêm việc đã làm.</p>
+          </div>
+        </div>
+
+        <!-- ================= 1. ĐỌC JD ================= -->
+        <h2>1. Đọc JD đúng bản chất</h2>
+        <p>Bề ngoài JD liệt kê "Embedded C, CAN, OSEK, RTOS, GSM, 3G/4G, AT commands" → tưởng là vị trí viết firmware telematics. Nhưng <strong>trách nhiệm số 1</strong> là <em>"Lead CI operations and manage the software integration testing and integration team"</em>, và hơn một nửa danh sách must-have là công cụ CI/DevOps. Vì vậy vai trò thực tế là:</p>
+        <dl class="kv">
+          <dt>Vai trò lõi</dt><dd><strong>SW Integration + CI/CD Lead</strong> cho một <em>automotive platform project</em> (TCU). Người này giữ "đường ống" từ lúc developer đẩy code → review → build → static analysis → unit test → integration test trên bench → release baseline. Họ chịu trách nhiệm để <strong>nhánh chính luôn build được, test xanh và có bằng chứng ASPICE</strong>.</dd>
+          <dt>Nền kỹ thuật</dt><dd><strong>AUTOSAR Classic</strong> (integrate SWC + ARXML bằng <em>EB tresos</em> và <em>AUTOSAR Builder</em>), OSEK/RTOS, CAN. Phải debug được khi integration gãy (Lauterbach/iSystem, CANoe) và hiểu MCU 16/32-bit.</dd>
+          <dt>Nền quy trình</dt><dd><strong>ASPICE</strong> (SWE.4/5/6, SUP.8 config management, SUP.9 problem resolution, MAN.3), MISRA/static analysis, <strong>8D</strong>, white/grey/black box, verify requirement ở mức component và bench.</dd>
+          <dt>Domain sản phẩm</dt><dd><strong>TCU</strong>: modem GSM/3G/4G điều khiển bằng <strong>AT command</strong>, eCall, remote service, OTA. Integration lead không cần là chuyên gia modem nhưng phải nói được TCU làm gì và giao tiếp modem thế nào (bài <a href="LX3-telematics-at.html">LX3</a>).</dd>
+          <dt>Toolchain CI</dt><dd>Gerrit + <strong>Zuul</strong> (gating) + Jenkins/GitLab CI + Ansible + Artifactory + Docker + AWS + Grafana (+ "Victoria", nhiều khả năng là <em>VictoriaMetrics</em>, time-series DB làm nguồn cho Grafana). "Cynosure" không có tài liệu công khai; khả năng là tool nội bộ của khách hàng. <strong>Không cần giả vờ biết</strong>, hỏi ngược lại interviewer là điểm cộng (xem mục 7).</dd>
+        </dl>
+
+        <div class="callout callout--key">
+          <div class="callout__icon">🔑</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Định vị bản thân cho buổi này:</strong> "Tôi là <em>integration + automation engineer</em> trên nền AUTOSAR Classic. Tôi từng là BSW integrator (CUBAS, RH850), từng lead một initiative automation rút chu kỳ validation từ 1–2 tháng xuống 2–3 ngày, và 1,5 năm gần đây vận hành hạ tầng CI/cloud (Docker, K8s, Terraform, pipelines). Vị trí này ghép đúng hai mảng đó lại."</p>
+          </div>
+        </div>
+
+        <!-- ================= 2. GAP MAP ================= -->
+        <h2>2. Gap map — JD ↔ CV</h2>
+        <div class="figure">
+          <svg viewBox="0 0 720 300" role="img" aria-label="Bản đồ mức độ match JD Luxoft với CV" xmlns="http://www.w3.org/2000/svg">
+            <text x="120" y="22" text-anchor="middle" class="dgm-label" font-size="11" font-weight="700">✅ Mạnh (kể bằng chuyện thật)</text>
+            <text x="360" y="22" text-anchor="middle" class="dgm-label" font-size="11" font-weight="700">⚠️ Chuyển đổi được (map khái niệm)</text>
+            <text x="600" y="22" text-anchor="middle" class="dgm-label" font-size="11" font-weight="700">❌ Cần học mới</text>
+            <rect x="20" y="34" width="200" height="252" rx="10" fill="var(--surface-2)" class="dgm-layer"/>
+            <rect x="260" y="34" width="200" height="252" rx="10" fill="var(--surface-2)" class="dgm-layer"/>
+            <rect x="500" y="34" width="200" height="252" rx="10" fill="var(--surface-2)" class="dgm-layer"/>
+            <rect x="32" y="46" width="176" height="30" rx="6" fill="var(--ok)"/><text x="120" y="66" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">AUTOSAR Classic BSW integ.</text>
+            <rect x="32" y="82" width="176" height="30" rx="6" fill="var(--ok)"/><text x="120" y="102" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">ASPICE traceability / evidence</text>
+            <rect x="32" y="118" width="176" height="30" rx="6" fill="var(--ok)"/><text x="120" y="138" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Unit/Component/System test</text>
+            <rect x="32" y="154" width="176" height="30" rx="6" fill="var(--ok)"/><text x="120" y="174" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">TRACE32 · UDE debug</text>
+            <rect x="32" y="190" width="176" height="30" rx="6" fill="var(--ok)"/><text x="120" y="210" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">RH850 · Infineon · ST</text>
+            <rect x="32" y="226" width="176" height="30" rx="6" fill="var(--ok)"/><text x="120" y="246" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Python/Pytest · Docker · YAML</text>
+            <text x="120" y="276" text-anchor="middle" class="dgm-sub" font-size="9">+ Automation lead (SENT)</text>
+            <rect x="272" y="46" width="176" height="30" rx="6" fill="var(--core)"/><text x="360" y="66" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Azure Pipelines → Jenkins/GitLab</text>
+            <rect x="272" y="82" width="176" height="30" rx="6" fill="var(--core)"/><text x="360" y="102" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Conan remote → Artifactory</text>
+            <rect x="272" y="118" width="176" height="30" rx="6" fill="var(--core)"/><text x="360" y="138" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Cantata → VectorCAST</text>
+            <rect x="272" y="154" width="176" height="30" rx="6" fill="var(--core)"/><text x="360" y="174" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">RTA-CAR → EB tresos</text>
+            <rect x="272" y="190" width="176" height="30" rx="6" fill="var(--core)"/><text x="360" y="210" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">AUTOSAR OS → OSEK</text>
+            <rect x="272" y="226" width="176" height="30" rx="6" fill="var(--core)"/><text x="360" y="246" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Terraform/Azure → Ansible/AWS</text>
+            <text x="360" y="276" text-anchor="middle" class="dgm-sub" font-size="9">CANoe → CAPL, CANape</text>
+            <rect x="512" y="46" width="176" height="30" rx="6" fill="var(--must)"/><text x="600" y="66" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Gerrit + Zuul gating</text>
+            <rect x="512" y="82" width="176" height="30" rx="6" fill="var(--must)"/><text x="600" y="102" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">GSM/LTE · AT commands</text>
+            <rect x="512" y="118" width="176" height="30" rx="6" fill="var(--must)"/><text x="600" y="138" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">MISRA / static analysis</text>
+            <rect x="512" y="154" width="176" height="30" rx="6" fill="var(--must)"/><text x="600" y="174" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">8D problem solving</text>
+            <rect x="512" y="190" width="176" height="30" rx="6" fill="var(--must)"/><text x="600" y="210" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Grafana / CI metrics</text>
+            <rect x="512" y="226" width="176" height="30" rx="6" fill="var(--must)"/><text x="600" y="246" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Code optimization target</text>
+            <text x="600" y="276" text-anchor="middle" class="dgm-sub" font-size="9">LIN · Ethernet (mức khái niệm)</text>
+          </svg>
+          <div class="figure__cap"><b>Ba vùng.</b> Cột xanh: kể bằng chuyện thật trong CV. Cột cam: đã làm việc tương đương bằng tool khác, trả lời theo kiểu "cùng khái niệm, khác tool". Cột đỏ: học mới trong LX1–LX8 để nói đúng cơ chế.</div>
+        </div>
+
+        <div class="table-wrap"><table>
+          <thead><tr><th>Yêu cầu JD</th><th>Bằng chứng trong CV</th><th>Đánh giá</th><th>Ôn ở</th></tr></thead>
+          <tbody>
+            <tr><td>Integrate SWC + ARXML trong dự án AUTOSAR</td><td>BSW integrator CUBAS, RH850 D3/D4/D5: BswM, Diag, Can, Com, EcuM, OS, MCAL, Mem</td><td>✅ Mạnh; khác tool (EB tresos)</td><td><a href="LX5-autosar-eb-integration.html">LX5</a></td></tr>
+            <tr><td>Lead CI operations, automate CI/CD + test framework</td><td>Azure Pipelines + Conan; frameworks được team ARA dùng; AI platform: Docker/K8s/Terraform</td><td>✅ Ý tưởng; ⚠️ khác tool</td><td><a href="LX1-review-gating.html">LX1</a>, <a href="LX2-ci-infra-ops.html">LX2</a></td></tr>
+            <tr><td>Nâng tốc độ, độ ổn định, khả năng scale của CI</td><td>SENT validation 1–2 tháng → 2–3 ngày</td><td>✅ Chuyện "đinh"</td><td><a href="LX2-ci-infra-ops.html">LX2</a></td></tr>
+            <tr><td>Manage integration team / team leader</td><td>Automation Lead SENT: planning, task breakdown, tracking, delivery (Agile)</td><td>✅</td><td>Mục 4 bên dưới</td></tr>
+            <tr><td>ASPICE, verify requirement ở component/bench</td><td>Requirement analysis, traceability, requirement-to-test mapping, evidence; test trên target + VECU</td><td>✅ Mạnh</td><td><a href="LX7-aspice-8d-cm.html">LX7</a></td></tr>
+            <tr><td>White/grey/black box</td><td>Unit/Component (Cantata, mocking, coverage) + integration + system</td><td>✅ (đổi thuật ngữ)</td><td><a href="LX6-test-quality.html">LX6</a></td></tr>
+            <tr><td>VectorCAST</td><td>Cantata, Pytest, ECU-Test</td><td>⚠️ Cùng loại tool</td><td><a href="LX6-test-quality.html">LX6</a></td></tr>
+            <tr><td>MISRA, static code analysis</td><td>Không ghi trong CV</td><td>❌ Học</td><td><a href="LX6-test-quality.html">LX6</a></td></tr>
+            <tr><td>8D, structured problem solving</td><td>"defect investigation, root cause" (SENT timing debug)</td><td>⚠️ Có chuyện, thiếu khung</td><td><a href="LX7-aspice-8d-cm.html">LX7</a></td></tr>
+            <tr><td>OSEK, RTOS</td><td>OS trong danh sách BSW đã integrate</td><td>⚠️ Ôn lại</td><td><a href="LX4-osek-rtos.html">LX4</a></td></tr>
+            <tr><td>GSM, 3G/4G, AT command</td><td>Không có</td><td>❌ Học (domain)</td><td><a href="LX3-telematics-at.html">LX3</a></td></tr>
+            <tr><td>CANalyzer/CANoe/CANape, CAPL</td><td>CANoe</td><td>⚠️</td><td><a href="LX8-vector-tools-debug.html">LX8</a></td></tr>
+            <tr><td>Lauterbach / iSystem</td><td>TRACE32 (register/memory, breakpoint, trace), UDE</td><td>✅</td><td><a href="LX8-vector-tools-debug.html">LX8</a></td></tr>
+            <tr><td>MCU 16/32-bit: Freescale, PPC, ARM, TI, Microchip, Infineon, Renesas</td><td>RH850, Infineon, ST, R-Car, RPi4</td><td>✅</td><td><a href="../F-mcu-peripherals.html">F</a></td></tr>
+            <tr><td>Code optimization theo target/compiler</td><td>"Compiler and build toolchains"</td><td>⚠️ Ôn</td><td><a href="LX5-autosar-eb-integration.html">LX5</a></td></tr>
+            <tr><td>Python/Pytest, YAML, Bash, Docker, AWS</td><td>Python, Pytest, Bash/PowerShell, Docker, Azure/GCP</td><td>✅ (AWS ⚠️)</td><td><a href="LX2-ci-infra-ops.html">LX2</a></td></tr>
+          </tbody>
+        </table></div>
+
+        <!-- ================= 3. RỦI RO ================= -->
+        <h2>3. Năm câu hỏi rủi ro — chuẩn bị trước</h2>
+        <p>Đây là những câu interviewer gần như chắc chắn hỏi khi đọc CV của bạn cạnh JD này. Mỗi câu có ý chính và câu mẫu tiếng Anh ngắn.</p>
+
+        <h3>3.1 "Bạn đang làm AI Platform, sao lại quay về embedded integration?"</h3>
+        <dl class="kv">
+          <dt>Ý chính</dt><dd>Không phải "quay về", mà là <strong>mang kỹ năng infra về lại domain gốc</strong>. Công việc AI Platform thực chất gồm vận hành hạ tầng: pipeline, container, Kubernetes, Terraform/IaC, access control, cost governance, monitoring. Đó chính là phần "CI operations" JD cần. Nền AUTOSAR Classic (2022–2024) vẫn còn nguyên.</dd>
+          <dt>Câu mẫu</dt><dd><em>"My last role was really platform engineering — running pipelines, containers, IaC and access control for an internal platform. This position combines that with the automotive integration work I did as a CUBAS BSW integrator. So it's not a step back; it's the two halves of my experience in one job."</em></dd>
+          <dt>Tránh</dt><dd>Nói xấu công việc AI, hoặc nói "tôi chán AI". Giữ trục chung xuyên suốt CV: <strong>biến công việc kỹ thuật lặp lại thành automation</strong>.</dd>
+        </dl>
+
+        <h3>3.2 "Bạn chưa dùng Jenkins / Gerrit / Zuul?"</h3>
+        <dl class="kv">
+          <dt>Ý chính</dt><dd>Thừa nhận thẳng, rồi <strong>chứng minh hiểu cơ chế</strong>: pipeline khai báo bằng YAML, stage/job/agent, artifact, cache, reproducible build bằng Docker. Đó là những gì bạn đã làm với Azure Pipelines + Conan. Sau đó nói một câu cụ thể về Zuul để cho thấy đã tìm hiểu: <em>check</em> vs <em>gate</em> pipeline, <em>speculative merge</em>, <code>Depends-On</code> (bài <a href="LX1-review-gating.html">LX1</a>).</dd>
+          <dt>Câu mẫu</dt><dd><em>"I haven't operated Zuul in production. I built pipelines in Azure Pipelines with Conan packaging, which are the same concepts as a Jenkinsfile or .gitlab-ci.yml. What I find valuable about Zuul is the gate pipeline: it tests each change speculatively on top of the changes queued ahead of it, so the main branch never breaks. That's exactly what an integration team needs."</em></dd>
+        </dl>
+
+        <h3>3.3 "Bạn có kinh nghiệm MISRA / static analysis không?"</h3>
+        <dl class="kv">
+          <dt>Ý chính</dt><dd>CV không ghi. Nếu thực tế bạn đã từng thấy report QAC/Polyspace hay sửa finding ở Bosch thì kể đúng mức đó. Nếu chưa thì nói chưa, rồi thể hiện hiểu biết: phân loại Mandatory/Required/Advisory, quy trình deviation, cách tích hợp vào CI như một quality gate (bài <a href="LX6-test-quality.html">LX6</a>).</dd>
+          <dt>Tránh</dt><dd>Nói "có" rồi bị hỏi rule cụ thể mà không trả lời được. Với vị trí lead, <strong>trung thực + hiểu quy trình</strong> được đánh giá cao hơn thuộc lòng số rule.</dd>
+        </dl>
+
+        <h3>3.4 "Bạn đã lead team bao giờ chưa? Quy mô thế nào?"</h3>
+        <dl class="kv">
+          <dt>Ý chính</dt><dd>Kể initiative SENT automation: bạn phụ trách <strong>planning, task breakdown, workflow design, progress tracking, delivery</strong>. Chuẩn bị sẵn <strong>số người trong team</strong> và vai trò của từng người (con số CV chưa có, bạn tự điền cho đúng thực tế). Bổ sung vai trò "integration point" giữa project stakeholder và nhiều BSW team ở CUBAS: đó là kỹ năng điều phối mà integration lead cần hằng ngày.</dd>
+          <dt>Nói thêm</dt><dd>Hoạt động enablement: đào tạo và hướng dẫn kỹ thuật khi đưa AI tools vào dùng, và các tool nội bộ đạt giải (Collect Review Finding, Pullogic). Những tool này cho thấy bạn nghĩ tới <em>chất lượng review và visibility cho management</em>.</dd>
+        </dl>
+
+        <h3>3.5 "Bạn biết gì về telematics / modem / AT command?"</h3>
+        <dl class="kv">
+          <dt>Ý chính</dt><dd>Chưa làm trực tiếp. Chuẩn bị đủ để nói: TCU làm gì (eCall, remote service, OTA, telemetry), vì sao 2G/3G sunset buộc chuyển sang LTE/5G và NG-eCall, luồng AT cơ bản (SIM → đăng ký mạng → PDP context → data), và <strong>cách thiết kế AT parser</strong> (ring buffer + state machine + URC). Sau đó kéo về thế mạnh: <em>"Protocol-level debugging là việc tôi đã làm với SENT; AT over UART cũng là một giao thức text có timing và trạng thái."</em> (bài <a href="LX3-telematics-at.html">LX3</a>).</dd>
+        </dl>
+
+        <!-- ================= 4. STAR theo JD ================= -->
+        <h2>4. Map câu chuyện STAR sang trách nhiệm JD</h2>
+        <p>Không cần chuyện mới. Dùng lại các chuyện trong bài <a href="../A-career-star.html">A</a> và <a href="../D-sent-automation.html">D</a>, nhưng <strong>đổi góc kể</strong> cho khớp với từng dòng JD.</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Trách nhiệm JD</th><th>Chuyện thật trong CV</th><th>Góc kể nên nhấn</th></tr></thead>
+          <tbody>
+            <tr><td>Improve speed/efficiency/stability của CI</td><td>SENT validation 1–2 tháng → 2–3 ngày</td><td>Đo baseline → tìm bottleneck (thao tác thủ công, chờ đợi) → tự động hoá → đo lại. Nói bằng từ của CI: <em>throughput, feedback time, repeatability</em>.</td></tr>
+            <tr><td>Lead integration team</td><td>Automation Lead SENT; integration point ở CUBAS</td><td>Chia việc, theo dõi tiến độ, gỡ block giữa các team, dependency management.</td></tr>
+            <tr><td>Integrate SW component, xử lý lỗi integration</td><td>CUBAS: reproduce defect, phân tích dependency, phối hợp nhiều BSW team</td><td>Ví dụ quy trình: reproduce → khoanh vùng module → TRACE32 → owner fix → verify lại trong baseline.</td></tr>
+            <tr><td>Troubleshooting &amp; 8D</td><td>SENT timing/signal defect trên ST/Infineon (UDE)</td><td>Kể theo khung 8D: mô tả vấn đề, containment, root cause, fix, cách ngăn tái diễn (bài <a href="LX7-aspice-8d-cm.html">LX7</a>).</td></tr>
+            <tr><td>ASPICE, verify requirement</td><td>Requirement-to-test mapping, evidence, review readiness</td><td>Bidirectional traceability, SWE.4/5/6, "evidence là sản phẩm của pipeline chứ không phải làm tay cuối dự án".</td></tr>
+            <tr><td>Test automation framework</td><td>Pytest/Cantata/ECU-Test; frameworks được team ARA dùng</td><td>Kiến trúc framework: fixture, abstraction phần cứng, report, cách tích hợp CI.</td></tr>
+          </tbody>
+        </table></div>
+
+        <!-- ================= 5. PITCH ================= -->
+        <h2>5. Pitch 90 giây — bản riêng cho Luxoft</h2>
+        <div class="flashcard__tag">Bản tiếng Anh, đọc khoảng 90 giây</div>
+        <div class="callout callout--interview">
+          <div class="callout__icon">🗣️</div>
+          <div class="callout__body">
+            <p>"I'm an embedded software engineer with nearly <strong>four years at Bosch</strong>, and most of that work sits exactly where this role sits: <strong>integration and automation</strong>.</p>
+            <p>I started in <strong>AUTOSAR Classic</strong>, validating MCAL drivers and then working as a <strong>BSW integrator in the CUBAS team</strong> on RH850. I integrated BswM, Diag, CAN, COM, EcuM, OS and memory modules, debugged integration failures with TRACE32, and owned requirement traceability and test evidence under ASPICE.</p>
+            <p>Then, as <strong>automation lead</strong> in the Adaptive system team, I led a SENT validation initiative that cut the full cycle from <strong>one to two months down to two to three days</strong>, and I wired build, package and test into <strong>Azure Pipelines with Conan</strong>.</p>
+            <p>Most recently I've been running an internal <strong>platform</strong>: Docker, Kubernetes, Terraform, access control, cost and usage monitoring.</p>
+            <p class="mb-0">So what I bring to this TCU project is someone who understands the AUTOSAR stack being integrated <em>and</em> knows how to build a CI system that keeps it green, fast and audit-ready."</p>
+          </div>
+        </div>
+
+        <!-- ================= 6. LỘ TRÌNH ================= -->
+        <h2>6. Lộ trình ôn bộ LX — đã biết trước, mới để sau</h2>
+        <div class="callout callout--key">
+          <div class="callout__icon">🧭</div>
+          <div class="callout__body">
+            <div class="callout__title">Nguyên tắc</div>
+            <p class="mb-0">Buổi phỏng vấn thắng bằng việc <strong>trả lời thật sâu và chắc những gì CV đã ghi</strong>, không phải biết sơ sơ mọi tool trong JD. Vì vậy: <strong>Giai đoạn 1</strong> ôn chắc phần đã biết (✅), <strong>giai đoạn 2</strong> học mức tối thiểu vài chủ đề JD gần như chắc hỏi (🎯), <strong>giai đoạn 3</strong> là optional (➕). Trong mỗi bài, tiêu đề mục cũng gắn ✅ / 🎯 / ➕ để bạn biết phần nào bỏ qua được.</p>
+          </div>
+        </div>
+        <h3>Giai đoạn 1 — ✅ Ôn chắc cái đã biết (ưu tiên tuyệt đối)</h3>
+        <ul class="steps">
+          <li><h4>Câu chuyện của bạn: <a href="../A-career-star.html">A</a> + <a href="../D-sent-automation.html">D</a> + mục 3–5 của bài này</h4><p class="mb-0">Pitch 90 giây, STAR cho CUBAS integration và SENT automation (1–2 tháng → 2–3 ngày). Kể trôi chảy không nhìn giấy.</p></li>
+          <li><h4>Đào sâu dự án: <a href="LX10-project-deep-dive.html">LX10</a></h4><p class="mb-0">Interviewer Luxoft thường mở bằng dự án hiện tại/gần nhất rồi hỏi dồn. Điền bảng số liệu (mục 7) và kể CUBAS + SENT automation qua đủ 5 tầng.</p></li>
+          <li><h4>BSW integration: <a href="LX5-autosar-eb-integration.html">LX5</a> (+ bài gốc <a href="../B3-communication.html">B3</a>, <a href="../B6-mode-management.html">B6</a>, <a href="../B2-memory.html">B2</a>)</h4><p class="mb-0">Config class, MemMap, SchM, lỗi integration, debug "CAN có trên bus mà SWC không nhận", tối ưu code. Điểm mạnh nhất, phải trả lời sâu được 2–3 tầng câu hỏi.</p></li>
+          <li><h4>Testing &amp; MISRA: các mục ✅ của <a href="LX6-test-quality.html">LX6</a> (+ <a href="../C-testing.html">C</a>, <a href="../G-embedded-c.html">G</a> §11)</h4><p class="mb-0">White/grey/black box, MC/DC, stub/mock, fault injection, MISRA category + deviation, static analysis gate.</p></li>
+          <li><h4>OS: <a href="LX4-osek-rtos.html">LX4</a> (+ <a href="../B5-os.html">B5</a>)</h4><p class="mb-0">Bạn đã tích hợp AUTOSAR OS; OSEK là nền của nó. Trạng thái task, conformance class, PCP, alarm, ISR cat1/2, bẫy.</p></li>
+          <li><h4>Debug &amp; bus: các mục ✅ của <a href="LX8-vector-tools-debug.html">LX8</a> (+ <a href="../E-protocols.html">E</a>)</h4><p class="mb-0">TRACE32 (register, memory, breakpoint, trace), CANoe, CAN/CAN FD, LIN cơ bản.</p></li>
+          <li><h4>ASPICE &amp; traceability: mục 1–2 của <a href="LX7-aspice-8d-cm.html">LX7</a></h4><p class="mb-0">Requirement-to-test, bằng chứng test, baseline, review readiness.</p></li>
+          <li><h4>Linux/QNX &amp; Git hằng ngày: mục 1–2 của <a href="LX9-linux-git-flashing.html">LX9</a></h4><p class="mb-0">Quy trình khoanh vùng lỗi trên target (systemd, journalctl, dmesg, mạng), QNX vs Linux, merge/rebase/cherry-pick.</p></li>
+          <li><h4>CI bạn đã làm: các mục ✅ của <a href="LX2-ci-infra-ops.html">LX2</a></h4><p class="mb-0">Azure Pipelines + Conan, Docker, bench trong CI, cách "đo trước rồi tối ưu". Luyện câu "CI chậm và hay đỏ, bạn làm gì?" bằng kinh nghiệm SENT.</p></li>
+        </ul>
+        <h3>Giai đoạn 2 — 🎯 Tối thiểu cho những gì JD gần như chắc hỏi (vài giờ)</h3>
+        <ul class="steps">
+          <li><h4>Gerrit/Zuul ở mức khái niệm: mục 1, mục 6 và cheat-sheet của <a href="LX1-review-gating.html">LX1</a></h4><p class="mb-0">Đủ để nói "review theo patchset, gate chạy test trước khi merge" và map sang Azure Pipelines bạn đã dùng.</p></li>
+          <li><h4>8D: mục 3 + 3.1 của <a href="LX7-aspice-8d-cm.html">LX7</a></h4><p class="mb-0">Thuộc D0–D8 và điền khung 8D bằng chuyện SENT thật.</p></li>
+          <li><h4>CAPL cơ bản: mục 2 của <a href="LX8-vector-tools-debug.html">LX8</a></h4><p class="mb-0">on message, on timer, output, setTimer. Viết được ví dụ gửi chu kỳ + timeout.</p></li>
+          <li><h4>Bisect &amp; flash UDS: mục 2.1, 3, 3.1 của <a href="LX9-linux-git-flashing.html">LX9</a></h4><p class="mb-0">git bisect khi baseline đỏ, release branch + cherry-pick; bootloader và trình tự flash 3 pha (TCU là cửa ngõ OTA).</p></li>
+          <li><h4>Từ vựng EB tresos: mục 1.2 của <a href="LX5-autosar-eb-integration.html">LX5</a></h4><p class="mb-0">Import, verify, generate, command line. Cùng khái niệm với RTA-CAR bạn đã dùng.</p></li>
+        </ul>
+        <h3>Giai đoạn 3 — ➕ Optional (chỉ khi còn thời gian)</h3>
+        <ul class="steps">
+          <li><h4>Phần còn lại của <a href="LX1-review-gating.html">LX1</a> và <a href="LX2-ci-infra-ops.html">LX2</a></h4><p class="mb-0">Zuul chi tiết, Jenkinsfile, GitLab CI, Ansible, Artifactory, AWS, Grafana.</p></li>
+          <li><h4>Telematics: <a href="LX3-telematics-at.html">LX3</a></h4><p class="mb-0">TCU, 2G→5G, eCall, AT command. Nếu ít thời gian, chỉ đọc cheat-sheet để biết từ vựng.</p></li>
+          <li><h4>VectorCAST, CANape/XCP, iSystem, CANoe trong CI</h4><p class="mb-0">Các mục ➕ trong <a href="LX6-test-quality.html">LX6</a>, <a href="LX8-vector-tools-debug.html">LX8</a> và <a href="LX9-linux-git-flashing.html">LX9</a> (SocketCAN, OTA/UN R156).</p></li>
+        </ul>
+        <div class="callout callout--interview">
+          <div class="callout__icon">🎤</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Khi bị hỏi phần ➕ chưa học:</strong> nói thật và nối về cái đã biết: <em>"I haven't used Zuul/VectorCAST in a project. What I did is X with Azure Pipelines/Cantata, which covers the same concept; I'd ramp up on the tool quickly."</em> Người phỏng vấn đánh giá cao câu trả lời trung thực + nền tảng vững hơn là biết sơ sơ.</p>
+          </div>
+        </div>
+
+        <!-- ================= 7. HỎI NGƯỢC ================= -->
+        <h2>7. Câu hỏi ngược cho interviewer</h2>
+        <p>Với vị trí lead, câu hỏi ngược cho thấy bạn đã nghĩ về công việc thật. Chọn 3–4 câu.</p>
+        <ul>
+          <li><strong>CI hiện tại:</strong> "What does the current pipeline look like from Gerrit push to release? Where is the biggest bottleneck today: build time, bench availability, or flaky tests?"</li>
+          <li><strong>Tool nội bộ:</strong> "The JD mentions Cynosure and Victoria. Are those customer-internal tools? What role do they play next to Zuul and Jenkins?"</li>
+          <li><strong>Bench / HIL:</strong> "How many test benches does the project have, and are they integrated into the gate pipeline or run nightly?"</li>
+          <li><strong>Team:</strong> "How big is the integration team, how is it split between Vietnam and other sites, and what would the lead own in the first three months?"</li>
+          <li><strong>AUTOSAR:</strong> "Which AUTOSAR stack is used, EB tresos with EB corbos/ACG? Who owns the BSW configuration: the integration team or the component teams?"</li>
+          <li><strong>ASPICE:</strong> "What ASPICE level is the project targeting, and is there an assessment coming up?"</li>
+        </ul>
+
+        <!-- ================= 8. EVO ================= -->
+        <h2>8. Trước (~2020) → Nay</h2>
+        <div class="evo">
+          <div class="evo__head">🚗 <span>Integration trong automotive: từ "integration event" → integration liên tục</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>Integration làm theo <strong>đợt</strong> (mỗi 2–4 tuần một baseline), build đêm, test trên bench bằng tay, evidence ASPICE gom cuối dự án. Integration team là "cửa ải" cuối cùng, lỗi được phát hiện muộn.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p><strong>Gated CI</strong> (Gerrit + Zuul): mỗi change được build, phân tích tĩnh, unit test và smoke test trên bench/vECU <em>trước khi merge</em>. Hạ tầng dạng code (Ansible, Docker), metrics trên Grafana. Evidence ASPICE sinh tự động từ pipeline. Integration lead chuyển từ "người ghép code" sang <strong>người vận hành hệ thống giữ chất lượng liên tục</strong>.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> nói được sự dịch chuyển này cho thấy bạn hiểu <em>vì sao</em> Luxoft tuyển người có cả nền AUTOSAR lẫn nền DevOps, thay vì hai người riêng.</div>
+        </div>
+
+        <!-- ================= 9. Q&A ================= -->
+        <h2>9. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">Tell me about yourself (bản cho vị trí CI/Integration). <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Dùng pitch ở mục 5. Cấu trúc: <strong>1 câu định vị</strong> (integration + automation) → <strong>Classic</strong> (CUBAS integrator, RH850, TRACE32, ASPICE) → <strong>Automation lead</strong> (SENT 1–2 tháng → 2–3 ngày, Azure Pipelines + Conan) → <strong>Platform</strong> (Docker/K8s/Terraform) → <strong>1 câu nối vào TCU project</strong>. Không đi sâu RAG/LLM trừ khi được hỏi.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>CUBAS là gì, team bạn integrate những gì?</li><li>2–3 ngày đó gồm những bước nào?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Why Luxoft / why this role? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Ba ý: (1) Vai trò <strong>ghép đúng hai nửa kinh nghiệm</strong>: AUTOSAR integration và CI/automation. (2) Luxoft là <em>software integrator</em> cho nhiều OEM/Tier-1, dự án đa quốc gia, được tiếp xúc toolchain gating hiện đại (Zuul) mà ít nơi dùng. (3) Muốn phát triển theo hướng <strong>lead</strong>: chịu trách nhiệm cả hệ thống chất lượng chứ không chỉ một component.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Bạn kỳ vọng gì trong 6 tháng đầu?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Nếu được giao một CI chậm (build 2 giờ) và hay đỏ vô lý, 30 ngày đầu bạn làm gì? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>Tuần 1, đo:</strong> thu metrics (thời gian từng stage, queue time, tỉ lệ fail theo nguyên nhân: code / infra / flaky / bench). <strong>Tuần 2, hái quả thấp:</strong> cache (ccache, Docker layer, artifact của stage trước), chạy song song các stage độc lập, bỏ bước trùng lặp. <strong>Tuần 3, ổn định:</strong> cách ly và gắn nhãn flaky test, retry có giới hạn chỉ cho lỗi infra, health-check bench trước khi chạy test, agent dựng bằng Ansible/Docker cho đồng nhất. <strong>Tuần 4, cấu trúc:</strong> chia tầng (check nhanh mỗi patchset, full ở gate, long-run ban đêm), dashboard Grafana, SLO cho feedback time. Luôn nhắc: <em>"Measure first, then optimise; that's how I approached the SENT automation."</em></p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Làm sao phân biệt flaky test với lỗi thật?</li><li>Bench là tài nguyên khan hiếm, chia thế nào?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Bạn xử lý thế nào khi một component team đẩy code làm gãy integration build? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Ngắn hạn: <strong>revert hoặc chặn</strong> để baseline xanh lại (không để cả team bị block), báo owner kèm log và bước reproduce. Dài hạn: đưa bài test phát hiện lỗi đó vào <strong>gate</strong> để lần sau change bị chặn trước khi merge. Kinh nghiệm CUBAS: bạn là cầu nối giữa project và các BSW team, và cách làm là mang <em>dữ liệu</em> (log, trace, bước reproduce) tới đúng owner thay vì tranh luận ai sai.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Khi owner không đồng ý đó là lỗi của họ?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Điểm yếu của bạn so với JD này là gì? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Chọn một gap <strong>thật nhưng học được nhanh</strong>, và nói đang làm gì để lấp: <em>"I haven't worked hands-on with Zuul and Gerrit or with cellular modems. I've studied the gating model and the 3GPP AT command set, and since I've already built pipelines and debugged protocol-level timing issues, I expect to ramp up quickly."</em> Không chọn gap thuộc lõi (ví dụ AUTOSAR integration).</p>
+          </div></div>
+        </div>
+
+        <!-- ================= 10. Cheat-sheet ================= -->
+        <h2>10. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>Vai trò thật</h4><ul>
+            <li>SW Integration + CI/CD Lead</li>
+            <li>AUTOSAR Classic TCU platform</li>
+            <li>Giữ main xanh + evidence ASPICE</li>
+            <li>Quản lý integration/test team</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>3 chuyện đinh</h4><ul>
+            <li>CUBAS BSW integrator (RH850, TRACE32)</li>
+            <li>SENT 1–2 tháng → 2–3 ngày (lead)</li>
+            <li>SENT timing debug ST/Infineon (8D)</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Map tool</h4><ul>
+            <li>Azure Pipelines ↔ Jenkins/GitLab</li>
+            <li>Conan remote ↔ Artifactory</li>
+            <li>Cantata ↔ VectorCAST</li>
+            <li>RTA-CAR ↔ EB tresos</li>
+            <li>Terraform ↔ Ansible (khác lớp!)</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Gap phải nói được</h4><ul>
+            <li>Zuul check/gate, speculative merge</li>
+            <li>AT: CPIN → CEREG → CGDCONT → data</li>
+            <li>MISRA: Mandatory/Required/Advisory</li>
+            <li>8D: D0–D8</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Hỏi ngược</h4><ul>
+            <li>Bottleneck CI hiện tại?</li>
+            <li>Cynosure / Victoria là gì?</li>
+            <li>Bench trong gate hay nightly?</li>
+            <li>Lead sở hữu gì trong 3 tháng đầu?</li>
+          </ul></div>
+        </div>
+
+        <!-- ================= 11. Sources ================= -->
+        <h2>11. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li>JD gốc (bạn cung cấp) và tin tuyển dụng công khai "Automotive Software Integration Engineer/Lead — Luxoft" (HCMC) trên <a href="https://freehire.me/jobs/automotive-software-integration-engineer-lead-luxoft-dhfooh2s" target="_blank" rel="noopener">freehire.me</a>.</li>
+          <li>Luxoft Automotive — <a href="https://www.luxoft.com/industries/automotive/software-systems-integrator" target="_blank" rel="noopener">Software systems integrator</a>; <a href="https://www.luxoft.com/automotive/system-testing-and-validation/" target="_blank" rel="noopener">System testing &amp; validation</a>.</li>
+          <li>Zuul — <a href="https://zuul-ci.org/docs/zuul/latest/gating.html" target="_blank" rel="noopener">Project Gating</a>; danh sách user (Volvo Cars, BMW) tại <a href="https://zuul-ci.org/users.html" target="_blank" rel="noopener">zuul-ci.org/users</a>.</li>
+          <li>Kinh nghiệm cá nhân: <code>cv/CV_Cao_Viet_Hoang.md</code>.</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi đã nói trơn pitch 90 giây và trả lời được cả 5 câu rủi ro mà không nhìn bài.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">Chủ đề LX0 · Luxoft JD strategy — Interview Prep</footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../../assets/js/app.js?v=7"></script>
+</body>
+</html>

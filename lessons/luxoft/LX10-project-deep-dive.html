@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LX10 · Project Deep-dive — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/css/style.css?v=7" />
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../../assets/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../../assets/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="../../assets/favicon.ico" />
+</head>
+<body data-page="LX10" data-root="../../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">LX10</span>
+            <span class="badge badge--must">Must-tell</span>
+            <span class="chip">Luxoft — TCU · CI &amp; Integration</span>
+          </div>
+          <h1>Project deep-dive — trả lời khi interviewer hỏi dồn về dự án của bạn</h1>
+          <p class="lead">Vòng technical của Luxoft thường mở bằng <em>"Tell me about your current / last project"</em> rồi đào sâu 3–4 tầng vào chính những gì CV ghi. Bài này gom <strong>từng dự án trong CV</strong>, các câu hỏi dồn hay gặp và khung trả lời. Mọi thông tin cá nhân lấy đúng từ CV. Chỗ cần chi tiết thật (con số, tên lỗi, quy mô) để dạng <strong>[..]</strong> cho bạn tự điền. Đừng bịa khi điền: một con số sai bị hỏi vặn còn tệ hơn nói "khoảng".</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> ✅ toàn bộ: đây là kinh nghiệm của bạn, phải kể trôi và đỡ được câu đào sâu</span>
+            <span><b>Bài gốc:</b> <a href="../A-career-star.html">A</a>, <a href="../D-sent-automation.html">D</a>, <a href="LX0-jd-strategy.html">LX0</a></span>
+          </div>
+        </div>
+
+        <div class="callout callout--key">
+          <div class="callout__icon">🧭</div>
+          <div class="callout__body">
+            <div class="callout__title">Chế độ "ôn cái đã biết trước"</div>
+            <p class="mb-0">Cả bài là ✅. Thứ tự ưu tiên theo mức gần với JD Luxoft (integration lead): mục 2 (CUBAS BSW integration) và mục 5 (SENT automation + CI) trước, rồi mục 4 (debug SENT), mục 3 (MCAL validation), cuối cùng mục 6 (AI platform, chỉ dùng như cầu nối sang CI operations). Làm mục 7 (bảng số liệu) trước buổi phỏng vấn.</p>
+            <p class="mb-0" style="margin-top:6px"><strong>Cách dùng:</strong> đọc câu hỏi, tự nói câu trả lời thành tiếng (tiếng Anh), rồi mới mở khung. Ô <strong>[..]</strong> là chỗ bạn thay bằng chi tiết thật.</p>
+          </div>
+        </div>
+
+        <!-- ================= 1 HOW ================= -->
+        <h2>✅ 1. Interviewer đào sâu theo tầng nào</h2>
+        <div class="figure">
+          <svg viewBox="0 0 720 280" role="img" aria-label="Năm tầng đào sâu khi hỏi về dự án" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="16" width="680" height="44" rx="9" fill="var(--brand-400)"/>
+            <text x="40" y="36" class="dgm-inv" font-size="11" font-weight="700">1. Bối cảnh</text>
+            <text x="40" y="51" class="dgm-inv-sub" font-size="8.5">"Tell me about the project." Sản phẩm gì, ECU/target gì, team bao nhiêu người, bạn ở đâu trong đó.</text>
+            <rect x="60" y="68" width="600" height="44" rx="9" fill="var(--brand-600)"/>
+            <text x="80" y="88" class="dgm-inv" font-size="11" font-weight="700">2. Vai trò của "tôi"</text>
+            <text x="80" y="103" class="dgm-inv-sub" font-size="8.5">"What exactly did YOU do?" Tách rõ phần bạn làm khỏi phần team làm.</text>
+            <rect x="100" y="120" width="520" height="44" rx="9" fill="var(--brand-800)"/>
+            <text x="120" y="140" class="dgm-inv" font-size="11" font-weight="700">3. Chi tiết kỹ thuật</text>
+            <text x="120" y="155" class="dgm-inv-sub" font-size="8.5">"How does it work? Why that way?" Kiến trúc, luồng dữ liệu, tool, cấu hình.</text>
+            <rect x="140" y="172" width="440" height="44" rx="9" fill="var(--brand-900)"/>
+            <text x="160" y="192" class="dgm-inv" font-size="11" font-weight="700">4. Vấn đề khó nhất</text>
+            <text x="160" y="207" class="dgm-inv-sub" font-size="8.5">"Hardest bug? How did you find it?" Trình tự điều tra, bằng chứng.</text>
+            <rect x="180" y="224" width="360" height="44" rx="9" fill="var(--must)"/>
+            <text x="200" y="244" class="dgm-inv" font-size="11" font-weight="700">5. Nhìn lại</text>
+            <text x="200" y="259" class="dgm-inv-sub" font-size="8.5">"What would you do differently?" Bài học, cải tiến.</text>
+          </svg>
+          <div class="figure__cap"><b>Phần lớn ứng viên rớt ở tầng 2 và 3:</b> kể "we did" mà không tách được phần của mình, hoặc nói được tên tool nhưng không giải thích được nó hoạt động thế nào. Chuẩn bị cho mỗi dự án đủ 5 tầng.</div>
+        </div>
+        <div class="grid grid-2">
+          <div class="callout callout--tip"><div class="callout__icon">✅</div><div class="callout__body"><div class="callout__title">Nên</div><p class="mb-0">Nói "I" cho phần mình làm, "the team" cho phần còn lại. Mỗi câu trả lời có một con số hoặc một ví dụ cụ thể. Nếu bị NDA thì nói ở mức kiến trúc chung ("a body/chassis ECU on RH850") thay vì tên khách hàng. Không biết thì nói không biết, rồi nói bạn sẽ tìm ra thế nào.</p></div></div>
+          <div class="callout callout--warn"><div class="callout__icon">⚠️</div><div class="callout__body"><div class="callout__title">Tránh</div><p class="mb-0">Nhận phần việc của người khác. Liệt kê tool mà không nói dùng để làm gì. Nói con số mà không nhớ được đo thế nào ("1–2 tháng xuống 2–3 ngày" phải giải thích được cái gì tốn thời gian trước đây). Chê team cũ hoặc Bosch.</p></div></div>
+        </div>
+
+        <!-- ================= 2 CUBAS ================= -->
+        <h2>✅ 2. CUBAS BSW integrator — RH850 D3/D4/D5 (2022–2024)</h2>
+        <dl class="kv">
+          <dt>CV ghi</dt><dd>"Served as a BSW integrator in the CUBAS integration team on RH850 D3/D4/D5, integrating and validating BswM, Diag, Can, Com, EcuM, OS, MCAL, and Mem across the stack." "Worked across component interfaces to investigate integration failures, reproduce defects, analyze dependencies, and coordinate resolution with multiple BSW development teams." "Acted as an integration point between project stakeholders and BSW component teams." Dùng Lauterbach TRACE32, RTA-CAR, ASPICE traceability.</dd>
+          <dt>Vì sao quan trọng nhất</dt><dd>JD Luxoft là <em>SW integration</em>. Đây là trải nghiệm trùng trực tiếp; người phỏng vấn sẽ dành nhiều thời gian nhất ở đây.</dd>
+          <dt>Kiến thức nền</dt><dd><a href="LX5-autosar-eb-integration.html">LX5</a> (luồng ARXML, config class, MemMap, lỗi integration), <a href="LX4-osek-rtos.html">LX4</a> (OS), <a href="../B3-communication.html">B3</a>, <a href="../B6-mode-management.html">B6</a>, <a href="../B2-memory.html">B2</a>.</dd>
+        </dl>
+        <div class="accordion">
+          <div class="accordion__item">
+            <button class="accordion__head">Q1. "Describe the integration flow in your team. What came in, what went out?" <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p><strong>Khung:</strong> đầu vào là các bản giao của từng BSW component team (source + cấu hình) và MCAL cho RH850 → người tích hợp ghép theo baseline, cấu hình/sinh code bằng tool (CV có RTA-CAR) → build → chạy test tích hợp trên target → báo cáo kết quả, mở ticket lỗi cho team component liên quan → baseline tích hợp được giao cho project.</p>
+              <p class="mb-0"><strong>Điền:</strong> chu kỳ tích hợp [bao lâu một lần]; số component/team [..]; biến thể D3/D4/D5 khác nhau ở [..]; tôi phụ trách [các module nào, hay cả stack]; kết quả giao dưới dạng [..].</p>
+            </div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">Q2. "What kind of integration failures did you see most often?" <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p><strong>Khung (loại lỗi điển hình ở tầng BSW, chọn những loại bạn thật sự gặp):</strong> interface giữa module không khớp version; cấu hình không nhất quán giữa các module (ví dụ PDU ID/độ dài giữa Com, PduR, CanIf); thứ tự khởi tạo trong EcuM/BswM sai nên module dùng trước khi init; MemMap/section đặt sai vùng nhớ; lỗi OS (stack overflow, sai ưu tiên, sai cấu hình ISR category); NvM/Fee không đọc/ghi được sau khi đổi layout.</p>
+              <p class="mb-0"><strong>Điền:</strong> ví dụ thật số 1 [triệu chứng → nguyên nhân → sửa ở đâu, team nào]; ví dụ thật số 2 [..]. Bảng lỗi đầy đủ ở <a href="LX5-autosar-eb-integration.html">LX5</a>.</p>
+            </div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">Q3. "Walk me through one integration failure you investigated with TRACE32." <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p><strong>Khung STAR:</strong> S: sau khi ghép bản mới của [module], [triệu chứng: ECU reset / không gửi CAN / DTC sai…] trên [D3/D4/D5]. T: xác định lỗi ở module nào và chứng minh để giao đúng team. A: tái hiện ổn định → dùng TRACE32 đặt breakpoint tại [hàm/ISR], xem register [..] và vùng nhớ [..], dùng trace/log để thấy [..] → so với baseline trước để khoanh vùng thay đổi. R: nguyên nhân là [..], team [..] sửa, bổ sung [test/kiểm tra] để lần sau bắt sớm.</p>
+              <p class="mb-0"><strong>Điền cho sẵn:</strong> tên lỗi, lệnh/cửa sổ TRACE32 bạn dùng nhiều nhất (Register, Data dump, Break, Trace List…), mất bao lâu.</p>
+            </div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">Q4. "Two BSW teams blamed each other. What did you do?" <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p><strong>Khung (khớp câu chuyện "integration hub" trong <a href="../A-career-star.html">A</a>):</strong> đưa tranh luận về bằng chứng: log/trace TRACE32, requirement và spec interface, truy vết ASPICE. Chỉ ra chính xác chỗ hành vi lệch spec, đề xuất phương án kèm trade-off, thống nhất ai sửa và khi nào, rồi theo dõi tới khi baseline xanh.</p>
+              <p class="mb-0"><strong>Điền:</strong> tình huống thật [module A vs module B, vấn đề gì], kết quả [..].</p>
+            </div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">Q5. "If you joined our TCU team tomorrow as integration lead, what would you reuse from CUBAS?" <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p class="mb-0"><strong>Khung:</strong> (1) cách chia baseline và quy trình giao nhận với component team; (2) thói quen tái hiện trước rồi mới đổ lỗi, bằng chứng từ debugger; (3) truy vết requirement ↔ test ↔ kết quả; (4) phần tôi sẽ làm khác: tự động hoá bước build/flash/smoke test vào CI để bắt lỗi integration mỗi ngày thay vì cuối chu kỳ, đúng bài học từ SENT automation.</p>
+            </div></div>
+          </div>
+        </div>
+
+        <!-- ================= 3 MCAL ================= -->
+        <h2>✅ 3. MCAL unit/component validation — target + VECU (2022–2024)</h2>
+        <dl class="kv">
+          <dt>CV ghi</dt><dd>"Designed and executed MCAL Unit/Component validation across digital I/O, analog, timer, communication, and watchdog driver groups on both target hardware and VECU." "Developed test logic and supporting automation with Pytest, Cantata, and ECU-Test, including dependency isolation, mocking/stubbing, fault injection, edge-case validation, and coverage-oriented testing." Làm cả requirement analysis, traceability, test evidence, review readiness.</dd>
+          <dt>Kiến thức nền</dt><dd><a href="LX6-test-quality.html">LX6</a> (box testing, MC/DC, MISRA), <a href="../C-testing.html">C</a>, <a href="../B1a-mcal-io.html">B1a</a>, <a href="../B1b-mcal-timer.html">B1b</a>, <a href="../B1c-mcal-system.html">B1c</a>, <a href="../K-vecu-sil.html">K</a> (VECU).</dd>
+        </dl>
+        <div class="accordion">
+          <div class="accordion__item">
+            <button class="accordion__head">Q1. "How did you design test cases for an MCAL driver, e.g. the ADC or GPT driver?" <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p><strong>Khung:</strong> bắt đầu từ requirement (spec AUTOSAR SWS của driver + requirement dự án) → với mỗi API: điều kiện hợp lệ, giá trị biên, tham số sai (DET error), gọi khi chưa init, gọi lặp → hành vi phụ thuộc cấu hình (mỗi channel/group, chế độ) → các trường hợp lỗi phần cứng bằng fault injection → đo coverage để tìm nhánh chưa test. Mỗi test case liên kết ngược về requirement.</p>
+              <p class="mb-0"><strong>Điền:</strong> driver bạn làm nhiều nhất [..]; một ví dụ test biên hoặc fault injection thật [..].</p>
+            </div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">Q2. "Target vs VECU — what did you run where, and why?" <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p><strong>Khung:</strong> VECU chạy nhanh, song song, không cần board, hợp cho logic, nhánh lỗi, coverage và chạy lặp. Target cần cho hành vi phụ thuộc phần cứng thật: timing, register thật, ngắt, chuyển đổi analog, watchdog. Cùng test logic chạy được cả hai nơi giúp tìm sớm và giảm thời gian chiếm board.</p>
+              <p class="mb-0"><strong>Điền:</strong> tỉ lệ hoặc tiêu chí chia [..]; một lỗi chỉ thấy trên target mà VECU không thấy [..] (nếu có).</p>
+            </div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">Q3. "Pytest, Cantata and ECU-Test — what was each one for?" <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p><strong>Khung (kiểm lại với trí nhớ thật):</strong> Cantata là tool unit test cho C, dùng cho stub/isolation và đo coverage ở mức unit. Pytest là framework Python để viết logic test và automation quanh đó. ECU-Test (tracetronic) dùng cho test ở mức ECU/HIL, điều khiển tool và thiết bị đo theo test case.</p>
+              <p class="mb-0"><strong>Điền:</strong> bạn dùng tool nào cho driver group nào [..]; mocking/stubbing làm bằng [..].</p>
+            </div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">Q4. "How did you test the watchdog driver without resetting the board every time?" <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p class="mb-0"><strong>Khung:</strong> tách hai loại: (1) test API/cấu hình (mode, timeout, trigger) mà không để watchdog hết hạn; (2) test hết hạn có chủ đích: cố tình ngừng trigger, rồi sau reset đọc lý do reset (reset reason register) để xác nhận là watchdog reset, hoặc quan sát bằng debugger. Trên VECU có thể mô phỏng. <strong>Điền:</strong> cách team bạn thật sự làm [..].</p>
+            </div></div>
+          </div>
+        </div>
+
+        <!-- ================= 4 SENT DEBUG ================= -->
+        <h2>✅ 4. Debug lỗi timing SENT — ST &amp; Infineon (2022–2024)</h2>
+        <dl class="kv">
+          <dt>CV ghi</dt><dd>"Diagnosed and fixed SENT timing and signal-behavior defects on ST and Infineon targets using UDE Debugger, analyzing hardware/software interaction and protocol-level timing."</dd>
+          <dt>Kiến thức nền</dt><dd><a href="../D-sent-automation.html">D</a> §1 (SENT: tick, nibble, sync/pause pulse, CRC, fast/slow channel), khung 8D ở <a href="LX7-aspice-8d-cm.html">LX7</a> §3.1.</dd>
+        </dl>
+        <div class="accordion">
+          <div class="accordion__item">
+            <button class="accordion__head">Q1. "Explain a SENT frame in 60 seconds." <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p class="mb-0"><strong>Khung (SAE J2716):</strong> giao tiếp một chiều từ cảm biến tới ECU, mã hoá bằng khoảng thời gian giữa các sườn xuống. Đơn vị là clock tick (thường 3 µs). Frame gồm: sync/calibration pulse 56 tick, 1 nibble status/communication, các nibble dữ liệu (thường 6), 1 nibble CRC, có thể có pause pulse để frame dài cố định. Mỗi nibble 4 bit = 12 + giá trị tick (12–27). Slow channel ghép bit từ nibble status qua nhiều frame. Bên nhận đo độ dài sync pulse để bù sai lệch clock của cảm biến.</p>
+            </div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">Q2. "How did you decide whether it was a hardware or a software problem?" <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p><strong>Khung (khớp <a href="../A-career-star.html">A</a>):</strong> cô lập biến: cùng phần mềm trên hai target (ST và Infineon) và ngược lại; bắt timing ở mức giao thức bằng UDE (tick, nibble, fast/slow) và đối chiếu reference manual của ngoại vi; phân tích tương tác giữa cấu hình ngoại vi, ngắt và driver.</p>
+              <p class="mb-0"><strong>Điền:</strong> triệu chứng cụ thể [sai tick? lỗi CRC? pause pulse? mất frame?]; chỉ xảy ra ở [target/điều kiện]; nguyên nhân cuối cùng [..]; cách sửa [..]; kiểm lại trên cả hai target thế nào.</p>
+            </div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">Q3. "What did you learn from it that you still apply?" <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p class="mb-0"><strong>Khung:</strong> với lỗi khó tái hiện thì phải đo ở tầng thấp nhất thay vì đoán; so sánh có kiểm soát (thay một biến mỗi lần); và biến kịch bản lỗi thành test lặp lại được. Ý cuối nối tự nhiên sang mục 5: sau đó tôi dẫn dắt SENT automation. (Chỉ nói liên hệ này nếu đúng với trải nghiệm của bạn.)</p>
+            </div></div>
+          </div>
+        </div>
+
+        <!-- ================= 5 SENT AUTOMATION ================= -->
+        <h2>✅ 5. SENT automation lead + ARA system test (2024–2025)</h2>
+        <dl class="kv">
+          <dt>CV ghi</dt><dd>"Led the engineering and delivery of a SENT stack automation initiative, covering planning, task breakdown, workflow execution, progress tracking, and team delivery in an Agile environment." Giảm chu kỳ validation thủ công từ "approximately 1–2 months to 2–3 days". "Integrated build, package, and test workflows with Azure Pipelines and Conan." Validate ARA trên Raspberry Pi 4, R-Car, QNX, Embedded Linux. Framework được ARA system team dùng lại.</dd>
+          <dt>Kiến thức nền</dt><dd><a href="../D-sent-automation.html">D</a> (toàn bộ), <a href="LX2-ci-infra-ops.html">LX2</a> (các mục ✅), <a href="LX9-linux-git-flashing.html">LX9</a> §1 (Linux/QNX).</dd>
+          <dt>Vì sao quan trọng</dt><dd>Đây là bằng chứng mạnh nhất cho phần <em>CI operations</em> và <em>team leader</em> trong JD.</dd>
+        </dl>
+        <div class="accordion">
+          <div class="accordion__item">
+            <button class="accordion__head">Q1. "What exactly took 1–2 months before, and where did the time go after automation?" <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p><strong>Đây là câu chắc chắn bị hỏi.</strong> Người phỏng vấn muốn kiểm tra con số có thật không.</p>
+              <p class="mb-0"><strong>Điền:</strong> trước đây một chu kỳ gồm [bao nhiêu test case, trên bao nhiêu cấu hình/target], mỗi case tốn [..] vì [thao tác tay nào: cấu hình, chạy, đo, ghi kết quả, viết báo cáo]. Sau automation: [cái gì chạy tự động], thời gian 2–3 ngày chủ yếu dành cho [..]. Đo bằng cách [so chu kỳ trước/sau, theo Jira hay theo log].</p>
+            </div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">Q2. "What was the architecture of the automation framework?" <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p class="mb-0"><strong>Khung:</strong> nói theo lớp: định nghĩa test case → lớp điều khiển (chạy test, điều khiển target/thiết bị) → thu thập kết quả và log → báo cáo; bọc bởi pipeline (Azure Pipelines) và quản lý dependency/package (Conan) để chạy lặp lại được. <strong>Điền:</strong> ngôn ngữ/tool thật của từng lớp [..], và phần bạn tự viết [..]. Sơ đồ tham khảo ở <a href="../D-sent-automation.html">D</a> §3.</p>
+            </div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">Q3. "Why Conan? What did Azure Pipelines do in your setup?" <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p class="mb-0"><strong>Khung:</strong> Conan là package manager cho C/C++: đóng gói và khoá version dependency (và binary theo cấu hình build) để mọi máy/agent dùng đúng một bộ, tránh "chạy trên máy tôi được". Azure Pipelines định nghĩa pipeline bằng YAML: trigger, build, đóng gói, chạy test, xuất báo cáo/artifact. <strong>Điền:</strong> pipeline của bạn có những stage nào [..], chạy khi nào [mỗi commit/nightly/thủ công], agent chạy ở đâu [..], nối với bench thế nào [..].</p>
+            </div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">Q4. "How big was the team, and how did you plan and track the work?" <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p class="mb-0"><strong>Khung (khớp <a href="LX0-jd-strategy.html">LX0</a> §3.4):</strong> chia bài toán thành các phần giao được theo sprint, ước lượng, theo dõi trên Jira, gỡ vướng kỹ thuật cho thành viên, báo cáo tiến độ cho stakeholder. <strong>Điền trung thực:</strong> quy mô [..] người, vai trò của bạn là [lead kỹ thuật / điều phối], bạn có quản lý nhân sự trực tiếp hay không [..]. Không phóng đại.</p>
+            </div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">Q5. "Tell me about a system-level failure on ARA you isolated." <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p class="mb-0"><strong>Khung (theo quy trình ở <a href="LX9-linux-git-flashing.html">LX9</a> §1):</strong> triệu chứng [..] trên [RPi4/R-Car/QNX/Linux] → kiểm trạng thái process/service → log → mạng (endpoint có listen không, gói có đi không) → tái hiện + remote debug → kết luận lỗi thuộc [stack/cấu hình/platform/bench] → giao cho [..]. <strong>Điền:</strong> một ví dụ thật, kể trong 90 giây.</p>
+            </div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">Q6. "What went wrong in the automation project?" <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p class="mb-0"><strong>Khung (câu chuyện "thất bại" trong <a href="../A-career-star.html">A</a>):</strong> giai đoạn đầu tối ưu tốc độ mà coi nhẹ độ ổn định môi trường nên pipeline flaky; sau đó chuẩn hoá môi trường bằng Conan, thêm retry và log rõ ràng, tách test phụ thuộc phần cứng; team mới thật sự dùng. Chỉ kể nếu đúng với trải nghiệm thật, hoặc thay bằng bài học thật của bạn [..].</p>
+            </div></div>
+          </div>
+        </div>
+
+        <!-- ================= 6 AI PLATFORM ================= -->
+        <h2>✅ 6. AI Platform Engineer (2025 – nay): dùng làm cầu nối, không kể dài</h2>
+        <dl class="kv">
+          <dt>CV ghi</dt><dd>Xây và vận hành nền tảng AI/LLM nội bộ: quản lý API access, access control, tooling, cost governance; chatbot và RAG cho hotline ticket và requirement tracing; agentic workflow; front-end; deploy trên Azure và GCP bằng Terraform/IaC, Docker, Kubernetes; Azure App Service, networking/DNS, Entra ID, AI Foundry; training cho người dùng.</dd>
+          <dt>Cách dùng trong buổi Luxoft</dt><dd>Người phỏng vấn sẽ hỏi "vì sao chuyển lại embedded" (câu trả lời ở <a href="LX0-jd-strategy.html">LX0</a> §3.1). Chỉ kể phần <strong>vận hành hạ tầng</strong>: IaC, container, access control, cost và giám sát. Đây chính là kỹ năng CI operations. Không đi sâu vào LLM trừ khi được hỏi.</dd>
+        </dl>
+        <div class="accordion">
+          <div class="accordion__item">
+            <button class="accordion__head">Q1. "What does your current platform look like, infrastructure-wise?" <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p class="mb-0"><strong>Khung:</strong> ứng dụng chạy container (Docker), triển khai trên Azure (App Service) và GCP/Kubernetes, hạ tầng mô tả bằng Terraform, xác thực qua Entra ID, quản lý truy cập API và theo dõi chi phí. <strong>Điền:</strong> quy mô [số người dùng/ứng dụng], một sự cố vận hành bạn đã xử lý [..], cách deploy một thay đổi [..]. Rồi nối: "the same discipline, reproducible environments, access control, monitoring, is what a CI infrastructure needs."</p>
+            </div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">Q2. "Your tools Pullogic and Collect Review Finding — what problem did they solve?" <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner">
+              <p class="mb-0"><strong>Theo CV:</strong> Pullogic là tool review pull request tích hợp Jira; Collect Review Finding gom finding review toàn hệ thống và thống kê chất lượng theo người/team cho quản lý. Cả hai liên quan trực tiếp tới code review và quality gate mà JD nhắc. <strong>Điền:</strong> vì sao bạn làm, ai dùng, tác động [..].</p>
+            </div></div>
+          </div>
+        </div>
+
+        <!-- ================= 7 NUMBERS ================= -->
+        <h2>✅ 7. Bảng số liệu và chi tiết cần điền trước buổi phỏng vấn</h2>
+        <p>Điền vào bản ghi riêng của bạn (không cần sửa trang này). Nếu không nhớ chính xác, chuẩn bị cách nói có khoảng: "around 10 people", "roughly 200 test cases".</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Dự án</th><th>Câu hỏi con số / chi tiết</th><th>Của bạn</th></tr></thead>
+          <tbody>
+            <tr><td rowspan="3">CUBAS</td><td>Số BSW team/component bạn làm việc cùng; chu kỳ giao baseline</td><td>[..]</td></tr>
+            <tr><td>Hai lỗi integration thật (triệu chứng → nguyên nhân → sửa)</td><td>[..]</td></tr>
+            <tr><td>D3/D4/D5 khác nhau ảnh hưởng tới tích hợp thế nào</td><td>[..]</td></tr>
+            <tr><td rowspan="2">MCAL</td><td>Driver group bạn phụ trách chính; số test case ước lượng; mức coverage đạt</td><td>[..]</td></tr>
+            <tr><td>Một fault injection hoặc test biên phát hiện lỗi thật</td><td>[..]</td></tr>
+            <tr><td>SENT debug</td><td>Triệu chứng, target, nguyên nhân, cách sửa, thời gian điều tra</td><td>[..]</td></tr>
+            <tr><td rowspan="3">SENT automation</td><td>Cái gì tốn 1–2 tháng; cái gì còn lại trong 2–3 ngày</td><td>[..]</td></tr>
+            <tr><td>Quy mô team; vai trò chính xác của bạn</td><td>[..]</td></tr>
+            <tr><td>Các stage pipeline Azure; Conan quản lý gì</td><td>[..]</td></tr>
+            <tr><td>ARA</td><td>Một lỗi hệ thống đã khoanh vùng trên Linux/QNX</td><td>[..]</td></tr>
+            <tr><td>AI Platform</td><td>Quy mô người dùng; một sự cố vận hành; cách deploy</td><td>[..]</td></tr>
+          </tbody>
+        </table></div>
+
+        <!-- ================= 8 EVO ================= -->
+        <h2>8. Trước (~2020) → Nay</h2>
+        <div class="evo">
+          <div class="evo__head">🔁 <span>Hỏi "biết tool gì" → hỏi "đã làm gì, chứng minh thế nào"</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>Vòng technical outsourcing automotive thiên về câu hỏi lý thuyết (C, CAN, AUTOSAR) và danh sách tool. Kể dự án ở mức mô tả chung là đủ.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p>Nhà tuyển dụng hỏi theo kiểu behavioral + technical kết hợp: đào sâu một dự án tới mức chi tiết để kiểm chứng CV, hỏi con số và cách đo, hỏi vai trò cá nhân. Nhiều nơi thêm vòng gặp khách hàng (client interview) cũng tập trung vào dự án đã làm.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> kiến thức chung có thể học trong vài ngày, còn độ sâu về dự án của chính bạn là thứ người khác không sao chép được. Đó là lợi thế lớn nhất của bạn.</div>
+        </div>
+
+        <!-- ================= 9 QA ================= -->
+        <h2>9. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">"Tell me about your last embedded project" trong 2 phút. <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Chọn CUBAS vì gần JD nhất. Bối cảnh: tích hợp stack AUTOSAR Classic BSW trên RH850 D3/D4/D5 trong team CUBAS. Vai trò: BSW integrator, ghép và validate BswM, Diag, Can, Com, EcuM, OS, MCAL, Mem; làm đầu mối giữa project và các BSW team. Kỹ thuật: [luồng tích hợp, tool]. Vấn đề khó: [một lỗi thật, điều tra bằng TRACE32]. Kết quả: [..]. Nối: sau đó tôi dẫn dắt SENT automation và đưa build/test vào Azure Pipelines, nên tôi hiểu cả phía tích hợp lẫn phía CI.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Bạn phụ trách module nào trực tiếp?</li><li>Một baseline tích hợp mất bao lâu từ lúc nhận bản giao?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">"You said 1–2 months to 2–3 days. How did you measure it?" <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Trả lời bằng chi tiết đã điền ở mục 5 Q1 và mục 7: chu kỳ trước gồm những bước tay nào, mỗi bước tốn bao lâu, sau automation còn bước nào và tốn bao lâu, số liệu lấy từ đâu. Nếu con số là ước lượng của team thì nói rõ là ước lượng theo chu kỳ thực tế trước/sau.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">"What was your personal contribution, not the team's?" <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Chuẩn bị cho mỗi dự án 2–3 câu bắt đầu bằng "I": CUBAS: "I integrated and validated…, I investigated… with TRACE32, I coordinated fixes with…". SENT automation: "I planned and broke down the work, I designed…, I integrated the workflow with Azure Pipelines and Conan, I tracked delivery…". Phần do người khác làm thì nói rõ "a teammate built…".</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">"What would you do differently if you ran the CUBAS integration again?" <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Câu mở để nối sang JD: đưa build + flash + smoke test lên CI chạy mỗi ngày, gating trước khi merge thay vì phát hiện lỗi ở cuối chu kỳ tích hợp; tự động bisect khi baseline đỏ; dashboard trạng thái baseline cho các team component. Đây đúng là việc của CI/integration lead ở Luxoft.</p></div></div>
+        </div>
+
+        <!-- ================= 10 CHEAT ================= -->
+        <h2>10. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>5 tầng</h4><ul>
+            <li>bối cảnh → vai trò "I"</li><li>→ kỹ thuật → lỗi khó</li><li>→ nhìn lại / làm khác</li><li>mỗi câu 1 con số hoặc 1 ví dụ</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>CUBAS (ưu tiên 1)</h4><ul>
+            <li>RH850 D3/D4/D5</li><li>BswM Diag Can Com EcuM OS MCAL Mem</li><li>TRACE32 · RTA-CAR · ASPICE</li><li>hub giữa project và BSW team</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>SENT automation (ưu tiên 1)</h4><ul>
+            <li>1–2 tháng → 2–3 ngày</li><li>lead: plan · breakdown · track · deliver</li><li>Azure Pipelines + Conan</li><li>ARA: RPi4 · R-Car · QNX · Linux</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Còn lại</h4><ul>
+            <li>MCAL: Pytest · Cantata · ECU-Test · target + VECU</li><li>SENT debug: UDE · ST/Infineon</li><li>AI: Terraform · Docker · K8s · Entra ID</li><li>Pullogic · Collect Review Finding</li>
+          </ul></div>
+        </div>
+
+        <h2>11. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li><code>cv/CV_Cao_Viet_Hoang.md</code> — nguồn duy nhất cho mọi thông tin cá nhân trong bài.</li>
+          <li>Luxoft — <a href="https://career.luxoft.com/hiring-process" target="_blank" rel="noopener">Hiring process</a>.</li>
+          <li>SAE J2716 (SENT).</li>
+          <li>Bài nội bộ: <a href="../A-career-star.html">A — STAR</a>, <a href="../D-sent-automation.html">D — SENT Automation</a>, <a href="LX0-jd-strategy.html">LX0 — JD &amp; chiến lược</a>.</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi đã điền xong bảng mục 7 và kể được CUBAS + SENT automation qua đủ 5 tầng bằng tiếng Anh.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">Chủ đề LX10 · Project Deep-dive — Interview Prep</footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../../assets/js/app.js?v=7"></script>
+</body>
+</html>

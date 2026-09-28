@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LX7 · ASPICE · 8D · Configuration Management — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/css/style.css?v=7" />
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../../assets/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../../assets/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="../../assets/favicon.ico" />
+</head>
+<body data-page="LX7" data-root="../../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">LX7</span>
+            <span class="badge badge--core">Core</span>
+            <span class="chip">Luxoft — TCU · CI &amp; Integration</span>
+          </div>
+          <h1>ASPICE 4.0 · 8D Problem Solving · Configuration Management</h1>
+          <p class="lead">JD nhắc: <em>"Knowledge of ASPICE… 8D problem-solving… Troubleshooting and root-cause analysis"</em>, và vai trò CI lead thực chất là người giữ <strong>configuration management</strong> (baseline, release, truy vết). CV có "ASPICE expectations, traceability, review readiness", còn <strong>8D chưa có trong CV</strong>: cần học phương pháp và áp vào một câu chuyện thật của bạn.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> ✅ ASPICE, traceability, CM: đã làm. 🎯 8D: học khung và điền câu chuyện SENT</span>
+            <span><b>Bài gốc:</b> <a href="../H-iso26262.html">H</a>, <a href="../C-testing.html">C</a></span>
+          </div>
+
+        </div>
+
+        <div class="callout callout--key">
+          <div class="callout__icon">🧭</div>
+          <div class="callout__body">
+            <div class="callout__title">Chế độ "ôn cái đã biết trước"</div>
+            <p class="mb-0">Ôn chắc ✅ mục 1–2 (ASPICE, truy vết requirement-to-test, baseline) vì CV có. 🎯 Mục 3 và 3.1: CV chưa có 8D nhưng JD ghi rõ; học 8 bước và điền khung bằng chuyện SENT thật. ➕ Mục 3.2 là ví dụ minh hoạ.</p>
+            <p class="mb-0" style="margin-top:6px"><strong>Ký hiệu trên tiêu đề mục:</strong> ✅ đã biết theo CV, ôn cho thật chắc · 🎯 chưa biết nhưng JD gần như chắc hỏi, học mức tối thiểu · ➕ mới, optional.</p>
+          </div>
+        </div>
+
+        <!-- ================= 1 ASPICE ================= -->
+        <h2>✅ 1. ASPICE 4.0 — phần liên quan tới vai trò</h2>
+        <div class="figure">
+          <svg viewBox="0 0 720 330" role="img" aria-label="V-model các process SWE của ASPICE 4.0" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="lx7a" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="20" y="20" width="220" height="50" rx="9" fill="var(--brand-900)"/><text x="130" y="42" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">SWE.1 SW Requirements Analysis</text><text x="130" y="58" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">requirement phần mềm, thuộc tính, ưu tiên</text>
+            <rect x="60" y="100" width="220" height="50" rx="9" fill="var(--brand-800)"/><text x="170" y="122" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">SWE.2 SW Architectural Design</text><text x="170" y="138" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">component, interface, động học</text>
+            <rect x="100" y="180" width="220" height="50" rx="9" fill="var(--brand-600)"/><text x="210" y="202" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">SWE.3 Detailed Design &amp; Construction</text><text x="210" y="218" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">thiết kế chi tiết + code</text>
+            <rect x="480" y="20" width="220" height="50" rx="9" fill="var(--ok)"/><text x="590" y="42" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">SWE.6 SW Verification</text><text x="590" y="58" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">kiểm phần mềm tích hợp vs SWE.1</text>
+            <rect x="440" y="100" width="220" height="50" rx="9" fill="var(--core)"/><text x="550" y="118" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">SWE.5 SW Component Verification</text><text x="550" y="132" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">&amp; Integration Verification</text><text x="550" y="145" text-anchor="middle" class="dgm-inv-sub" font-size="8">tích hợp + kiểm vs SWE.2</text>
+            <rect x="400" y="180" width="220" height="50" rx="9" fill="var(--defend)"/><text x="510" y="202" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">SWE.4 SW Unit Verification</text><text x="510" y="218" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">unit test, static, review vs SWE.3</text>
+            <path d="M240,45 L476,45" class="dgm-arrow" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#lx7a)"/>
+            <path d="M280,125 L436,125" class="dgm-arrow" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#lx7a)"/>
+            <path d="M320,205 L396,205" class="dgm-arrow" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#lx7a)"/>
+            <text x="360" y="38" text-anchor="middle" class="dgm-sub" font-size="8.5">traceability + consistency 2 chiều</text>
+            <rect x="20" y="260" width="680" height="56" rx="9" fill="var(--brand-400)"/>
+            <text x="360" y="282" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Supporting &amp; Management: nền cho mọi process SWE</text>
+            <text x="360" y="300" text-anchor="middle" class="dgm-inv-sub" font-size="9">SUP.1 QA · SUP.8 Configuration Mgmt · SUP.9 Problem Resolution · SUP.10 Change Request · MAN.3 Project Mgmt</text>
+          </svg>
+          <div class="figure__cap"><b>CI lead chạm nhiều nhất vào SWE.5, SUP.8, SUP.9, SUP.10.</b> Pipeline CI chính là nơi sinh ra bằng chứng cho các process này: baseline, kết quả tích hợp, ticket lỗi liên kết với commit.</div>
+        </div>
+        <dl class="kv">
+          <dt>ASPICE là gì</dt><dd>Automotive SPICE: mô hình đánh giá năng lực quy trình (Process Reference Model + Process Assessment Model). OEM dùng để đánh giá nhà cung cấp; mục tiêu thường gặp là <strong>Capability Level 2</strong> (managed) hoặc 3 (established) cho các process trong phạm vi "VDA scope".</dd>
+          <dt>Phiên bản 4.0 (2023)</dt><dd>Thay 3.1 (2017). Thay đổi chính: SWE.5 đổi tên thành <em>"Software Component Verification and Integration Verification"</em>, SWE.6 thành <em>"Software Verification"</em>; SYS tương tự; thêm nhóm <strong>HWE</strong> (hardware), <strong>MLE</strong> (machine learning), <strong>VAL.1</strong> (validation); dùng khái niệm <em>information item</em> thay work product; plug-in cybersecurity (SEC) tách riêng.</dd>
+          <dt>Capability level</dt><dd>CL0 incomplete · CL1 performed (làm được việc) · CL2 managed (lập kế hoạch, theo dõi, quản lý work product) · CL3 established (quy trình chuẩn của tổ chức) · CL4–5 (đo lường, cải tiến). Đánh giá theo thang N/P/L/F.</dd>
+          <dt>Traceability 2 chiều</dt><dd>Requirement ↔ architecture ↔ unit ↔ test case ↔ kết quả test; và requirement ↔ change request ↔ commit. Assessor lấy mẫu: chọn một requirement, yêu cầu chỉ ra nó được hiện thực ở đâu, test nào, kết quả của baseline nào.</dd>
+          <dt>SWE.5 cho người tích hợp</dt><dd>Cần: <strong>chiến lược tích hợp</strong> (thứ tự, baseline, môi trường), đặc tả test tích hợp dựa vào kiến trúc, kết quả gắn với baseline cụ thể, truy vết giữa kiến trúc và test, và thông báo kết quả cho các bên.</dd>
+        </dl>
+        <h3>✅ 1.1 SUP process mà CI chạm tới</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Process</th><th>Mục đích</th><th>Bằng chứng từ CI/tool</th></tr></thead>
+          <tbody>
+            <tr><td><strong>SUP.8</strong> Configuration Management</td><td>Xác định, kiểm soát, lưu trữ các item cấu hình và baseline.</td><td>Git tag/branch policy, Gerrit review record, manifest version component, artifact bất biến trong Artifactory kèm build info, khả năng tái tạo build.</td></tr>
+            <tr><td><strong>SUP.9</strong> Problem Resolution</td><td>Ghi nhận, phân tích, giải quyết, theo dõi vấn đề tới khi đóng.</td><td>Ticket Jira có trạng thái, phân tích nguyên nhân (8D cho lỗi khách hàng), liên kết commit sửa và test xác nhận.</td></tr>
+            <tr><td><strong>SUP.10</strong> Change Request Management</td><td>Quản lý yêu cầu thay đổi: phân tích tác động, phê duyệt, thực hiện, xác nhận.</td><td>Change request liên kết requirement và change Gerrit; lịch sử phê duyệt.</td></tr>
+            <tr><td><strong>SUP.1</strong> Quality Assurance</td><td>Đảm bảo độc lập rằng quy trình và sản phẩm tuân theo kế hoạch.</td><td>Báo cáo MISRA, coverage, review, dashboard KPI; audit định kỳ.</td></tr>
+            <tr><td><strong>MAN.3</strong> Project Management</td><td>Phạm vi, ước lượng, lịch, theo dõi.</td><td>Sprint/Jira board, kế hoạch release; vai trò team leader.</td></tr>
+          </tbody>
+        </table></div>
+
+        <!-- ================= 2 CM ================= -->
+        <h2>✅ 2. Configuration management trong thực tế TCU</h2>
+        <dl class="kv">
+          <dt>Configuration item</dt><dd>Mọi thứ ảnh hưởng tới binary và bằng chứng: source, cấu hình tresos/ARXML, toolchain version (compiler, tresos, VectorCAST), script build, Docker image của agent, test spec, requirement, tài liệu.</dd>
+          <dt>Baseline</dt><dd>Ảnh chụp có tên, bất biến của tập item đã được thống nhất (ví dụ <code>TCU_SW_R2.3.0</code>). Thường có baseline integration hằng ngày/tuần và baseline release có phê duyệt.</dd>
+          <dt>Branching</dt><dd>Trunk-based với gating (Zuul) cho phát triển; branch release cho bản đã giao khách hàng, chỉ nhận bug fix qua cherry-pick có review. Chính sách phải viết ra và áp bằng quyền Gerrit.</dd>
+          <dt>Tái tạo build</dt><dd>Từ tag cũ phải build ra lại đúng binary (hoặc tương đương đã kiểm chứng): khoá toolchain bằng Docker image có version, khoá dependency, lưu mọi input. Khách hàng báo lỗi trên bản 18 tháng trước thì bạn phải dựng lại được.</dd>
+          <dt>Release note</dt><dd>Version, danh sách thay đổi (change request, bug fix), known issue, kết quả test, version component và toolchain, checksum artifact.</dd>
+          <dt>Multi-repo</dt><dd>TCU thường có nhiều repo (BSW, MCAL, app, modem driver, config). Dùng manifest (<code>repo</code> tool, submodule, hoặc file version) để định nghĩa một baseline trên nhiều repo; Zuul Depends-On cho thay đổi xuyên repo (<a href="LX1-review-gating.html">LX1</a>).</dd>
+        </dl>
+
+        <!-- ================= 3 8D ================= -->
+        <h2>🎯 3. 8D Problem Solving</h2>
+        <p>8D (Eight Disciplines) là phương pháp giải quyết vấn đề theo nhóm, gốc từ Ford, phổ biến trong automotive khi <strong>khách hàng báo lỗi</strong> (customer complaint). Báo cáo 8D thường được OEM yêu cầu kèm hạn chót cho từng bước (ví dụ D3 trong 24–48 giờ).</p>
+        <ul class="steps">
+          <li><h4>D0 — Chuẩn bị</h4><p class="mb-0">Đánh giá có cần 8D không, có cần hành động khẩn cấp (an toàn, khách hàng đang bị ảnh hưởng) không.</p></li>
+          <li><h4>D1 — Lập nhóm</h4><p class="mb-0">Nhóm liên chức năng có đủ kiến thức: integration, BSW, test, hardware, chất lượng, người liên lạc khách hàng. Có trưởng nhóm và người bảo trợ.</p></li>
+          <li><h4>D2 — Mô tả vấn đề</h4><p class="mb-0">Định lượng bằng <strong>5W2H</strong> (What, Where, When, Who, Why, How, How many) và <strong>Is / Is-not</strong>: lỗi xảy ra ở bản nào, biến thể nào, điều kiện nào, và <em>không</em> xảy ra ở đâu. Is/Is-not thu hẹp vùng nghi ngờ rất mạnh.</p></li>
+          <li><h4>D3 — Hành động khoanh vùng tạm thời (ICA)</h4><p class="mb-0">Bảo vệ khách hàng ngay: dừng giao bản lỗi, rollback về baseline trước, workaround, tăng kiểm tra đầu ra. Xác minh ICA hiệu quả.</p></li>
+          <li><h4>D4 — Nguyên nhân gốc (root cause)</h4><p class="mb-0">Tìm nguyên nhân <strong>xảy ra</strong> (occurrence) và nguyên nhân <strong>lọt</strong> (escape: vì sao test/review không bắt được). Công cụ: 5 Why, Ishikawa (fishbone), so sánh baseline tốt/xấu (git bisect), tái hiện có kiểm soát. Chứng minh bằng cách bật/tắt được lỗi.</p></li>
+          <li><h4>D5 — Chọn và xác minh hành động khắc phục (PCA)</h4><p class="mb-0">Chọn giải pháp cho cả hai nguyên nhân, chứng minh nó loại bỏ lỗi mà không gây tác dụng phụ (test, phân tích).</p></li>
+          <li><h4>D6 — Thực hiện và xác nhận</h4><p class="mb-0">Đưa vào baseline, gỡ ICA, theo dõi hiệu quả trên thực tế (không tái phát).</p></li>
+          <li><h4>D7 — Phòng ngừa tái diễn</h4><p class="mb-0">Sửa hệ thống: cập nhật quy trình, checklist review, thêm test case vào regression, thêm check vào CI, cập nhật FMEA, áp cho sản phẩm tương tự (lessons learned).</p></li>
+          <li><h4>D8 — Ghi nhận nhóm</h4><p class="mb-0">Đóng 8D, ghi nhận đóng góp, lưu tài liệu.</p></li>
+        </ul>
+        <div class="callout callout--key"><div class="callout__icon">🔑</div><div class="callout__body"><p class="mb-0"><strong>Điểm người phỏng vấn tìm:</strong> (1) bạn có tách <em>containment</em> (D3) khỏi <em>corrective</em> (D5) không; (2) bạn có tìm cả <em>escape root cause</em> không; (3) D7 của bạn có sửa <em>hệ thống</em> (thêm test vào CI, cập nhật checklist) chứ không chỉ sửa một dòng code.</p></div></div>
+
+        <h3>🎯 3.1 Khung 8D cho câu chuyện SENT của bạn</h3>
+        <div class="callout callout--warn"><div class="callout__icon">⚠️</div><div class="callout__body"><p class="mb-0">CV chỉ ghi: <em>"Diagnosed and fixed SENT timing and signal-behavior defects on ST and Infineon targets using UDE Debugger, analyzing hardware/software interaction and protocol-level timing."</em> Dưới đây là <strong>khung</strong>; các ô <em>[…]</em> bạn điền từ trí nhớ thật. Nếu dự án không chạy 8D chính thức, nói thẳng: "chúng tôi không làm báo cáo 8D chính thức, nhưng cách tôi xử lý đi theo các bước này".</p></div></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Bước</th><th>Nội dung (khung)</th></tr></thead>
+          <tbody>
+            <tr><td>D1</td><td>Tôi + [ai: developer MCAL SENT, test, người phụ trách target ST/Infineon].</td></tr>
+            <tr><td>D2</td><td>Lỗi timing/tín hiệu SENT: [triệu chứng cụ thể, ví dụ sai tick, lỗi CRC/pause pulse]. Is: [target nào, điều kiện nào]. Is-not: [target/cấu hình nào vẫn đúng].</td></tr>
+            <tr><td>D3</td><td>[Có workaround tạm hay giữ bản cũ không].</td></tr>
+            <tr><td>D4</td><td>Dùng UDE Debugger quan sát tương tác phần cứng/phần mềm và timing ở mức giao thức; nguyên nhân: [điền]. Escape: [vì sao test trước đó không bắt].</td></tr>
+            <tr><td>D5–D6</td><td>Sửa [điền], xác minh trên cả ST và Infineon.</td></tr>
+            <tr><td>D7</td><td>Liên hệ tự nhiên với sự kiện thật trong CV: ở vai trò sau, tôi dẫn dắt SENT automation, giảm chu kỳ validation thủ công từ khoảng 1–2 tháng xuống 2–3 ngày, nên kiểu lỗi này được kiểm tra lặp lại được thay vì phụ thuộc test tay. (Chỉ nói liên hệ nếu đúng với trải nghiệm của bạn.)</td></tr>
+          </tbody>
+        </table></div>
+
+        <h3>➕ 3.2 5 Why ví dụ (TCU, minh hoạ)</h3>
+<pre><code class="language-text">Vấn đề: một số TCU không đăng ký mạng sau khi xe ngủ qua đêm.
+Why 1  Modem không trả lời AT sau khi thức      → UART RX không nhận byte nào.
+Why 2  UART RX không nhận                      → Pin RX vẫn ở chế độ GPIO low-power.
+Why 3  Pin chưa về chế độ UART                  → Port_SetPinMode không được gọi trên nhánh wakeup từ CAN.
+Why 4  Nhánh wakeup từ CAN bỏ qua bước đó       → Callout EcuM chỉ xử lý wakeup từ RTC (đã test).
+Why 5  Test chỉ có wakeup RTC                   → Test spec không bao phủ mọi wakeup source.   (escape)
+PCA:   Gọi khôi phục pin trong mọi nhánh wakeup; thêm test cho từng wakeup source vào regression bench.</code></pre>
+
+        <!-- ================= 4 EVO ================= -->
+        <h2>4. Trước (~2020) → Nay</h2>
+        <div class="evo">
+          <div class="evo__head">🔁 <span>Bằng chứng soạn tay → bằng chứng sinh từ pipeline</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>ASPICE 3.1. Trước đợt assessment, team soạn ma trận truy vết trong Excel, gom báo cáo test, chụp màn hình. Baseline ghi trong tài liệu. 8D viết trong Word.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p>ASPICE 4.0 (thêm HWE, MLE, VAL). Truy vết sống trong ALM (Polarion, codebeamer, Jira + plugin) nối với Gerrit và kết quả CI; baseline là tag + manifest + artifact bất biến. Ngoài ra ISO/SAE 21434 và UN R155/R156 (cybersecurity, software update) bắt buộc với xe mới ở châu Âu, rất liên quan TCU vì đây là cửa ngõ OTA.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> CI lead làm tốt thì bằng chứng ASPICE có sẵn mỗi ngày, không phải "chạy nước rút trước assessment".</div>
+        </div>
+
+        <!-- ================= 5 QA ================= -->
+        <h2>5. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">Kể 8 bước của 8D. D3 và D5 khác nhau thế nào? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">D0 chuẩn bị, D1 lập nhóm, D2 mô tả vấn đề (5W2H, Is/Is-not), D3 khoanh vùng tạm thời, D4 nguyên nhân gốc (xảy ra và lọt), D5 chọn và xác minh hành động khắc phục, D6 thực hiện và xác nhận, D7 phòng ngừa tái diễn, D8 ghi nhận nhóm. D3 bảo vệ khách hàng ngay mà chưa cần biết nguyên nhân (rollback, dừng giao hàng). D5 loại bỏ nguyên nhân gốc vĩnh viễn.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">ASPICE 4.0 khác 3.1 ở đâu, phần nào liên quan tới integration? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">4.0 (2023) đổi tên SWE.5 thành "Software Component Verification and Integration Verification", SWE.6 thành "Software Verification"; thêm HWE, MLE, VAL.1; dùng "information item". Với integration: cần chiến lược tích hợp, test tích hợp dựa vào kiến trúc, kết quả gắn baseline, truy vết 2 chiều. SUP.8/9/10 là nền cho CM, lỗi và thay đổi.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Khách hàng báo lỗi trên bản phát hành 1 năm trước. Bạn cần gì từ hệ thống CM? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Tag/baseline của bản đó với version mọi component; artifact gốc (binary, map, ELF có symbol) trong Artifactory để debug; Docker image toolchain đúng version để build lại; kết quả test của bản đó; release note và known issue. Từ đó tái hiện, sửa trên branch release, cherry-pick về trunk nếu cần, và phát hành bản vá với truy vết đầy đủ. Nếu thiếu một trong các thứ này thì đó là một D7 cho chính quy trình CM.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Assessor chọn một requirement và hỏi "chứng minh nó đã được test tích hợp". Bạn chỉ ra gì? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Requirement → phần tử kiến trúc hiện thực nó → test case tích hợp liên kết → kết quả chạy của test đó trên baseline cụ thể (log CI, report) → nếu fail thì ticket và change sửa. Hai chiều: từ test case cũng lần ngược về requirement. Nhất quán: nội dung test thực sự kiểm tra điều requirement nói.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Lỗi xuất hiện 1/50 lần chạy bench. Áp 8D thế nào? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">D2: định lượng tỉ lệ, gom log của lần fail và lần pass, Is/Is-not theo bench, baseline, nhiệt độ, thứ tự test. D3: đánh dấu test flaky để không chặn gate nhưng vẫn theo dõi (không được âm thầm bỏ qua). D4: tăng số lần chạy để tái hiện, so sánh baseline bằng bisect, trace bằng TRACE32 khi fail, phân biệt lỗi sản phẩm với lỗi hạ tầng bench. D5–D6: sửa, chạy lại đủ nhiều lần để tự tin thống kê. D7: thêm giám sát flaky rate trên dashboard.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Kinh nghiệm của bạn với ASPICE và root cause analysis? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Bám CV: trong vai trò MCAL/BSW, tôi làm từ phân tích requirement, thiết kế test, thực thi, điều tra lỗi tới bằng chứng kỹ thuật theo kỳ vọng ASPICE; tôi chịu trách nhiệm truy vết requirement-to-test, bằng chứng test và sẵn sàng review. Root cause: điều tra lỗi integration xuyên component bằng TRACE32, và lỗi timing SENT trên ST/Infineon bằng UDE. Công cụ nội bộ Collect Review Finding (được giải thưởng) gom finding review toàn hệ thống và thống kê chất lượng theo người/team. 8D: nói trung thực mức bạn đã dùng chính thức.</p></div></div>
+        </div>
+
+        <!-- ================= 6 CHEAT ================= -->
+        <h2>6. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>ASPICE 4.0</h4><ul>
+            <li>SWE.1–6 · SWE.5 = Comp. Verif. &amp; Integration Verif.</li><li>mới: HWE · MLE · VAL.1</li><li>CL1 performed · CL2 managed · CL3 established</li><li>traceability + consistency 2 chiều</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>SUP</h4><ul>
+            <li>SUP.1 QA · SUP.8 CM</li><li>SUP.9 problem · SUP.10 change</li><li>MAN.3 project</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>CM</h4><ul>
+            <li>CI item gồm cả toolchain + Docker image</li><li>baseline bất biến · tag + manifest</li><li>branch release chỉ nhận fix</li><li>tái tạo build từ tag cũ</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>8D</h4><ul>
+            <li>D0 prep · D1 team · D2 5W2H/Is-Is not</li><li>D3 containment · D4 root cause (occur + escape)</li><li>D5 PCA · D6 implement · D7 prevent · D8 recognize</li><li>5 Why · Ishikawa · git bisect</li>
+          </ul></div>
+        </div>
+
+        <h2>7. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li>VDA QMC — <a href="https://vda-qmc.de/en/automotive-spice/" target="_blank" rel="noopener">Automotive SPICE 4.0</a> (PAM 4.0, 2023).</li>
+          <li>Ford Global 8D; AIAG CQI-20 Effective Problem Solving.</li>
+          <li>UNECE R155 (Cyber Security Management System), R156 (Software Update Management System); ISO/SAE 21434.</li>
+          <li>Bài nội bộ: <a href="../H-iso26262.html">H — ISO 26262</a>, <a href="../A-career-star.html">A — STAR</a>.</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi đã điền khung 8D cho câu chuyện SENT bằng chi tiết thật và kể được trong 2 phút.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">Chủ đề LX7 · ASPICE · 8D · Configuration Management — Interview Prep</footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../../assets/js/app.js?v=7"></script>
+</body>
+</html>

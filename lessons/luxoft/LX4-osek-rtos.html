@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LX4 · OSEK/VDX &amp; RTOS — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/css/style.css?v=7" />
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../../assets/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../../assets/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="../../assets/favicon.ico" />
+</head>
+<body data-page="LX4" data-root="../../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">LX4</span>
+            <span class="badge badge--core">Core</span>
+            <span class="chip">Luxoft — TCU · CI &amp; Integration</span>
+          </div>
+          <h1>OSEK/VDX &amp; RTOS — ôn lại có trọng tâm</h1>
+          <p class="lead">JD ghi "OSEK operating system" và "RTOS". Bài <a href="../B5-os.html">B5</a> đã đào sâu AUTOSAR OS; bài này là bản <strong>ôn nhanh theo góc OSEK thuần</strong>: trạng thái task và các API gây chuyển trạng thái, conformance class, chính sách preemption, <strong>Priority Ceiling</strong>, alarm/counter/event, ISR category 1/2, hook, file <strong>OIL</strong>, xử lý lỗi (standard/extended status), và <strong>so sánh OSEK với RTOS động</strong> (FreeRTOS/Zephyr). Cuối bài có bộ bẫy phỏng vấn.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> ✅ Đã biết qua AUTOSAR OS (quên một phần): ôn chắc</span>
+            <span><b>Bài gốc:</b> <a href="../B5-os.html">B5 — AUTOSAR OS</a></span>
+          </div>
+
+        </div>
+
+        <div class="callout callout--key">
+          <div class="callout__icon">🧭</div>
+          <div class="callout__body">
+            <div class="callout__title">Chế độ "ôn cái đã biết trước"</div>
+            <p class="mb-0">Bạn đã tích hợp AUTOSAR OS trên RH850, mà AUTOSAR OS dựa trên OSEK. Các mục ✅ là ôn lại: trạng thái task, conformance class, PCP, alarm/ISR/hook, bẫy. Chỉ ➕ mục 6 (file OIL) là cú pháp riêng của OSEK, đọc lướt.</p>
+            <p class="mb-0" style="margin-top:6px"><strong>Ký hiệu trên tiêu đề mục:</strong> ✅ đã biết theo CV, ôn cho thật chắc · 🎯 chưa biết nhưng JD gần như chắc hỏi, học mức tối thiểu · ➕ mới, optional.</p>
+          </div>
+        </div>
+
+        <!-- ================= 1 ================= -->
+        <h2>✅ 1. OSEK là gì và vì sao "tĩnh"</h2>
+        <dl class="kv">
+          <dt>Nguồn gốc</dt><dd>OSEK (Đức, 1993) + VDX (Pháp) hợp nhất thành chuẩn <strong>OSEK/VDX</strong>, bản OS cuối cùng là <strong>2.2.3 (2005)</strong>, sau đó chuẩn hoá thành <strong>ISO 17356-3</strong>. Bộ chuẩn gồm OS, COM (giao tiếp), NM (network management) và OIL (ngôn ngữ cấu hình). AUTOSAR OS lấy OSEK OS làm nền và mở rộng.</dd>
+          <dt>Tĩnh hoàn toàn</dt><dd>Mọi đối tượng (task, resource, alarm, event, ISR) được khai báo lúc cấu hình trong file OIL; generator sinh bảng hằng. <strong>Không có tạo task lúc chạy, không cấp phát động.</strong> Kết quả: RAM/ROM biết trước, thời gian API xác định, phân tích được thời gian đáp ứng xấu nhất. Đây là lý do nó hợp với ECU chạy trên MCU vài trăm KB RAM.</dd>
+          <dt>Ưu tiên cố định</dt><dd>Mỗi task có priority cố định (số lớn = ưu tiên cao trong OSEK). Scheduler luôn chạy task <em>ready</em> có priority cao nhất; cùng priority thì FIFO theo thứ tự kích hoạt.</dd>
+          <dt>Stack</dt><dd>Basic task có thể <strong>dùng chung stack</strong> (vì chúng chạy xong mới nhường, không bao giờ "đợi giữa chừng"), nên tiết kiệm RAM. Extended task cần stack riêng vì có thể dừng ở trạng thái waiting với ngữ cảnh còn trên stack.</dd>
+        </dl>
+
+        <!-- ================= 2 STATES ================= -->
+        <h2>✅ 2. Trạng thái task và API chuyển trạng thái</h2>
+        <div class="figure">
+          <svg viewBox="0 0 720 300" role="img" aria-label="Sơ đồ trạng thái task OSEK" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="lx4a" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="60" y="120" width="130" height="56" rx="28" fill="var(--brand-400)"/><text x="125" y="153" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">SUSPENDED</text>
+            <rect x="300" y="30" width="130" height="56" rx="28" fill="var(--brand-600)"/><text x="365" y="63" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">READY</text>
+            <rect x="300" y="210" width="130" height="56" rx="28" fill="var(--ok)"/><text x="365" y="243" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">RUNNING</text>
+            <rect x="540" y="120" width="130" height="56" rx="28" fill="var(--core)"/><text x="605" y="146" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">WAITING</text><text x="605" y="162" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">chỉ extended task</text>
+            <path d="M160,122 L298,70" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx4a)"/><text x="190" y="84" class="dgm-text" font-size="9.5" font-weight="700">activate</text><text x="190" y="98" class="dgm-sub dgm-mono" font-size="8">ActivateTask / alarm / ChainTask</text>
+            <path d="M350,86 L350,206" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx4a)"/><text x="292" y="150" text-anchor="end" class="dgm-text" font-size="9.5" font-weight="700">start</text><text x="292" y="164" text-anchor="end" class="dgm-sub" font-size="8">scheduler chọn</text>
+            <path d="M382,206 L382,90" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx4a)"/><text x="392" y="140" class="dgm-text" font-size="9.5" font-weight="700">preempt</text><text x="392" y="154" class="dgm-sub" font-size="8">task cao hơn ready</text><text x="392" y="166" class="dgm-sub dgm-mono" font-size="8">/ Schedule()</text>
+            <path d="M298,246 L160,170" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx4a)"/><text x="150" y="228" class="dgm-text" font-size="9.5" font-weight="700">terminate</text><text x="150" y="242" class="dgm-sub dgm-mono" font-size="8">TerminateTask / ChainTask</text>
+            <path d="M432,240 L570,176" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx4a)"/><text x="520" y="236" class="dgm-text" font-size="9.5" font-weight="700">wait</text><text x="520" y="250" class="dgm-sub dgm-mono" font-size="8">WaitEvent (event chưa set)</text>
+            <path d="M570,122 L432,70" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx4a)"/><text x="500" y="78" class="dgm-text" font-size="9.5" font-weight="700">release</text><text x="500" y="92" class="dgm-sub dgm-mono" font-size="8">SetEvent</text>
+          </svg>
+          <div class="figure__cap"><b>4 trạng thái.</b> Basic task chỉ có 3 trạng thái (không có WAITING). Chú ý: task không thể tự chuyển RUNNING → READY trừ khi bị preempt hoặc gọi <code>Schedule()</code>; và task <strong>phải</strong> kết thúc bằng <code>TerminateTask()</code> hoặc <code>ChainTask()</code>, return khỏi hàm task là lỗi (hành vi không xác định trong OSEK, AUTOSAR OS bắt lỗi).</div>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>API</th><th>Ý nghĩa</th><th>Bẫy</th></tr></thead>
+          <tbody>
+            <tr><td><code>ActivateTask(t)</code></td><td>SUSPENDED → READY. Nếu t đang chạy và class cho phép multiple activation → xếp hàng thêm.</td><td>Vượt số activation tối đa → <code>E_OS_LIMIT</code>. Gọi từ task thấp kích hoạt task cao → preempt <em>ngay</em> (full-preemptive).</td></tr>
+            <tr><td><code>TerminateTask()</code></td><td>Kết thúc task đang chạy.</td><td>Không được gọi khi đang giữ resource (<code>E_OS_RESOURCE</code>) hoặc trong ISR (<code>E_OS_CALLEVEL</code>). Không return về nơi gọi.</td></tr>
+            <tr><td><code>ChainTask(t)</code></td><td>Kết thúc task hiện tại và kích hoạt t (nguyên tử).</td><td>Chain chính mình = kích hoạt lại, dùng để lặp.</td></tr>
+            <tr><td><code>Schedule()</code></td><td>Điểm nhường tự nguyện: nếu có task ready cao hơn thì nhường.</td><td>Chỉ có ý nghĩa với non-preemptive task. Giữ resource thì không được gọi.</td></tr>
+            <tr><td><code>GetResource / ReleaseResource</code></td><td>Vào/ra critical section theo Priority Ceiling.</td><td>Phải release theo thứ tự <strong>LIFO</strong>. Không được <code>WaitEvent</code> khi đang giữ.</td></tr>
+            <tr><td><code>SetEvent(t, mask)</code></td><td>Set event cho extended task t; nếu t đang chờ event đó → READY.</td><td>Gọi được từ ISR cat2. Event chưa được clear thì vẫn còn set.</td></tr>
+            <tr><td><code>WaitEvent(mask)</code></td><td>Chờ một trong các event trong mask.</td><td>Nếu event đã set sẵn → không chờ, chạy tiếp. Chỉ extended task.</td></tr>
+            <tr><td><code>ClearEvent(mask)</code></td><td>Xoá event của chính task.</td><td>Quên clear → vòng lặp chạy liên tục không chờ (busy loop).</td></tr>
+            <tr><td><code>GetEvent(t, &amp;m)</code></td><td>Đọc event hiện tại để biết event nào đánh thức.</td><td>Mẫu chuẩn: Wait → Get → Clear → xử lý.</td></tr>
+          </tbody>
+        </table></div>
+
+<pre><code class="language-c">TASK(ModemTask)                                  /* extended task, ECC1 */
+{
+    EventMaskType ev;
+    for (;;) {
+        (void)WaitEvent(EV_RX | EV_TIMEOUT | EV_CMD);
+        (void)GetEvent(ModemTask, &amp;ev);
+        (void)ClearEvent(ev);                    /* clear đúng các event đã nhận */
+        if ((ev &amp; EV_RX) != 0u)      { At_ProcessRx(); }
+        if ((ev &amp; EV_TIMEOUT) != 0u) { At_HandleTimeout(); }
+        if ((ev &amp; EV_CMD) != 0u)     { At_SendNextQueued(); }
+    }
+    /* không bao giờ tới: extended task vòng lặp vô hạn là mẫu hợp lệ */
+}
+
+TASK(Cyclic10ms)                                 /* basic task, kích bởi alarm */
+{
+    (void)GetResource(RES_SignalBuf);
+    Signal_Update();                             /* dữ liệu chung với task khác */
+    (void)ReleaseResource(RES_SignalBuf);
+    (void)TerminateTask();                       /* bắt buộc */
+}
+
+ISR(Uart0_Rx)                                    /* ISR category 2 */
+{
+    Uart_RxIsr(UART0_DATA);
+    (void)SetEvent(ModemTask, EV_RX);            /* cat2 mới được gọi OS API */
+}</code></pre>
+
+        <!-- ================= 3 CLASSES ================= -->
+        <h2>✅ 3. Conformance class &amp; chính sách preemption</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Class</th><th>Loại task</th><th>Multiple activation</th><th>Nhiều task / priority</th><th>Dùng khi</th></tr></thead>
+          <tbody>
+            <tr><td><strong>BCC1</strong></td><td>Basic</td><td>Không</td><td>Không</td><td>ECU nhỏ, ít RAM nhất</td></tr>
+            <tr><td><strong>BCC2</strong></td><td>Basic</td><td>Có</td><td>Có</td><td>Cần xếp hàng kích hoạt</td></tr>
+            <tr><td><strong>ECC1</strong></td><td>Basic + Extended</td><td>Không (basic cũng không)</td><td>Có</td><td>Cần event</td></tr>
+            <tr><td><strong>ECC2</strong></td><td>Basic + Extended</td><td>Có (chỉ basic)</td><td>Có</td><td>Đầy đủ nhất</td></tr>
+          </tbody>
+        </table></div>
+        <p class="small text-soft">Extended task không bao giờ có multiple activation, kể cả ở ECC2. ECC1 vẫn cho phép nhiều task cùng priority trong OSEK 2.2.3. Chi tiết số lượng tối thiểu (ví dụ ≥ 8 task, ≥ 8 event/task) nằm trong spec.</p>
+        <dl class="kv">
+          <dt>Full preemptive</dt><dd>Task ready cao hơn chiếm CPU <strong>ngay lập tức</strong>. Đáp ứng tốt nhất cho task ưu tiên cao, nhưng dữ liệu chung phải được bảo vệ ở mọi chỗ.</dd>
+          <dt>Non-preemptive</dt><dd>Task chạy tới khi terminate, chờ event, hoặc gọi <code>Schedule()</code>. Ít race condition, tốn ít stack hơn, nhưng task dài làm trễ task cao. ISR vẫn ngắt được.</dd>
+          <dt>Mixed preemptive</dt><dd>Mỗi task tự khai báo <code>SCHEDULE = FULL | NON</code>. Phổ biến: task dài và ít quan trọng để NON, task thời gian thực để FULL.</dd>
+          <dt>Nhóm task bằng internal resource</dt><dd>Gán một <em>internal resource</em> cho nhóm task: task tự động giữ resource khi chạy, nên các task trong nhóm không preempt lẫn nhau, nhưng task ngoài nhóm có priority cao hơn ceiling vẫn preempt được. Đây là cách làm "non-preemptive cục bộ". Non-preemptive task thực chất là task giữ internal resource <code>RES_SCHEDULER</code>.</dd>
+        </dl>
+
+        <!-- ================= 4 PCP ================= -->
+        <h2>✅ 4. Priority Ceiling (OSEK PCP)</h2>
+        <dl class="kv">
+          <dt>Vấn đề</dt><dd><strong>Priority inversion</strong>: task H chờ resource do L giữ; M (không liên quan) preempt L → H chờ không giới hạn (vụ Mars Pathfinder 1997 là ví dụ kinh điển với VxWorks). Và <strong>deadlock</strong> khi hai task giữ và chờ chéo resource.</dd>
+          <dt>Cơ chế</dt><dd>Mỗi resource có <strong>ceiling</strong> = priority cao nhất trong các task (và ISR) có dùng nó, tính lúc cấu hình. <code>GetResource</code> nâng priority task lên ceiling <em>ngay lập tức</em> (immediate ceiling, khác với priority inheritance chỉ nâng khi có tranh chấp).</dd>
+          <dt>Kết quả</dt><dd>(1) H bị chặn tối đa <strong>một</strong> critical section, thời gian chặn tính được. (2) <strong>Không deadlock</strong>: khi task giữ R, không task nào có thể dùng R được chạy, nên không có chờ chéo. (3) Không cần hàng đợi chờ resource: <code>GetResource</code> không bao giờ block.</dd>
+          <dt>Resource dùng chung với ISR</dt><dd>Ceiling khi đó cao hơn mọi task, bằng mức ngắt của ISR, nên <code>GetResource</code> thực chất che ngắt đến mức đó. Tính năng này là tuỳ chọn trong OSEK; AUTOSAR OS hỗ trợ cho ISR cat2.</dd>
+          <dt>So với mutex của RTOS động</dt><dd>FreeRTOS mutex dùng <em>priority inheritance</em> (chỉ nâng khi task cao đang chờ), có thể block, có thể deadlock nếu lồng sai thứ tự, và không chặn được chuỗi inversion lồng nhau hoàn toàn. Ceiling tĩnh đơn giản hơn nhưng cần biết trước ai dùng resource, điều mà OSEK có sẵn nhờ cấu hình tĩnh.</dd>
+        </dl>
+
+        <!-- ================= 5 ALARM/ISR/HOOK ================= -->
+        <h2>✅ 5. Counter, Alarm, ISR, Hook</h2>
+        <dl class="kv">
+          <dt>Counter</dt><dd>Bộ đếm tick (thường từ timer phần cứng). Thuộc tính: <code>MAXALLOWEDVALUE</code> (giá trị tối đa trước khi quay vòng), <code>TICKSPERBASE</code>, <code>MINCYCLE</code> (chu kỳ nhỏ nhất cho phép với alarm).</dd>
+          <dt>Alarm</dt><dd>Gắn với một counter. Khi hết hạn thực hiện <strong>một</strong> hành động: <code>ACTIVATETASK</code>, <code>SETEVENT</code>, hoặc <code>ALARMCALLBACK</code> (hàm ngắn, chạy ở mức ISR). API: <code>SetRelAlarm(a, offset, cycle)</code> (tương đối, offset 0 không hợp lệ trong OSEK), <code>SetAbsAlarm(a, start, cycle)</code>, <code>CancelAlarm</code>, <code>GetAlarm</code> (còn bao nhiêu tick). <code>cycle = 0</code> là one-shot. Có thể autostart theo application mode.</dd>
+          <dt>Jitter và offset</dt><dd>Nhiều alarm cùng chu kỳ kích hoạt cùng tick làm CPU dồn tải. Đặt <em>offset</em> khác nhau để rải tải. AUTOSAR dùng <strong>schedule table</strong> để cố định mẫu thời gian và đồng bộ với thời gian toàn cục (xem <a href="../B5-os.html">B5</a>).</dd>
+          <dt>ISR category 1</dt><dd>Không gọi OS API (trừ một số API bật/tắt ngắt). Nhanh nhất, overhead nhỏ nhất, nhưng không thể kích hoạt task. Sau khi ISR cat1 kết thúc, OS không reschedule.</dd>
+          <dt>ISR category 2</dt><dd>Có khung OS bao quanh, được gọi một tập API (<code>ActivateTask</code>, <code>SetEvent</code>, <code>GetResource</code>…). Khi ISR kết thúc, OS kiểm tra và chuyển sang task ưu tiên cao nhất nếu cần. Không được gọi <code>TerminateTask</code>, <code>WaitEvent</code>, <code>Schedule</code>.</dd>
+          <dt>Quy tắc priority</dt><dd>Mọi ISR luôn cao hơn mọi task. ISR cat1 thường được đặt ở mức ngắt cao hơn cat2, vì OS che ngắt cat2 khi vào vùng tới hạn của nó; nếu cat1 thấp hơn thì cat1 cũng bị che.</dd>
+          <dt>Tắt ngắt</dt><dd><code>DisableAllInterrupts/EnableAllInterrupts</code> (không lồng được), <code>SuspendAllInterrupts/ResumeAllInterrupts</code> (lồng được, có đếm), <code>SuspendOSInterrupts/ResumeOSInterrupts</code> (chỉ che cat2). Trong vùng này không được gọi OS API khác.</dd>
+          <dt>Hooks</dt><dd><code>StartupHook</code> (sau khi OS khởi tạo, trước task đầu tiên), <code>ShutdownHook</code>, <code>ErrorHook(StatusType)</code> (mọi API trả lỗi đều gọi vào đây, là chỗ log lỗi tập trung), <code>PreTaskHook/PostTaskHook</code> (đo thời gian chạy task, debug). AUTOSAR thêm <code>ProtectionHook</code>.</dd>
+          <dt>Standard vs extended status</dt><dd><em>Extended status</em> (dùng lúc phát triển): API kiểm tra đầy đủ tham số, trả <code>E_OS_ID</code>, <code>E_OS_STATE</code>, <code>E_OS_CALLEVEL</code>, <code>E_OS_RESOURCE</code>… <em>Standard status</em> (production): ít kiểm tra hơn, nhanh hơn. Cấu hình bằng <code>STATUS = EXTENDED | STANDARD</code>.</dd>
+          <dt>Application mode</dt><dd><code>StartOS(mode)</code> chọn mode (ví dụ normal, diagnostic, flash) → mỗi mode có tập task/alarm autostart khác nhau. OS không trở về từ <code>StartOS</code>.</dd>
+        </dl>
+
+        <!-- ================= 6 OIL ================= -->
+        <h2>➕ 6. OIL — file cấu hình</h2>
+        <p>OIL (OSEK Implementation Language, bản 2.5) mô tả mọi đối tượng. Generator của nhà cung cấp OS đọc OIL và sinh ra code C. AUTOSAR thay OIL bằng ARXML (container <code>Os</code>), nhưng khái niệm giữ nguyên, và OIL vẫn gặp trong dự án OSEK thuần.</p>
+<pre><code>CPU tcu_mcu {
+  OS StdOS { STATUS = EXTENDED; STARTUPHOOK = TRUE; ERRORHOOK = TRUE;
+             PRETASKHOOK = FALSE; USERESSCHEDULER = TRUE; };
+  APPMODE AppNormal {};
+
+  COUNTER SysCounter { MAXALLOWEDVALUE = 65535; TICKSPERBASE = 1; MINCYCLE = 1; };
+
+  TASK Cyclic10ms { PRIORITY = 10; SCHEDULE = FULL; ACTIVATION = 1;
+                    AUTOSTART = FALSE; RESOURCE = RES_SignalBuf; };
+  TASK ModemTask  { PRIORITY = 8;  SCHEDULE = FULL; ACTIVATION = 1;
+                    AUTOSTART = TRUE { APPMODE = AppNormal; };
+                    EVENT = EV_RX; EVENT = EV_TIMEOUT; EVENT = EV_CMD;
+                    RESOURCE = RES_SignalBuf; };       /* có event → extended */
+
+  ALARM Alarm10ms { COUNTER = SysCounter;
+                    ACTION = ACTIVATETASK { TASK = Cyclic10ms; };
+                    AUTOSTART = TRUE { ALARMTIME = 3; CYCLETIME = 10; APPMODE = AppNormal; }; };
+
+  RESOURCE RES_SignalBuf { RESOURCEPROPERTY = STANDARD; };   /* ceiling = 10 (tự tính) */
+  EVENT EV_RX { MASK = AUTO; };  EVENT EV_TIMEOUT { MASK = AUTO; };  EVENT EV_CMD { MASK = AUTO; };
+
+  ISR Uart0_Rx { CATEGORY = 2; RESOURCE = RES_SignalBuf; };   /* nếu ISR dùng chung dữ liệu */
+};</code></pre>
+
+        <!-- ================= 7 COMPARE ================= -->
+        <h2>✅ 7. OSEK vs AUTOSAR OS vs RTOS động</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Tiêu chí</th><th>OSEK/VDX OS</th><th>AUTOSAR Classic OS</th><th>FreeRTOS / Zephyr</th><th>POSIX (QNX, Linux RT)</th></tr></thead>
+          <tbody>
+            <tr><td>Tạo đối tượng</td><td>Tĩnh (OIL)</td><td>Tĩnh (ARXML)</td><td>Động hoặc tĩnh (<code>xTaskCreateStatic</code>)</td><td>Động (process/thread)</td></tr>
+            <tr><td>Đồng bộ</td><td>Resource (PCP), event</td><td>+ spinlock (multicore), IOC</td><td>Mutex (inheritance), semaphore, queue, event group</td><td>Mutex, condvar, message passing</td></tr>
+            <tr><td>Thời gian</td><td>Counter/alarm</td><td>+ schedule table, sync</td><td>Tick, software timer</td><td>Timer POSIX</td></tr>
+            <tr><td>Bảo vệ</td><td>Không</td><td>SC2 timing, SC3 memory (MPU), SC4 cả hai</td><td>MPU port tuỳ chọn</td><td>MMU, process isolation</td></tr>
+            <tr><td>Multicore</td><td>Không</td><td>Có (từ R4.0)</td><td>SMP (tuỳ port)</td><td>SMP</td></tr>
+            <tr><td>Chứng nhận an toàn</td><td>Tuỳ vendor</td><td>Vendor có ASIL-D</td><td>SafeRTOS (bản chứng nhận)</td><td>QNX OS for Safety</td></tr>
+            <tr><td>Hợp với</td><td>ECU MCU nhỏ, legacy</td><td>ECU AUTOSAR hiện nay</td><td>IoT, MCU không AUTOSAR, modem phụ</td><td>Application processor, Adaptive</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout callout--tip">
+          <div class="callout__icon">💡</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Nối với CV:</strong> đã làm BSW integration có module OS trên RH850 (AUTOSAR Classic OS là OSEK mở rộng) và test hệ AUTOSAR Adaptive trên QNX/Embedded Linux (POSIX). Nói được sự khác nhau giữa hai thế giới là một lợi thế: TCU thường có cả MCU chạy OSEK/AUTOSAR OS lẫn application processor chạy Linux/QNX.</p>
+          </div>
+        </div>
+
+        <!-- ================= 8 TRAPS ================= -->
+        <h2>✅ 8. Bẫy hay gặp (dạng "đoạn code này sai gì?")</h2>
+        <div class="accordion">
+          <div class="accordion__item">
+            <button class="accordion__head">Basic task return mà không gọi TerminateTask <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner"><p class="mb-0">OSEK: hành vi không xác định. AUTOSAR OS: phát hiện, gọi ErrorHook với <code>E_OS_MISSINGEND</code> rồi tự terminate. Luôn kết thúc task bằng <code>TerminateTask()</code>/<code>ChainTask()</code>.</p></div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">TerminateTask khi đang giữ resource <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner"><p class="mb-0">Trả <code>E_OS_RESOURCE</code> (extended status). Task không kết thúc, priority vẫn ở ceiling → hệ thống chạy sai. Mỗi <code>GetResource</code> phải có <code>ReleaseResource</code> trên mọi đường thoát, kể cả nhánh lỗi.</p></div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">Gọi SetEvent / ActivateTask trong ISR category 1 <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner"><p class="mb-0">Không được phép: OS không biết đang ở trong ngắt nên không reschedule, trạng thái kernel có thể hỏng. Cần OS API thì khai báo ISR là cat2.</p></div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">Quên ClearEvent trong vòng lặp extended task <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner"><p class="mb-0"><code>WaitEvent</code> trả về ngay vì event vẫn set → task quay vòng chiếm CPU, task thấp hơn bị đói. Triệu chứng: CPU load 100%, watchdog reset.</p></div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">Release resource không theo LIFO <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner"><p class="mb-0">Get A, Get B thì phải Release B trước rồi mới Release A. Sai thứ tự → <code>E_OS_NOFUNC</code>, và priority trả về sai mức.</p></div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">ActivateTask vượt số activation <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner"><p class="mb-0">Task chu kỳ 10 ms chạy lâu hơn 10 ms (overrun) → alarm kích hoạt khi task còn chạy → <code>E_OS_LIMIT</code>, mất một chu kỳ. Là dấu hiệu CPU quá tải hoặc task bị chặn; dùng PreTaskHook/PostTaskHook hoặc trace TRACE32 để đo.</p></div></div>
+          </div>
+          <div class="accordion__item">
+            <button class="accordion__head">Biến dùng chung giữa task và ISR không volatile, không bảo vệ <span class="chev">›</span></button>
+            <div class="accordion__panel"><div class="accordion__panel-inner"><p class="mb-0">Compiler có thể giữ giá trị trong thanh ghi (thiếu <code>volatile</code>), và đọc/ghi 32-bit trên MCU có thể không nguyên tử (ví dụ biến 64-bit trên core 32-bit) → cần resource hoặc suspend ngắt. Volatile không thay thế được bảo vệ critical section.</p></div></div>
+          </div>
+        </div>
+
+        <!-- ================= 9 EVO ================= -->
+        <h2>9. Trước (~2020) → Nay</h2>
+        <div class="evo">
+          <div class="evo__head">🔁 <span>Từ OSEK lõi đơn → AUTOSAR OS multicore + bảo vệ</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>Nhiều ECU (kể cả TCU đời cũ) chạy OSEK thuần hoặc AUTOSAR OS SC1 trên một core, cấu hình OIL. Không có bảo vệ bộ nhớ giữa các phần mềm.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p>AUTOSAR OS multicore với spinlock và IOC, SC3/SC4 (MPU, timing protection) cho mixed-ASIL. TCU hiện đại kết hợp MCU (AUTOSAR OS) với SoC chạy Linux/QNX hoặc hypervisor. OSEK thuần vẫn còn trong legacy và là nền để hiểu mọi thứ phía trên.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> JD ghi OSEK; interviewer có thể đang duy trì codebase OSEK. Nói được cả OSEK thuần và phần AUTOSAR mở rộng là an toàn nhất.</div>
+        </div>
+
+        <!-- ================= 10 QA ================= -->
+        <h2>10. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">Basic task và extended task khác nhau thế nào? Khi nào chọn cái nào? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Basic: 3 trạng thái, chạy từ đầu đến cuối rồi terminate, không chờ giữa chừng, dùng chung stack được. Extended: thêm trạng thái WAITING qua <code>WaitEvent</code>, cần stack riêng. Chọn basic cho công việc chu kỳ ngắn (đa số task). Chọn extended khi có luồng xử lý phải chờ nhiều loại sự kiện, ví dụ task modem chờ RX/timeout/lệnh mới.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Priority Ceiling chống priority inversion và deadlock thế nào? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Ceiling của resource = priority cao nhất trong các user, tính tĩnh. Get → priority task nhảy lên ceiling ngay. Task trung gian không chen được nên thời gian chặn task cao bị giới hạn ở một critical section. Không deadlock vì khi đã giữ R thì không task nào khác dùng R được chạy, nên không có vòng chờ. Get không bao giờ block.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Khác priority inheritance ở đâu?</li><li>Resource dùng chung với ISR thì sao?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">ISR category 1 và 2 khác nhau? Vì sao cat1 đặt mức ưu tiên cao hơn? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Cat1 không gọi OS API, không reschedule sau khi xong, overhead thấp nhất. Cat2 có khung OS, gọi được API như SetEvent/ActivateTask, OS reschedule khi kết thúc. Cat1 đặt cao hơn vì OS che các ngắt cat2 trong vùng tới hạn của kernel; nếu cat1 thấp hơn thì cũng bị che và mất lợi thế độ trễ thấp.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Task 10 ms thỉnh thoảng báo E_OS_LIMIT. Điều tra thế nào? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">E_OS_LIMIT = kích hoạt khi task chưa xong. Nghĩa là task (cộng thời gian bị preempt) vượt 10 ms. Bước: (1) ErrorHook log thời điểm và task. (2) Đo thời gian thực thi bằng PreTaskHook/PostTaskHook hoặc trace TRACE32 (task/ISR timeline). (3) Tìm nguyên nhân: đường code dài bất thường (retry, vòng chờ), ISR bão (ví dụ UART nhận liên tục), task cao hơn chiếm CPU, resource bị giữ lâu. (4) Sửa: tách việc dài sang task thấp hơn, dời offset alarm để rải tải, giới hạn tần suất ISR. Cách làm giống debug timing SENT: đo trước, kết luận sau.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">OSEK khác FreeRTOS thế nào? Nếu phải chọn cho TCU? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">OSEK tĩnh hoàn toàn, PCP không block, không deadlock, phân tích thời gian được, là nền của AUTOSAR OS nên phù hợp với phía MCU cần CAN, chẩn đoán, an toàn. FreeRTOS linh hoạt (tạo task động, queue, semaphore), hệ sinh thái lớn, nhưng không có sẵn stack AUTOSAR và mutex có thể deadlock nếu dùng sai. Với MCU của TCU: AUTOSAR OS/OSEK. FreeRTOS hợp với MCU phụ không AUTOSAR hoặc module IoT.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Kinh nghiệm của bạn với OS trong ECU? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Bám CV: là BSW integrator trong team integration trên RH850 D3/D4/D5, tích hợp và validate stack gồm OS cùng BswM, EcuM, Can, Com, Mem, MCAL; dùng TRACE32 để debug ở mức register/memory, breakpoint, trace. Ở phía Adaptive, validate hệ thống trên QNX và Embedded Linux (process/service, log). Thành thật: cấu hình OIL thuần thì cần ôn lại, nhưng các khái niệm là một với AUTOSAR OS.</p></div></div>
+        </div>
+
+        <!-- ================= 11 CHEAT ================= -->
+        <h2>11. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>Task</h4><ul>
+            <li>SUSPENDED · READY · RUNNING · WAITING</li><li>basic (3 state, chung stack) · extended (event)</li><li>kết thúc bằng Terminate/ChainTask</li><li>priority cố định, cùng mức FIFO</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Class &amp; sched</h4><ul>
+            <li>BCC1/BCC2/ECC1/ECC2</li><li>extended: không multiple activation</li><li>FULL · NON · mixed</li><li>internal resource = nhóm non-preempt</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Resource</h4><ul>
+            <li>ceiling tĩnh, nâng ngay khi Get</li><li>không block, không deadlock</li><li>release LIFO · RES_SCHEDULER</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Thời gian &amp; ngắt</h4><ul>
+            <li>counter → alarm: task / event / callback</li><li>SetRelAlarm(offset, cycle), cycle 0 = one-shot</li><li>ISR cat1 không API · cat2 có API</li><li>Disable/Suspend/SuspendOS</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Lỗi &amp; hook</h4><ul>
+            <li>E_OS_LIMIT · RESOURCE · CALLEVEL · STATE · ID</li><li>ErrorHook · Pre/PostTaskHook · Startup/Shutdown</li><li>EXTENDED (dev) · STANDARD (prod)</li><li>OIL 2.5 → ARXML trong AUTOSAR</li>
+          </ul></div>
+        </div>
+
+        <h2>12. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li>OSEK/VDX Operating System Specification 2.2.3 (2005); OSEK/VDX OIL 2.5; ISO 17356-3.</li>
+          <li>AUTOSAR — Specification of Operating System (SWS OS), Classic Platform.</li>
+          <li>FreeRTOS documentation — mutexes and priority inheritance; Zephyr kernel docs.</li>
+          <li>Bài nội bộ: <a href="../B5-os.html">B5 — AUTOSAR OS</a> (schedule table, protection, multicore).</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi vẽ lại sơ đồ trạng thái và giải thích được 7 bẫy ở mục 8.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">Chủ đề LX4 · OSEK/VDX &amp; RTOS — Interview Prep</footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../../assets/js/app.js?v=7"></script>
+</body>
+</html>

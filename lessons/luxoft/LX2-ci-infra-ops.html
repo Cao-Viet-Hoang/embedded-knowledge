@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LX2 · CI Infra &amp; Operations — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/css/style.css?v=7" />
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../../assets/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../../assets/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="../../assets/favicon.ico" />
+</head>
+<body data-page="LX2" data-root="../../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">LX2</span>
+            <span class="badge badge--core">Core</span>
+            <span class="chip">Luxoft — TCU · CI &amp; Integration</span>
+          </div>
+          <h1>CI Infrastructure &amp; Operations</h1>
+          <p class="lead">JD ghi <em>"Lead the CI operations and development… enhance the performance, stability, efficiency and scalability of CI"</em>. Đây là phần "vận hành" phía sau pipeline: <strong>Ansible</strong> dựng máy, <strong>Docker</strong> đóng gói toolchain, <strong>Artifactory</strong> lưu và thăng hạng build, <strong>AWS</strong> cấp tài nguyên co giãn, <strong>Grafana + VictoriaMetrics</strong> đo sức khoẻ CI, và <strong>HIL bench</strong> nằm trong vòng CI. Cuối bài là bộ "playbook" tối ưu tốc độ và ổn định để trả lời câu hỏi mở.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> ✅ Nửa đầu là kinh nghiệm thật (Docker, HIL, tối ưu kiểu SENT). ➕ Ansible/Artifactory/AWS/Grafana là optional</span>
+            <span><b>Gắn:</b> <a href="LX1-review-gating.html">LX1</a> (pipeline), <a href="LX8-vector-tools-debug.html">LX8</a> (TRACE32)</span>
+          </div>
+
+        </div>
+
+        <div class="callout callout--key">
+          <div class="callout__icon">🧭</div>
+          <div class="callout__body">
+            <div class="callout__title">Chế độ "ôn cái đã biết trước"</div>
+            <p class="mb-0">Ôn trước các mục ✅: kiến trúc CI (1), Docker (3), bench trong CI (7), playbook tối ưu (8). Đây là chỗ nối trực tiếp với Azure Pipelines + Conan, Docker/K8s/Terraform và câu chuyện SENT 1–2 tháng → 2–3 ngày. Ansible, Artifactory, AWS, Grafana (➕) đọc sau.</p>
+            <p class="mb-0" style="margin-top:6px"><strong>Ký hiệu trên tiêu đề mục:</strong> ✅ đã biết theo CV, ôn cho thật chắc · 🎯 chưa biết nhưng JD gần như chắc hỏi, học mức tối thiểu · ➕ mới, optional.</p>
+          </div>
+        </div>
+
+        <!-- ================= 1 ================= -->
+        <h2>✅ 1. Kiến trúc một hệ CI embedded điển hình</h2>
+        <div class="figure">
+          <svg viewBox="0 0 720 300" role="img" aria-label="Kiến trúc hạ tầng CI embedded" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="lx2a" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="14" y="20" width="692" height="46" rx="8" fill="var(--brand-900)"/>
+            <text x="30" y="40" class="dgm-inv" font-size="10.5" font-weight="700">Điều phối</text>
+            <text x="30" y="56" class="dgm-inv-sub" font-size="9">Gerrit / GitLab → Zuul · Jenkins (scheduler, queue, report)</text>
+            <rect x="14" y="86" width="220" height="112" rx="8" fill="var(--brand-600)"/>
+            <text x="124" y="108" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Build agents (co giãn)</text>
+            <text x="124" y="126" text-anchor="middle" class="dgm-inv-sub" font-size="9">AWS EC2 / K8s · Docker image</text>
+            <text x="124" y="142" text-anchor="middle" class="dgm-inv-sub" font-size="9">compiler (GHS/Tasking/GCC)</text>
+            <text x="124" y="158" text-anchor="middle" class="dgm-inv-sub" font-size="9">tresos gen · MISRA · VectorCAST</text>
+            <text x="124" y="178" text-anchor="middle" class="dgm-inv-sub" font-size="9">license server (FlexLM)</text>
+            <rect x="250" y="86" width="220" height="112" rx="8" fill="var(--core)"/>
+            <text x="360" y="108" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Bench agents (tĩnh, on-prem)</text>
+            <text x="360" y="126" text-anchor="middle" class="dgm-inv-sub" font-size="9">PC + TRACE32 / iSystem</text>
+            <text x="360" y="142" text-anchor="middle" class="dgm-inv-sub" font-size="9">CANoe/VN interface · PSU</text>
+            <text x="360" y="158" text-anchor="middle" class="dgm-inv-sub" font-size="9">TCU + SIM/ network simulator</text>
+            <text x="360" y="178" text-anchor="middle" class="dgm-inv-sub" font-size="9">pytest runner</text>
+            <rect x="486" y="86" width="220" height="112" rx="8" fill="var(--brand-800)"/>
+            <text x="596" y="108" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Artifactory</text>
+            <text x="596" y="126" text-anchor="middle" class="dgm-inv-sub" font-size="9">docker · conan · generic repo</text>
+            <text x="596" y="142" text-anchor="middle" class="dgm-inv-sub" font-size="9">dev → test → release (promote)</text>
+            <text x="596" y="158" text-anchor="middle" class="dgm-inv-sub" font-size="9">build info · retention</text>
+            <text x="596" y="178" text-anchor="middle" class="dgm-inv-sub" font-size="9">remote proxy (pypi, dockerhub)</text>
+            <rect x="14" y="220" width="340" height="62" rx="8" fill="var(--ok)"/>
+            <text x="184" y="244" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Ansible (IaC)</text>
+            <text x="184" y="262" text-anchor="middle" class="dgm-inv-sub" font-size="9">dựng/cập nhật agent, bench PC, tool version</text>
+            <rect x="366" y="220" width="340" height="62" rx="8" fill="var(--defend)"/>
+            <text x="536" y="244" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Observability</text>
+            <text x="536" y="262" text-anchor="middle" class="dgm-inv-sub" font-size="9">exporter → VictoriaMetrics → Grafana · alert</text>
+            <path d="M124,66 L124,82" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx2a)"/>
+            <path d="M360,66 L360,82" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx2a)"/>
+            <path d="M234,142 L246,142" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx2a)"/>
+            <path d="M470,142 L482,142" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx2a)"/>
+          </svg>
+          <div class="figure__cap"><b>Hai loại tài nguyên rất khác nhau.</b> Build agent là <em>gia súc</em> (cattle): giống hệt nhau, dựng từ image, hỏng thì vứt đi tạo cái mới, co giãn trên cloud. Bench agent là <em>thú cưng</em> (pet): phần cứng thật, có trạng thái, khan hiếm, phải giữ gìn và giám sát. Chiến lược CI tốt đẩy tối đa việc sang loại thứ nhất.</div>
+        </div>
+
+        <!-- ================= 2 ANSIBLE ================= -->
+        <h2>➕ 2. Ansible — Infrastructure as Code</h2>
+        <dl class="kv">
+          <dt>Agentless</dt><dd>Không cần cài daemon trên máy đích. Ansible SSH (Linux) hoặc WinRM/SSH (Windows) vào, đẩy module Python sang chạy, lấy kết quả JSON về. Chỉ cần Python trên máy đích (Linux). Lợi thế so với Puppet/Chef (cần agent).</dd>
+          <dt>Inventory</dt><dd>Danh sách máy và nhóm (<code>[build_agents]</code>, <code>[bench_pcs]</code>), dạng INI/YAML tĩnh hoặc <em>dynamic inventory</em> (plugin <code>aws_ec2</code> tự liệt kê instance theo tag). Biến theo nhóm trong <code>group_vars/</code>, theo máy trong <code>host_vars/</code>.</dd>
+          <dt>Playbook · play · task</dt><dd>Playbook (YAML) gồm các <em>play</em>; mỗi play áp một danh sách <em>task</em> lên một nhóm host. Mỗi task gọi một <strong>module</strong> (<code>apt</code>, <code>copy</code>, <code>template</code>, <code>service</code>, <code>win_package</code>…).</dd>
+          <dt>Idempotent</dt><dd>Chạy lại nhiều lần cho cùng kết quả; task chỉ báo <code>changed</code> khi thật sự thay đổi. Module khai báo <em>trạng thái mong muốn</em> (<code>state: present</code>) thay vì lệnh. Đây là tính chất quan trọng nhất và là câu hỏi hay gặp. <code>shell</code>/<code>command</code> không tự idempotent, phải thêm <code>creates:</code> hoặc <code>changed_when:</code>.</dd>
+          <dt>Role</dt><dd>Gói tái sử dụng có cấu trúc chuẩn: <code>tasks/</code>, <code>handlers/</code>, <code>templates/</code> (Jinja2), <code>defaults/</code>, <code>vars/</code>, <code>files/</code>. Ví dụ role <code>trace32</code>, <code>ghs_compiler</code>, <code>jenkins_agent</code>. Chia sẻ qua Ansible Galaxy hoặc collection nội bộ.</dd>
+          <dt>Handler</dt><dd>Task chỉ chạy khi được <code>notify</code> và chạy một lần ở cuối play, ví dụ restart service khi file cấu hình đổi.</dd>
+          <dt>Check / diff mode</dt><dd><code>--check --diff</code>: chạy thử, cho biết sẽ đổi gì mà không đổi thật. Dùng trong CI của chính repo hạ tầng trước khi áp lên bench thật.</dd>
+          <dt>Vault</dt><dd><code>ansible-vault</code> mã hoá biến bí mật (token Artifactory, license key) để commit an toàn vào Git.</dd>
+          <dt>Liên hệ Zuul</dt><dd>Mọi job Zuul là Ansible playbook chạy từ executor. Biết Ansible nghĩa là đọc và viết được job Zuul.</dd>
+        </dl>
+<pre><code class="language-yaml"># site.yml — cấu hình bench PC
+- hosts: bench_pcs
+  become: true
+  vars:
+    t32_version: "2025.09"
+  roles:
+    - role: trace32          # cài TRACE32, copy config.t32, bật API port
+    - role: vector_driver    # driver VN1630/VN1640
+  tasks:
+    - name: Cài python deps cho bench test
+      ansible.builtin.pip:
+        requirements: /opt/bench/requirements.txt
+        virtualenv: /opt/bench/venv
+    - name: Đặt udev rule cho debugger USB
+      ansible.builtin.copy:
+        src: files/99-lauterbach.rules
+        dest: /etc/udev/rules.d/99-lauterbach.rules
+      notify: reload udev
+  handlers:
+    - name: reload udev
+      ansible.builtin.command: udevadm control --reload-rules</code></pre>
+
+        <!-- ================= 3 DOCKER ================= -->
+        <h2>✅ 3. Docker — đóng gói toolchain</h2>
+        <dl class="kv">
+          <dt>Vì sao dùng trong embedded CI</dt><dd>Build tái lập (reproducible): compiler, Python, CMake, tool generate được đóng băng vào image có tag. Máy nào chạy image đó cũng ra cùng ELF. Build 2 năm trước (release đã ship) vẫn dựng lại được bằng image cũ, điều cần cho truy vết an toàn chức năng.</dd>
+          <dt>Image vs container</dt><dd>Image: template chỉ đọc, gồm nhiều <em>layer</em>. Container: instance chạy của image, có layer ghi tạm thời, mất khi xoá.</dd>
+          <dt>Layer cache</dt><dd>Mỗi lệnh trong Dockerfile tạo một layer; Docker dùng lại layer nếu lệnh và các layer trước không đổi. Đặt thứ ít thay đổi (cài OS package, compiler) lên trên, thứ hay đổi (requirements của dự án) xuống dưới.</dd>
+          <dt>Multi-stage build</dt><dd>Stage 1 cài/biên dịch tool, stage cuối chỉ copy kết quả sang image gọn. Giảm kích thước và bề mặt tấn công.</dd>
+          <dt>Tag &amp; digest</dt><dd>Không dùng <code>latest</code> trong pipeline. Dùng tag có version (<code>build-ghs:2026.2</code>) hoặc pin bằng digest <code>@sha256:…</code> để chắc chắn bất biến.</dd>
+          <dt>Giới hạn</dt><dd>Compiler thương mại cần license server (FlexLM) truy cập qua mạng. Tool chỉ có trên Windows (một số version tresos, CANoe) cần Windows container hoặc VM. Truy cập USB (debugger, VN interface) từ container phức tạp, nên bench thường chạy trên host trực tiếp.</dd>
+          <dt>Volume &amp; bind mount</dt><dd>Mount workspace từ host vào container; mount thư mục ccache bền để giữ cache giữa các lần build.</dd>
+        </dl>
+<pre><code class="language-bash"># Dockerfile (rút gọn)
+FROM ubuntu:24.04 AS base
+RUN apt-get update &amp;&amp; apt-get install -y --no-install-recommends \
+      cmake ninja-build python3 python3-venv ccache git &amp;&amp; rm -rf /var/lib/apt/lists/*
+COPY toolchains/arm-gnu-14.2 /opt/arm-gnu            # layer ít đổi
+ENV PATH=/opt/arm-gnu/bin:$PATH CCACHE_DIR=/cache/ccache
+COPY requirements.txt /tmp/                          # layer hay đổi, đặt cuối
+RUN python3 -m venv /opt/venv &amp;&amp; /opt/venv/bin/pip install -r /tmp/requirements.txt
+
+# build &amp; push lên Artifactory với tag có version
+docker build -t artifactory.local/tcu/build-arm:2026.2 .
+docker push  artifactory.local/tcu/build-arm:2026.2</code></pre>
+
+        <!-- ================= 4 ARTIFACTORY ================= -->
+        <h2>➕ 4. JFrog Artifactory — kho artifact &amp; thăng hạng</h2>
+        <dl class="kv">
+          <dt>Loại repository</dt><dd><strong>Local</strong>: lưu artifact do mình tạo. <strong>Remote</strong>: proxy/cache nguồn ngoài (PyPI, Docker Hub, ConanCenter), tăng tốc và giữ được khi nguồn ngoài sập hoặc bị xoá gói. <strong>Virtual</strong>: gộp nhiều local + remote dưới một URL duy nhất.</dd>
+          <dt>Package type</dt><dd>Docker, Conan (C/C++), PyPI, Maven, npm, và <em>Generic</em> (file tuỳ ý: ELF, HEX, A2L, report). Firmware TCU thường vào generic repo, library C vào Conan.</dd>
+          <dt>Promotion</dt><dd>Không build lại để release. Cùng một binary được <strong>chuyển (move/copy)</strong> từ <code>tcu-dev-local</code> → <code>tcu-test-local</code> → <code>tcu-release-local</code> khi qua từng cổng chất lượng. Nguyên tắc "build once, promote many": binary đã test chính là binary được ship.</dd>
+          <dt>Build info</dt><dd>Metadata gắn với mỗi build: commit, pipeline, dependency đã dùng (và checksum), môi trường. Trả lời được "binary này build từ đâu, dùng lib nào" → truy vết cho ASPICE SUP.8 và ISO 26262.</dd>
+          <dt>Properties &amp; AQL</dt><dd>Gắn thuộc tính key-value (<code>git.commit</code>, <code>test.bench=passed</code>) lên artifact, truy vấn bằng AQL (Artifactory Query Language) để tìm "bản release mới nhất đã pass bench".</dd>
+          <dt>Retention / cleanup</dt><dd>Artifact dev sinh ra mỗi change làm đầy đĩa rất nhanh. Chính sách xoá theo tuổi/số lượng cho repo dev, giữ vĩnh viễn repo release.</dd>
+          <dt>Checksum dedup</dt><dd>Artifactory lưu theo checksum SHA-1/SHA-256: cùng nội dung chỉ lưu một bản vật lý, nên copy/promote gần như không tốn dung lượng.</dd>
+        </dl>
+        <div class="callout callout--interview">
+          <div class="callout__icon">🎤</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Nối với CV:</strong> đã tích hợp <strong>Conan</strong> vào pipeline để quản lý package C/C++ và artifact trên Azure. Conan remote trỏ vào Artifactory là cấu hình phổ biến nhất, nên có thể nói: "Tôi đã dùng Conan để version hoá và tái sử dụng package. Trong setup của các bạn, remote đó có lẽ là Artifactory."</p>
+          </div>
+        </div>
+
+        <!-- ================= 5 AWS ================= -->
+        <h2>➕ 5. AWS cho CI — những gì cần nói được</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Dịch vụ</th><th>Dùng trong CI</th><th>Lưu ý</th></tr></thead>
+          <tbody>
+            <tr><td><strong>EC2</strong></td><td>VM làm build agent. Auto Scaling Group co giãn theo độ dài queue.</td><td><em>Spot instance</em> rẻ tới ~90% nhưng có thể bị thu hồi với cảnh báo 2 phút → hợp với build ngắn, có retry.</td></tr>
+            <tr><td><strong>S3</strong></td><td>Lưu log, report, cache build, backup Artifactory (filestore).</td><td>Lifecycle rule chuyển sang lớp lưu trữ rẻ hơn rồi xoá.</td></tr>
+            <tr><td><strong>ECR</strong></td><td>Docker registry (thay hoặc song song Artifactory).</td><td>Kéo image từ cùng region để nhanh và không tốn phí egress.</td></tr>
+            <tr><td><strong>EKS</strong></td><td>Kubernetes cho agent dạng pod (Jenkins K8s plugin, GitLab K8s executor).</td><td>Agent sống theo job, tự dọn sạch.</td></tr>
+            <tr><td><strong>IAM</strong></td><td>Role cho agent truy cập S3/ECR không cần key cứng.</td><td>Least privilege; không để access key trong pipeline.</td></tr>
+            <tr><td><strong>VPC / VPN</strong></td><td>Nối cloud với mạng on-prem (license server, bench lab).</td><td>Độ trễ tới license server làm chậm build nếu compiler check-out license liên tục.</td></tr>
+          </tbody>
+        </table></div>
+        <p class="small text-soft">Hybrid là mô hình thực tế: build + test phần mềm trên cloud, bench HIL ở lab on-prem. Kết nối qua VPN, artifact đi qua Artifactory.</p>
+
+        <!-- ================= 6 OBSERVABILITY ================= -->
+        <h2>➕ 6. Grafana + VictoriaMetrics — đo sức khoẻ CI</h2>
+        <dl class="kv">
+          <dt>VictoriaMetrics</dt><dd>CSDL time-series tương thích Prometheus (nhận remote-write, hỗ trợ PromQL và mở rộng MetricsQL), nén tốt và tốn ít RAM hơn. "Victoria" trong JD nhiều khả năng là nó, dùng làm datasource cho Grafana. Nếu hỏi, xác nhận lại với interviewer.</dd>
+          <dt>Luồng dữ liệu</dt><dd>Exporter (Jenkins Prometheus plugin, Zuul statsd metrics, node_exporter trên agent, script đọc trạng thái bench) → scrape/push → VictoriaMetrics → Grafana dashboard + alert.</dd>
+          <dt>Metric kiểu counter/gauge/histogram</dt><dd><em>Counter</em> chỉ tăng (tổng build), xem bằng <code>rate()</code>. <em>Gauge</em> lên xuống (độ dài queue, số agent rảnh). <em>Histogram</em> phân phối (thời gian build) → xem p50/p95 bằng <code>histogram_quantile()</code>.</dd>
+          <dt>KPI của CI</dt><dd>
+            <ul class="mb-0">
+              <li><strong>Queue time</strong>: thời gian chờ agent. Tăng → thiếu tài nguyên.</li>
+              <li><strong>Build/test duration p50/p95</strong>: xu hướng chậm dần.</li>
+              <li><strong>Success rate</strong> theo job, tách lỗi do code và lỗi hạ tầng.</li>
+              <li><strong>Flaky rate</strong>: test fail rồi pass khi chạy lại cùng commit.</li>
+              <li><strong>Gate throughput</strong>: số change merge/ngày, số lần gate reset.</li>
+              <li><strong>Bench utilization &amp; availability</strong>: bench offline bao lâu.</li>
+              <li><strong>Feedback time</strong>: từ push tới Verified vote.</li>
+            </ul>
+          </dd>
+          <dt>Alert</dt><dd>Ví dụ: queue &gt; 30 phút trong 15 phút liên tục, bench không phản hồi health check, đĩa agent &gt; 90%, success rate một job tụt dưới ngưỡng.</dd>
+        </dl>
+<pre><code class="language-bash"># PromQL/MetricsQL ví dụ
+# p95 thời gian job build trong 1 ngày
+histogram_quantile(0.95, sum(rate(ci_job_duration_seconds_bucket{job="tcu-build"}[1d])) by (le))
+# tỉ lệ fail do hạ tầng
+sum(rate(ci_job_result_total{result="infra_error"}[1h])) / sum(rate(ci_job_result_total[1h]))</code></pre>
+
+        <!-- ================= 7 HIL IN CI ================= -->
+        <h2>✅ 7. HIL bench trong vòng CI</h2>
+        <div class="figure">
+          <svg viewBox="0 0 720 200" role="img" aria-label="Các bước một bench job" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="lx2b" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <g font-size="9.5">
+              <rect x="10" y="40" width="100" height="60" rx="8" fill="var(--brand-800)"/><text x="60" y="64" text-anchor="middle" class="dgm-inv" font-weight="700">1. Lock</text><text x="60" y="82" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">bench độc quyền</text>
+              <rect x="128" y="40" width="100" height="60" rx="8" fill="var(--brand-600)"/><text x="178" y="64" text-anchor="middle" class="dgm-inv" font-weight="700">2. Health</text><text x="178" y="82" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">PSU cycle, ping</text>
+              <rect x="246" y="40" width="100" height="60" rx="8" fill="var(--core)"/><text x="296" y="64" text-anchor="middle" class="dgm-inv" font-weight="700">3. Flash</text><text x="296" y="82" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">TRACE32 .cmm</text>
+              <rect x="364" y="40" width="100" height="60" rx="8" fill="var(--ok)"/><text x="414" y="64" text-anchor="middle" class="dgm-inv" font-weight="700">4. Verify</text><text x="414" y="82" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">version DID, boot</text>
+              <rect x="482" y="40" width="100" height="60" rx="8" fill="var(--defend)"/><text x="532" y="64" text-anchor="middle" class="dgm-inv" font-weight="700">5. Test</text><text x="532" y="82" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">pytest + CAN/AT</text>
+              <rect x="600" y="40" width="110" height="60" rx="8" fill="var(--brand-900)"/><text x="655" y="64" text-anchor="middle" class="dgm-inv" font-weight="700">6. Collect</text><text x="655" y="82" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">log, trace, unlock</text>
+              <path d="M110,70 L124,70" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx2b)"/>
+              <path d="M228,70 L242,70" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx2b)"/>
+              <path d="M346,70 L360,70" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx2b)"/>
+              <path d="M464,70 L478,70" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx2b)"/>
+              <path d="M582,70 L596,70" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx2b)"/>
+              <text x="178" y="130" text-anchor="middle" class="dgm-sub">fail → đánh dấu bench offline,</text>
+              <text x="178" y="144" text-anchor="middle" class="dgm-sub">job = INFRA ERROR (không đổ lỗi code)</text>
+              <text x="532" y="130" text-anchor="middle" class="dgm-sub">timeout mỗi test, retry có kiểm soát</text>
+              <text x="655" y="144" text-anchor="middle" class="dgm-sub">luôn chạy (finally)</text>
+              <text x="360" y="182" text-anchor="middle" class="dgm-label" font-size="10">Phân loại kết quả: PASS · FAIL (lỗi code) · INFRA_ERROR (bench/tool) — ba trạng thái, không phải hai</text>
+            </g>
+          </svg>
+          <div class="figure__cap"><b>Bench job đáng tin.</b> Điểm khác biệt của người làm CI giỏi: tách được "code sai" khỏi "bench hỏng". Nếu không, developer mất niềm tin, bấm recheck liên tục, và gate bị tắc.</div>
+        </div>
+<pre><code class="language-python"># conftest.py — fixture bench (rút gọn)
+import pytest, subprocess, time
+
+@pytest.fixture(scope="session")
+def tcu(request):
+    psu = Psu("/dev/ttyUSB0")
+    psu.cycle(off_s=2)                                    # trạng thái sạch
+    rc = subprocess.run(["t32", "-s", "flash.cmm", request.config.getoption("--elf")],
+                        timeout=300).returncode
+    if rc != 0:
+        pytest.exit("INFRA_ERROR: flash failed", returncode=3)  # mã riêng cho lỗi hạ tầng
+    ecu = Ecu(can_channel=0)
+    assert ecu.wait_boot(timeout_s=10), "TCU không boot sau khi flash"
+    yield ecu
+    ecu.close(); psu.off()
+
+@pytest.mark.smoke
+def test_modem_registers(tcu):
+    at = tcu.at_port()
+    assert at.send("AT+CEREG?", timeout_s=2).stat in (1, 5)   # home / roaming</code></pre>
+
+        <!-- ================= 8 OPTIMISE ================= -->
+        <h2>✅ 8. Playbook tối ưu: tốc độ · ổn định · hiệu quả · khả năng mở rộng</h2>
+        <p>Câu hỏi mở hay gặp: <em>"CI hiện mất 2 tiếng và hay fail ngẫu nhiên. Bạn sẽ làm gì trong 3 tháng đầu?"</em> Trả lời theo cấu trúc: <strong>đo trước → sửa chỗ tốn nhất → chống tái phát</strong>.</p>
+        <ul class="steps">
+          <li><h4>Đo trước (tuần 1–2)</h4><p class="mb-0">Dựng dashboard: thời gian từng stage, queue time, success rate, flaky rate. Tìm 20% job chiếm 80% thời gian. Không tối ưu theo cảm tính.</p></li>
+          <li><h4>Tốc độ</h4><p class="mb-0"><strong>Cache</strong>: ccache/sccache cho compile, layer Docker, remote cache Conan. <strong>Song song</strong>: <code>-j</code>, parallel stage, <em>sharding</em> test (<code>pytest -n</code>, chia theo thời gian lịch sử). <strong>Incremental</strong>: chỉ generate lại BSW khi ARXML đổi; chỉ chạy test liên quan file thay đổi ở check. <strong>Phân tầng</strong>: check nhanh (&lt;15 phút), gate vừa, nightly đầy đủ.</p></li>
+          <li><h4>Ổn định</h4><p class="mb-0">Phân loại lỗi PASS/FAIL/INFRA. <strong>Quarantine flaky test</strong>: phát hiện bằng chạy lại cùng commit, đưa vào danh sách cách ly (vẫn chạy, không chặn gate), tạo ticket có owner và hạn. Health check bench, auto offline. Pin mọi version tool (image digest). Timeout ở mọi bước.</p></li>
+          <li><h4>Hiệu quả</h4><p class="mb-0">Retention artifact, spot instance cho build, tắt agent ngoài giờ, gom license (compiler license là chi phí lớn và hay là nút cổ chai).</p></li>
+          <li><h4>Mở rộng</h4><p class="mb-0">Agent dựng hoàn toàn bằng Ansible/Docker → thêm máy trong vài phút. Template pipeline dùng chung cho các biến thể TCU. Chuyển bớt test từ bench sang SIL/vECU để không bị giới hạn bởi số bench.</p></li>
+          <li><h4>Chống tái phát</h4><p class="mb-0">Postmortem ngắn cho sự cố CI lớn, runbook cho lỗi hay gặp, on-call luân phiên trong team, báo cáo KPI hằng tuần.</p></li>
+        </ul>
+
+        <!-- ================= 9 EVO ================= -->
+        <h2>9. Trước (~2020) → Nay</h2>
+        <div class="evo">
+          <div class="evo__head">🔁 <span>Từ "máy build thủ công" → hạ tầng như code, đo được</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>Máy build cài tay, mỗi máy khác nhau ("chạy trên máy A mà không chạy trên máy B"). Artifact để trên share drive. Bench chạy script tay, kết quả gửi email. Không có số liệu, CI chậm thì không biết vì sao.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p>Agent dựng bằng Ansible + Docker image có version, co giãn trên cloud. Artifactory với promotion và build info để truy vết. Bench là một node trong CI, có lock, health check, phân loại lỗi hạ tầng. Metric vào time-series DB, dashboard Grafana, alert. Xu hướng tiếp theo: vECU/SIL giảm phụ thuộc bench.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> "Lead CI operations" nghĩa là chịu trách nhiệm cả độ tin cậy của hệ thống, không chỉ viết pipeline.</div>
+        </div>
+
+        <!-- ================= 10 QA ================= -->
+        <h2>10. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">Idempotent trong Ansible là gì? Viết task không idempotent thì hậu quả thế nào? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Chạy playbook nhiều lần cho cùng trạng thái cuối, lần sau không đổi gì nếu đã đúng. Module khai báo trạng thái mong muốn nên tự kiểm tra trước khi làm. Task <code>shell: echo x &gt;&gt; file</code> sẽ nối thêm mỗi lần chạy → file hỏng dần, và luôn báo <code>changed</code> nên không phát hiện được drift. Sửa bằng module phù hợp (<code>lineinfile</code>) hoặc <code>creates:</code>/<code>changed_when:</code>.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">"Build once, promote many" là gì và vì sao quan trọng cho automotive? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Binary chỉ build một lần; qua mỗi cổng test thì được promote (move/copy) sang repo mức cao hơn trong Artifactory, không build lại. Nếu build lại cho release thì binary ship khác binary đã test (compiler, timestamp, dependency có thể khác) → bằng chứng test không còn giá trị. Build info cho truy vết commit, dependency, môi trường, phục vụ SUP.8 (configuration management) và audit.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">CI mất 2 giờ và hay fail ngẫu nhiên. Kế hoạch của bạn? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">(1) Đo: dashboard thời gian từng stage và tỉ lệ lỗi theo loại. (2) Phân loại lỗi: code / flaky test / hạ tầng. (3) Ổn định trước khi tăng tốc: quarantine flaky test có owner, health check bench, pin version tool, timeout. (4) Tăng tốc chỗ tốn nhất: cache compile, song song hoá, sharding test, chỉ regenerate khi config đổi, tách check nhanh / gate / nightly. (5) Theo dõi KPI hằng tuần để chứng minh cải thiện. Lấy ví dụ thật: kinh nghiệm tự động hoá SENT debugging và giảm effort qua Python script cho thấy cách làm "đo → tự động hoá → chuẩn hoá".</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Làm sao phát hiện flaky test tự động?</li><li>Nếu quarantine quá nhiều test thì sao?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Bench job fail vì debugger không kết nối. Developer bị chặn merge. Xử lý thế nào? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Ngắn hạn: job phải báo <code>INFRA_ERROR</code> (không phải FAIL), tự thử lại trên bench khác nếu có, và đánh dấu bench lỗi offline để job khác không vào. Có alert tới người on-call. Dài hạn: health check trước mỗi job (power cycle, ping debugger), thống kê availability từng bench, runbook khôi phục, cân nhắc relay USB để reset debugger từ xa. Nguyên tắc: lỗi hạ tầng không được đẩy sang developer.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Vì sao không chạy bench test trong Docker container như build? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Bench cần truy cập phần cứng: USB debugger, VN interface, serial của PSU, driver nhân (kernel module) của nhà cung cấp, và một số tool chỉ chạy trên Windows. Có thể pass-through thiết bị vào container nhưng phức tạp và dễ vỡ. Thực tế: bench PC được cấu hình bằng Ansible (vẫn là IaC), còn phần Python test có thể đóng gói trong venv có version. Build và static analysis thì container hoá hoàn toàn.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Kinh nghiệm của bạn với hạ tầng CI là gì? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Trung thực, bám CV: đã tích hợp build, package và test workflow với Azure Pipelines và Conan, và ở vai trò AI Platform Engineer đang deploy/vận hành hạ tầng trên Azure và GCP bằng Terraform (IaC), Docker, Kubernetes. Chưa dùng AWS, Ansible, Artifactory, Grafana trong dự án; nói rõ Terraform → Ansible và Azure → AWS là cùng tư duy IaC/cloud, và đã tìm hiểu nguyên lý (idempotent, promotion, KPI CI) và sẽ tiếp nhận nhanh vì khái niệm tương đồng. Nhấn mạnh tư duy vận hành: đo trước, phân loại lỗi, tự động hoá.</p></div></div>
+        </div>
+
+        <!-- ================= 11 CHEAT ================= -->
+        <h2>11. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>Ansible</h4><ul>
+            <li>agentless (SSH/WinRM)</li><li>inventory · playbook · role · handler</li><li>idempotent · <code>--check --diff</code></li><li>vault cho secret · job Zuul = playbook</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Docker</h4><ul>
+            <li>reproducible toolchain</li><li>layer cache: ít đổi lên trên</li><li>multi-stage · pin tag/digest</li><li>license server · USB khó</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Artifactory</h4><ul>
+            <li>local · remote · virtual</li><li>generic / conan / docker</li><li>promotion: build once</li><li>build info · AQL · retention</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Observability</h4><ul>
+            <li>VictoriaMetrics = Prometheus-compatible TSDB</li><li>counter · gauge · histogram</li><li>queue time · p95 · flaky rate</li><li>bench availability · alert</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Bench CI</h4><ul>
+            <li>lock → health → flash → verify → test → collect</li><li>PASS / FAIL / INFRA_ERROR</li><li>quarantine flaky, có owner</li>
+          </ul></div>
+        </div>
+
+        <h2>12. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li>Ansible documentation — <a href="https://docs.ansible.com/ansible/latest/getting_started/index.html" target="_blank" rel="noopener">Getting started</a>, Playbooks, Roles, Vault.</li>
+          <li>Docker — <a href="https://docs.docker.com/build/building/best-practices/" target="_blank" rel="noopener">Building best practices</a> (layer cache, multi-stage).</li>
+          <li>JFrog — Artifactory documentation: repository types, build promotion, build info, AQL.</li>
+          <li><a href="https://docs.victoriametrics.com/" target="_blank" rel="noopener">VictoriaMetrics documentation</a> (Prometheus compatibility, MetricsQL); Grafana data source docs.</li>
+          <li>AWS — EC2 Spot Instances (interruption notice 2 phút), Auto Scaling, IAM roles.</li>
+          <li>Zuul — jobs as Ansible playbooks (Zuul job content docs).</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi trả lời được câu "CI 2 giờ, hay fail" theo 6 bước.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">Chủ đề LX2 · CI Infra &amp; Operations — Interview Prep</footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../../assets/js/app.js?v=7"></script>
+</body>
+</html>

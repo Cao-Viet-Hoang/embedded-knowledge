@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LX1 · Gerrit · Zuul · Jenkins · GitLab — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/css/style.css?v=7" />
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../../assets/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../../assets/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="../../assets/favicon.ico" />
+</head>
+<body data-page="LX1" data-root="../../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">LX1</span>
+            <span class="badge badge--bg">Background</span>
+            <span class="chip">Luxoft — TCU · CI &amp; Integration</span>
+          </div>
+          <h1>Gerrit · Zuul · Jenkins · GitLab CI — review &amp; gating</h1>
+          <p class="lead">Nửa đầu của toolchain CI trong JD: nơi code được <strong>review</strong> (Gerrit), được <strong>gate</strong> trước khi merge (Zuul), và được <strong>build/test</strong> (Jenkins, GitLab CI). Đào sâu: mô hình <em>change/patchset</em> và label của Gerrit, pipeline <strong>check vs gate</strong>, <strong>speculative merge</strong> và <code>Depends-On</code> của Zuul, Jenkinsfile declarative với khoá bench, và <code>.gitlab-ci.yml</code>. Mỗi phần có "map sang Azure Pipelines" để nối với kinh nghiệm thật.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> ➕ Phần lớn là tool mới (optional). 🎯 Tối thiểu: mục 1, mục 6 và cheat-sheet (~30 phút)</span>
+            <span><b>Gắn:</b> CI infra (<a href="LX2-ci-infra-ops.html">LX2</a>), bài gốc CI/CD (<a href="../J-cicd-cloud.html">J</a>)</span>
+          </div>
+
+        </div>
+
+        <div class="callout callout--key">
+          <div class="callout__icon">🧭</div>
+          <div class="callout__body">
+            <div class="callout__title">Chế độ "ôn cái đã biết trước"</div>
+            <p class="mb-0">Bạn chưa dùng Gerrit/Zuul/Jenkins/GitLab. Chỉ cần đọc 🎯 mục 1 (bức tranh tổng) và 🎯 mục 6 (map sang Azure Pipelines bạn đã làm) cùng cheat-sheet, đủ để trả lời mức khái niệm. Các mục ➕ để sau khi đã ôn chắc phần đã biết.</p>
+            <p class="mb-0" style="margin-top:6px"><strong>Ký hiệu trên tiêu đề mục:</strong> ✅ đã biết theo CV, ôn cho thật chắc · 🎯 chưa biết nhưng JD gần như chắc hỏi, học mức tối thiểu · ➕ mới, optional.</p>
+          </div>
+        </div>
+
+        <div class="callout callout--note">
+          <div class="callout__icon">📌</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Nguồn:</strong> Zuul documentation (Project Gating, Pipeline config), Gerrit Code Review documentation, Jenkins Pipeline syntax, GitLab CI/CD YAML reference. Xem cuối bài. Tên label/pipeline có thể khác nhau tuỳ cách mỗi công ty cấu hình; bài dùng mặc định phổ biến.</p>
+          </div>
+        </div>
+
+        <!-- ================= 1. BỨC TRANH ================= -->
+        <h2>🎯 1. Bức tranh tổng: từ <code>git push</code> đến merge</h2>
+        <div class="figure">
+          <svg viewBox="0 0 720 250" role="img" aria-label="Luồng Gerrit và Zuul check gate" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="lx1a" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="14" y="90" width="100" height="56" rx="9" fill="var(--brand-800)"/><text x="64" y="114" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Developer</text><text x="64" y="130" text-anchor="middle" class="dgm-inv-sub dgm-mono" font-size="8">refs/for/main</text>
+            <rect x="150" y="80" width="130" height="76" rx="9" fill="var(--brand-600)"/><text x="215" y="104" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Gerrit</text><text x="215" y="120" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">Change + Patchset</text><text x="215" y="136" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">Code-Review / Verified</text>
+            <rect x="330" y="24" width="150" height="70" rx="9" fill="var(--core)"/><text x="405" y="48" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Zuul CHECK</text><text x="405" y="64" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">independent</text><text x="405" y="80" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">→ Verified ±1</text>
+            <rect x="330" y="142" width="150" height="70" rx="9" fill="var(--must)"/><text x="405" y="166" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Zuul GATE</text><text x="405" y="182" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">dependent · speculative</text><text x="405" y="198" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">pass → submit</text>
+            <rect x="530" y="80" width="160" height="76" rx="9" fill="var(--brand-900)"/><text x="610" y="104" text-anchor="middle" class="dgm-inv" font-size="10.5" font-weight="700">Executors / Jenkins</text><text x="610" y="120" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">build · MISRA · unit</text><text x="610" y="136" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">bench smoke · report</text>
+            <path d="M114,118 L146,118" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx1a)"/>
+            <path d="M280,104 L326,66" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx1a)"/><text x="296" y="76" class="dgm-sub" font-size="8">patchset-created</text>
+            <path d="M280,134 L326,172" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx1a)"/><text x="262" y="176" class="dgm-sub" font-size="8">CR+2 (+approve)</text>
+            <path d="M480,60 L526,100" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx1a)"/>
+            <path d="M480,176 L526,136" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx1a)"/>
+            <path d="M405,212 C405,240 215,240 215,160" class="dgm-arrow" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#lx1a)"/><text x="310" y="244" text-anchor="middle" class="dgm-sub" font-size="8.5">report: vote Verified, merge change khi gate xanh</text>
+          </svg>
+          <div class="figure__cap"><b>Hai cửa.</b> <em>Check</em> chạy mỗi patchset mới để cho reviewer biết change có build/test được không. <em>Gate</em> chỉ chạy khi change đã được duyệt, test nó <strong>trên nền các change đang xếp hàng trước</strong>, và chính Zuul là người bấm merge. Không ai merge tay được, nên nhánh chính luôn ở trạng thái đã test.</div>
+        </div>
+
+        <div class="callout callout--key">
+          <div class="callout__icon">🔑</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Ý tưởng cốt lõi để nói với interviewer:</strong> CI thông thường test change <em>trước khi merge</em> nhưng trên nền main <em>tại thời điểm tạo nhánh</em>. Nếu hai change cùng xanh riêng lẻ nhưng xung đột ngữ nghĩa, merge cả hai thì main đỏ. <strong>Gating</strong> giải quyết bằng cách test đúng trạng thái main <em>sẽ có</em> sau khi merge, theo thứ tự merge.</p>
+          </div>
+        </div>
+
+        <!-- ================= 2. GERRIT ================= -->
+        <h2>➕ 2. Gerrit — code review theo từng commit</h2>
+        <p><strong>Vai trò:</strong> server Git + hệ thống review. Khác GitHub/GitLab (review theo <em>nhánh/merge request</em>), Gerrit review <strong>từng commit</strong>. Một commit là một đơn vị review.</p>
+        <dl class="kv">
+          <dt>Change &amp; Change-Id</dt><dd>Mỗi commit đẩy lên review tạo một <strong>change</strong>. Git hook <code>commit-msg</code> tự thêm dòng footer <code>Change-Id: I&lt;40 hex&gt;</code>. Gerrit dùng Change-Id (không dùng SHA) để nhận ra "đây là bản sửa của cùng một change", vì SHA đổi mỗi lần amend.</dd>
+          <dt>Patchset</dt><dd>Sửa theo review: <code>git commit --amend</code> (giữ nguyên Change-Id) rồi push lại → change có thêm <strong>patchset</strong> mới (PS1, PS2…). Reviewer so sánh diff giữa hai patchset. Đây là lý do developer quen Gerrit không tạo commit "fix review" mà amend.</dd>
+          <dt>Push để review</dt><dd><code>git push origin HEAD:refs/for/main</code>. <code>refs/for/</code> là namespace ảo: Gerrit nhận commit vào hàng chờ review thay vì cập nhật nhánh <code>main</code>. Có thể kèm option như <code>%topic=x</code>, <code>%r=reviewer@…</code>, <code>%wip</code>.</dd>
+          <dt>Relation chain</dt><dd>Đẩy nhiều commit nối tiếp nhau → mỗi commit là một change, xếp thành chuỗi phụ thuộc. Change con không merge được nếu change cha chưa merge.</dd>
+          <dt>Label Code-Review</dt><dd>Mặc định từ <strong>−2 tới +2</strong>. +1 = "trông ổn nhưng cần người khác duyệt", +2 = <em>approve</em> (chỉ người có quyền), −1 = "nên sửa", <strong>−2 = chặn</strong> (veto; change không submit được cho tới khi chính người đó gỡ).</dd>
+          <dt>Label Verified</dt><dd>Từ −1 tới +1, thường do <strong>CI bot</strong> vote (Zuul hoặc Jenkins Gerrit Trigger). Verified +1 = build/test pass.</dd>
+          <dt>Submit requirements</dt><dd>Điều kiện để nút Submit hoạt động, ví dụ "có Code-Review +2, không có −2, Verified +1". Từ Gerrit 3.6 cấu hình bằng <em>submit requirements</em> (thay cho Prolog submit rules cũ). Nhiều dự án thêm label riêng (ví dụ <em>Workflow +1</em> ở OpenStack) làm tín hiệu "đưa vào gate".</dd>
+          <dt>Submit type</dt><dd>Cách Gerrit ghép change vào nhánh: <em>Merge if necessary</em>, <em>Fast-forward only</em>, <em>Rebase if necessary</em>, <em>Rebase always</em>, <em>Cherry pick</em>, <em>Merge always</em>. Dự án muốn lịch sử thẳng thường chọn rebase/cherry-pick.</dd>
+          <dt>Stream events</dt><dd>Gerrit phát sự kiện (<code>patchset-created</code>, <code>comment-added</code>, <code>change-merged</code>, <code>ref-updated</code>) qua SSH <code>gerrit stream-events</code> hoặc plugin (webhook, Kafka). Zuul và Jenkins lắng nghe các sự kiện này để kích hoạt pipeline.</dd>
+          <dt>Quyền (ACL)</dt><dd>Cấu hình theo project/nhánh trong <code>refs/meta/config</code> (<code>project.config</code>): ai được push, ai được vote +2, ai được submit. Integration lead thường giữ quyền cấu hình ACL cho nhánh release.</dd>
+        </dl>
+
+<pre><code class="language-bash"># Quy trình developer trên Gerrit
+git clone ssh://user@gerrit:29418/tcu/app &amp;&amp; cd app
+scp -p -P 29418 user@gerrit:hooks/commit-msg .git/hooks/   # cài hook sinh Change-Id
+git commit -m "CanIf: fix Rx indication for extended ID"   # footer Change-Id được thêm tự động
+git push origin HEAD:refs/for/main%topic=canif-extid         # tạo change, PS1
+# ... reviewer góp ý ...
+git commit --amend                                           # giữ Change-Id
+git push origin HEAD:refs/for/main                           # PS2 của cùng change</code></pre>
+
+        <!-- ================= 3. ZUUL ================= -->
+        <h2>➕ 3. Zuul — project gating</h2>
+        <p><strong>Vai trò:</strong> hệ thống CI mã nguồn mở (xuất phát từ OpenStack) chuyên <em>gating</em>: đảm bảo không change nào được merge nếu chưa test trên đúng trạng thái sau merge. Automotive dùng nhiều: Volvo Cars dựng ECM CI chain trên Zuul (2018), BMW có instance CI/CD tập trung dựa trên Zuul v3 (theo danh sách user của Zuul).</p>
+
+        <h3>3.1 Kiến trúc</h3>
+        <dl class="kv">
+          <dt>zuul-scheduler</dt><dd>Não của hệ thống: nhận event từ Gerrit/GitLab/GitHub, quyết định change vào pipeline nào, job nào chạy, và report kết quả. Trạng thái được lưu trong <strong>ZooKeeper</strong> nên có thể chạy nhiều scheduler (HA).</dd>
+          <dt>zuul-merger</dt><dd>Chuẩn bị trạng thái Git <em>dự kiến</em>: ghép change đang test lên nhánh đích cùng các change phía trước trong queue. Nếu ghép lỗi (merge conflict) thì báo ngay, không cần chạy job.</dd>
+          <dt>zuul-executor</dt><dd>Chạy job. <strong>Job trong Zuul là Ansible playbook</strong> (pre-run / run / post-run) chạy trên node được cấp. Đây là lý do JD ghi Ansible cạnh Zuul.</dd>
+          <dt>Nodepool / launcher</dt><dd>Cấp node (VM cloud, container, hoặc máy tĩnh như máy nối bench) cho job, dọn sau khi xong. Các bản Zuul mới đang tích hợp chức năng này vào Zuul (zuul-launcher), nhưng khái niệm vẫn là "pool node theo label".</dd>
+          <dt>zuul-web</dt><dd>API + dashboard: xem pipeline trực tiếp (status page), lịch sử build, log, cấu hình job. "Zuul Web" trong JD chính là thành phần này.</dd>
+        </dl>
+
+        <h3>3.2 Pipeline và các loại manager</h3>
+        <dl class="kv">
+          <dt>Independent (check)</dt><dd>Mỗi change được test <strong>độc lập</strong> trên nhánh đích hiện tại. Không có thứ tự, không ảnh hưởng nhau. Trigger thường là <code>patchset-created</code>. Report: vote Verified ±1. Mục đích: cho reviewer biết sớm.</dd>
+          <dt>Dependent (gate)</dt><dd>Các change được xếp vào <strong>shared queue</strong> theo thứ tự được duyệt, test <em>speculatively</em> (mục 3.3). Trigger thường là khi đủ approval (ví dụ Code-Review +2 cộng label approve). Report thành công: <strong>Zuul submit change</strong>.</dd>
+          <dt>Post / periodic</dt><dd><em>post</em>: chạy sau khi merge (<code>ref-updated</code>), ví dụ publish artifact lên Artifactory, build docs. <em>periodic</em>: theo lịch (timer), ví dụ full regression hằng đêm trên bench, long-run test.</dd>
+          <dt>Serial / supercedent</dt><dd><em>serial</em>: chạy từng item một (hữu ích cho deploy). <em>supercedent</em>: chỉ giữ item mới nhất cho mỗi nhánh, bỏ item cũ đang chờ (ví dụ build tài liệu).</dd>
+        </dl>
+
+        <h3>3.3 Speculative execution — trái tim của gate</h3>
+        <div class="figure">
+          <svg viewBox="0 0 720 230" role="img" aria-label="Zuul speculative execution trong gate queue" xmlns="http://www.w3.org/2000/svg">
+            <text x="20" y="22" class="dgm-label" font-size="10.5" font-weight="700">Gate queue: A, B, C được duyệt theo thứ tự đó, chạy SONG SONG</text>
+            <rect x="20" y="36" width="80" height="30" rx="5" fill="var(--brand-400)"/><text x="60" y="55" text-anchor="middle" class="dgm-inv" font-size="9.5" font-weight="700">main</text>
+            <rect x="104" y="36" width="44" height="30" rx="5" fill="var(--ok)"/><text x="126" y="55" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">A</text>
+            <text x="170" y="55" class="dgm-sub" font-size="9">→ test "main + A"</text>
+            <rect x="20" y="74" width="80" height="30" rx="5" fill="var(--brand-400)"/><text x="60" y="93" text-anchor="middle" class="dgm-inv" font-size="9.5" font-weight="700">main</text>
+            <rect x="104" y="74" width="44" height="30" rx="5" fill="var(--ok)"/><text x="126" y="93" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">A</text>
+            <rect x="152" y="74" width="44" height="30" rx="5" fill="var(--must)"/><text x="174" y="93" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">B ✗</text>
+            <text x="210" y="93" class="dgm-sub" font-size="9">→ test "main + A + B"  FAIL</text>
+            <rect x="20" y="112" width="80" height="30" rx="5" fill="var(--brand-400)"/><text x="60" y="131" text-anchor="middle" class="dgm-inv" font-size="9.5" font-weight="700">main</text>
+            <rect x="104" y="112" width="44" height="30" rx="5" fill="var(--ok)"/><text x="126" y="131" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">A</text>
+            <rect x="152" y="112" width="44" height="30" rx="5" fill="var(--must)" opacity="0.45"/><text x="174" y="131" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">B</text>
+            <rect x="200" y="112" width="44" height="30" rx="5" fill="var(--brand-600)"/><text x="222" y="131" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">C</text>
+            <text x="258" y="131" class="dgm-sub" font-size="9">→ kết quả vô nghĩa vì chứa B</text>
+            <line x1="420" y1="30" x2="420" y2="220" stroke="var(--border-strong)" stroke-dasharray="4 3"/>
+            <text x="440" y="22" class="dgm-label" font-size="10.5" font-weight="700">Sau khi B fail</text>
+            <text x="440" y="50" class="dgm-text" font-size="9.5">• A pass → Zuul merge A</text>
+            <text x="440" y="72" class="dgm-text" font-size="9.5">• B bị đẩy khỏi queue, báo −1</text>
+            <text x="440" y="94" class="dgm-text" font-size="9.5">• C được test LẠI trên "main + A"</text>
+            <rect x="440" y="110" width="80" height="30" rx="5" fill="var(--brand-400)"/><text x="480" y="129" text-anchor="middle" class="dgm-inv" font-size="9.5" font-weight="700">main</text>
+            <rect x="524" y="110" width="44" height="30" rx="5" fill="var(--ok)"/><text x="546" y="129" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">A</text>
+            <rect x="572" y="110" width="44" height="30" rx="5" fill="var(--brand-600)"/><text x="594" y="129" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">C</text>
+            <text x="440" y="168" class="dgm-text" font-size="9.5">Lạc quan: giả định mọi change phía</text>
+            <text x="440" y="184" class="dgm-text" font-size="9.5">trước sẽ pass → song song hoá.</text>
+            <text x="440" y="206" class="dgm-sub" font-size="9">Chỉ tốn thêm khi có change fail.</text>
+          </svg>
+          <div class="figure__cap"><b>Speculative execution.</b> Zuul giả định các change phía trước sẽ pass nên test tất cả cùng lúc, mỗi change trên nền "main + mọi change phía trước". Nếu một change fail, những change phía sau bị test lại mà không có nó. Kết quả: vừa nhanh như chạy song song, vừa đúng như chạy tuần tự.</div>
+        </div>
+        <dl class="kv">
+          <dt>Vì sao không chạy tuần tự?</dt><dd>Nếu mỗi gate run mất 1 giờ, tuần tự chỉ merge được khoảng 24 change/ngày. Với song song speculative, thông lượng gần bằng số change được duyệt, miễn tỉ lệ fail thấp.</dd>
+          <dt>Chi phí khi fail</dt><dd>Mỗi change fail làm các change phía sau phải chạy lại. Vì vậy <strong>flaky test là kẻ thù số 1 của gate</strong>: một test chập chờn làm hỏng cả queue. Đây là câu hỏi hay gặp cho integration lead.</dd>
+          <dt>Window</dt><dd>Zuul giới hạn số change được test đồng thời trong một queue (<em>window</em>) và điều chỉnh động: tăng khi liên tục pass, giảm khi có fail. Mục đích là không lãng phí tài nguyên khi queue đang "xấu".</dd>
+          <dt>Shared queue</dt><dd>Nhiều repo có thể dùng chung một queue (ví dụ repo app + repo BSW config + repo tool). Change trong các repo đó được xếp chung thứ tự, nên thay đổi liên repo cũng được gate đúng.</dd>
+        </dl>
+
+        <h3>3.4 Depends-On — thay đổi xuyên nhiều repo</h3>
+        <dl class="kv">
+          <dt>Cú pháp</dt><dd>Thêm vào footer commit message: <code>Depends-On: &lt;URL của change&gt;</code> (các bản cũ dùng Change-Id đầy đủ). Có thể có nhiều dòng Depends-On, và có thể trỏ sang hệ thống khác (ví dụ change Gerrit phụ thuộc merge request GitLab).</dd>
+          <dt>Hành vi</dt><dd>Nếu A phụ thuộc B: trong gate, B được xếp trước A. Nếu B fail thì cả B và A bị loại khỏi queue. A không thể merge trước B. Trong check, Zuul test A trên nền có sẵn B (chưa merge).</dd>
+          <dt>Ví dụ automotive</dt><dd>Thay đổi signal trong ARXML (repo <em>config</em>) cần sửa code SWC (repo <em>app</em>) cùng lúc. Change app ghi <code>Depends-On</code> change config → cả hai được test chung, merge đúng thứ tự, không có khoảnh khắc main bị lệch.</dd>
+          <dt>Điều kiện</dt><dd>Để hai change được enqueue cùng nhau trong gate, hai repo phải cùng shared queue. Nếu không, change đầu phải merge xong thì change sau mới vào queue.</dd>
+        </dl>
+
+        <h3>3.5 Cấu hình: tất cả là YAML trong repo</h3>
+        <dl class="kv">
+          <dt>Config project vs untrusted project</dt><dd><em>Config project</em> (được tin cậy) định nghĩa pipeline, connection, secret, base job; thay đổi chỉ có hiệu lực sau khi merge. <em>Untrusted project</em> (repo thường) tự khai báo job trong <code>.zuul.yaml</code> hoặc thư mục <code>zuul.d/</code>.</dd>
+          <dt>Speculative config</dt><dd>Sửa <code>.zuul.yaml</code> trong một change thì <strong>chính change đó chạy với cấu hình mới</strong>. Developer thử job mới mà không cần quyền admin CI, và job hỏng không ảnh hưởng người khác vì chưa merge.</dd>
+          <dt>Job inheritance</dt><dd>Job kế thừa <code>parent</code> (ví dụ <code>base</code> lo checkout và thu log), có <code>nodeset</code> (node label), <code>vars</code>, <code>timeout</code>, <code>required-projects</code>, và <code>dependencies</code> giữa các job (job B chỉ chạy sau khi job A pass).</dd>
+        </dl>
+
+<pre><code class="language-yaml"># zuul.d/pipelines.yaml (config project)
+- pipeline:
+    name: check
+    manager: independent
+    trigger:
+      gerrit:
+        - event: patchset-created
+        - event: comment-added
+          comment: (?i)^recheck$
+    success:
+      gerrit: { Verified: 1 }
+    failure:
+      gerrit: { Verified: -1 }
+
+- pipeline:
+    name: gate
+    manager: dependent
+    require:
+      gerrit:
+        approval:
+          - Code-Review: 2
+    trigger:
+      gerrit:
+        - event: comment-added
+          approval:
+            - Code-Review: 2
+    success:
+      gerrit: { Verified: 2, submit: true }
+    failure:
+      gerrit: { Verified: -2 }
+
+# .zuul.yaml (trong repo tcu/app)
+- job:
+    name: tcu-build-rh850
+    parent: base
+    nodeset: { nodes: [ { name: builder, label: docker-ghs } ] }
+    run: playbooks/build.yaml
+    timeout: 3600
+
+- job:
+    name: tcu-bench-smoke
+    nodeset: { nodes: [ { name: bench, label: hil-bench-tcu } ] }
+    run: playbooks/flash_and_smoke.yaml
+    dependencies: [ tcu-build-rh850 ]
+
+- project:
+    check: { jobs: [ tcu-build-rh850, tcu-misra, tcu-unit ] }
+    gate:  { jobs: [ tcu-build-rh850, tcu-misra, tcu-unit, tcu-bench-smoke ] }</code></pre>
+        <p class="small text-soft">Tên label <code>Verified: 2</code> và điều kiện approval ở trên chỉ là ví dụ; mỗi Gerrit instance cấu hình phạm vi label khác nhau.</p>
+
+        <!-- ================= 4. JENKINS ================= -->
+        <h2>➕ 4. Jenkins — Jenkinsfile declarative</h2>
+        <dl class="kv">
+          <dt>Controller / agent</dt><dd><em>Controller</em> giữ cấu hình, lịch sử, UI, và phân việc. <em>Agent</em> (node) thực sự chạy build, được gắn <strong>label</strong> (ví dụ <code>windows-ghs</code>, <code>bench-tcu-01</code>). Không nên build trên controller (bảo mật và tải).</dd>
+          <dt>Pipeline as code</dt><dd><code>Jenkinsfile</code> nằm trong repo, dạng <em>declarative</em> (<code>pipeline { agent; stages; post }</code>) hoặc <em>scripted</em> (Groovy tự do). Multibranch pipeline tự tạo job cho mỗi nhánh/change.</dd>
+          <dt>Shared library</dt><dd>Logic dùng chung (flash ECU, parse report MISRA, upload Artifactory) đặt trong repo riêng, nạp bằng <code>@Library('tcu-ci') _</code>. Là cách chuẩn hoá pipeline cho nhiều repo. Tương đương <em>template</em> trong Azure Pipelines.</dd>
+          <dt>Gerrit Trigger plugin</dt><dd>Nghe stream-events của Gerrit, chạy job khi có patchset, vote Verified. Là phương án khi không có Zuul. Khi có Zuul, Jenkins thường được Zuul gọi hoặc chỉ làm job dài hạn (nightly, release).</dd>
+          <dt>Lockable Resources</dt><dd><code>lock('bench-tcu')</code>: chỉ một build dùng bench tại một thời điểm. Quan trọng với HIL bench, vốn là tài nguyên khan hiếm và có trạng thái (xem <a href="LX2-ci-infra-ops.html">LX2</a>).</dd>
+          <dt>Kết quả</dt><dd><code>junit</code> (đọc report JUnit XML từ pytest/VectorCAST), <code>archiveArtifacts</code>, <code>stash/unstash</code> (chuyển file giữa các stage chạy trên agent khác nhau), <code>recordIssues</code> (Warnings NG, hiển thị finding static analysis).</dd>
+        </dl>
+
+<pre><code class="language-groovy">@Library('tcu-ci') _
+pipeline {
+  agent none
+  options { timeout(time: 90, unit: 'MINUTES'); timestamps() }
+  stages {
+    stage('Build') {
+      agent { docker { image 'artifactory.local/tcu/build-ghs:2026.2'; label 'linux' } }
+      steps {
+        sh 'python tools/generate.py --tresos-project cfg/'   // BSW/RTE generation
+        sh 'cmake --preset rh850 &amp;&amp; cmake --build --preset rh850 -j8'
+        stash name: 'elf', includes: 'build/**/*.elf,build/**/*.map'
+      }
+    }
+    stage('Quality') {
+      parallel {
+        stage('MISRA')  { agent { label 'linux' } steps { sh 'tools/run_qac.sh' } }
+        stage('Unit')   { agent { label 'vcast' } steps { sh 'tools/run_vcast.sh'; junit 'reports/vcast/*.xml' } }
+      }
+    }
+    stage('Bench smoke') {
+      agent { label 'bench-tcu' }
+      steps {
+        lock('bench-tcu-01') {
+          unstash 'elf'
+          sh 't32 -s flash.cmm build/tcu.elf'                  // TRACE32 flash qua PRACTICE script
+          sh 'pytest tests/bench -m smoke --junitxml=reports/bench.xml'
+        }
+      }
+      post { always { junit 'reports/bench.xml' } }
+    }
+  }
+  post { failure { notifyOwners() } }                          // hàm trong shared library
+}</code></pre>
+
+        <!-- ================= 5. GITLAB ================= -->
+        <h2>➕ 5. GitLab CI — <code>.gitlab-ci.yml</code></h2>
+        <dl class="kv">
+          <dt>Stages &amp; jobs</dt><dd>Job cùng stage chạy song song, stage sau chờ stage trước xong. Dùng <code>needs:</code> để tạo <strong>DAG</strong>: job chạy ngay khi job nó cần xong, không chờ cả stage.</dd>
+          <dt>Runner &amp; tags</dt><dd>Runner (shell, docker, kubernetes executor) nhận job có <code>tags</code> khớp. Máy nối bench là một runner shell có tag <code>bench</code>.</dd>
+          <dt>rules</dt><dd>Quyết định job có chạy không: theo nhánh, loại pipeline (<code>merge_request_event</code>), file thay đổi (<code>changes:</code>). Tránh chạy bench test cho change chỉ sửa tài liệu.</dd>
+          <dt>artifacts vs cache</dt><dd><em>artifacts</em>: output của job (ELF, report) được truyền sang job sau và lưu để tải về. <em>cache</em>: tăng tốc (thư mục pip, ccache), không đảm bảo có mặt. Nhầm hai cái này là lỗi phổ biến.</dd>
+          <dt>resource_group</dt><dd>Chỉ một job trong group chạy tại một thời điểm, tương đương <code>lock</code> của Jenkins. Dùng cho bench.</dd>
+          <dt>include / extends</dt><dd>Tái sử dụng template giữa các repo, tương đương shared library và template của Azure.</dd>
+          <dt>Merge trains</dt><dd>Tính năng của GitLab gần giống gate của Zuul: xếp các MR thành đoàn, mỗi MR được test trên nền main + các MR phía trước. Nhắc tới để thể hiện bạn hiểu gating không phải khái niệm riêng của Zuul.</dd>
+        </dl>
+
+<pre><code class="language-yaml">stages: [build, quality, bench]
+
+build:rh850:
+  stage: build
+  image: artifactory.local/tcu/build-ghs:2026.2
+  script:
+    - cmake --preset rh850 &amp;&amp; cmake --build --preset rh850 -j8
+  artifacts: { paths: [build/tcu.elf, build/tcu.map], expire_in: 1 week }
+  cache: { key: ccache-rh850, paths: [.ccache/] }
+
+misra:
+  stage: quality
+  needs: [build:rh850]
+  script: [tools/run_qac.sh]
+  artifacts: { reports: { codequality: reports/qac.json } }
+
+bench:smoke:
+  stage: bench
+  needs: [build:rh850]
+  tags: [bench-tcu]
+  resource_group: bench-tcu-01
+  rules:
+    - changes: [src/**/*, cfg/**/*]
+  script:
+    - t32 -s flash.cmm build/tcu.elf
+    - pytest tests/bench -m smoke --junitxml=bench.xml
+  artifacts: { reports: { junit: bench.xml } }</code></pre>
+
+        <!-- ================= 6. MAP ================= -->
+        <h2>✅ 6. Map sang kinh nghiệm Azure Pipelines</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Khái niệm</th><th>Azure Pipelines (đã làm)</th><th>Jenkins</th><th>GitLab CI</th><th>Zuul</th></tr></thead>
+          <tbody>
+            <tr><td>File pipeline</td><td><code>azure-pipelines.yml</code></td><td><code>Jenkinsfile</code></td><td><code>.gitlab-ci.yml</code></td><td><code>.zuul.yaml</code> + playbook</td></tr>
+            <tr><td>Đơn vị chạy</td><td>stage / job / step</td><td>stage / step</td><td>stage / job</td><td>job (Ansible playbook)</td></tr>
+            <tr><td>Máy chạy</td><td>agent pool</td><td>agent + label</td><td>runner + tags</td><td>nodeset + label</td></tr>
+            <tr><td>Tái sử dụng</td><td>template</td><td>shared library</td><td>include / extends</td><td>job parent / project-template</td></tr>
+            <tr><td>Khoá tài nguyên</td><td>exclusive lock check</td><td><code>lock()</code></td><td><code>resource_group</code></td><td>semaphore</td></tr>
+            <tr><td>Truyền output</td><td>pipeline artifact</td><td>stash / archive</td><td>artifacts</td><td>artifact URL / log server</td></tr>
+            <tr><td>Chặn merge</td><td>branch policy (build validation)</td><td>Gerrit Trigger vote</td><td>MR pipeline, merge train</td><td>gate pipeline</td></tr>
+          </tbody>
+        </table></div>
+
+        <!-- ================= 7. EVO ================= -->
+        <h2>7. Trước (~2020) → Nay</h2>
+        <div class="evo">
+          <div class="evo__head">🔁 <span>Từ "Jenkins job bấm tay + nightly" → gating as code</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>Jenkins job cấu hình qua UI (freestyle), không version control. CI chủ yếu build đêm; developer merge xong mới biết gãy. Gerrit Trigger vote Verified nhưng test trên nền cũ, nên main vẫn đỏ khi hai change xung đột.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p>Pipeline là code trong repo (Jenkinsfile, <code>.gitlab-ci.yml</code>, <code>.zuul.yaml</code>), review như code thường. <strong>Gating</strong> (Zuul gate, GitLab merge train) test đúng trạng thái sau merge. Thay đổi liên repo dùng <code>Depends-On</code>. Agent chạy trong container dựng từ image có version, hạ tầng dựng bằng Ansible.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> interviewer của một dự án dùng Zuul muốn nghe bạn hiểu <em>vì sao</em> họ chọn gating, chứ không chỉ biết viết một pipeline YAML.</div>
+        </div>
+
+        <!-- ================= 8. Q&A ================= -->
+        <h2>8. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q">Patchset và Change-Id trong Gerrit là gì? Vì sao Gerrit không dùng SHA? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Một commit đẩy lên <code>refs/for/&lt;branch&gt;</code> tạo một <strong>change</strong>. Mỗi lần amend và push lại tạo một <strong>patchset</strong> mới của cùng change. Gerrit nhận ra hai lần push là cùng change nhờ footer <strong>Change-Id</strong> (do hook <code>commit-msg</code> sinh ra), vì SHA thay đổi mỗi lần amend. Nhờ vậy review diễn ra trên từng commit sạch, không có commit "fix review".</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Code-Review −2 khác −1 thế nào?</li><li>Relation chain là gì?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Check pipeline và gate pipeline trong Zuul khác nhau thế nào? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0"><strong>Check</strong> dùng manager <em>independent</em>: test mỗi patchset riêng lẻ trên nhánh hiện tại, report Verified cho reviewer. <strong>Gate</strong> dùng manager <em>dependent</em>: chỉ nhận change đã được duyệt, xếp vào queue theo thứ tự, test mỗi change trên nền main cộng các change phía trước (speculative), và khi pass thì <strong>Zuul tự merge</strong>. Check trả lời "change này có ổn không", gate đảm bảo "main sau khi merge vẫn ổn".</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Vì sao phải chạy lại ở gate khi đã pass check?</li><li>Post pipeline dùng để làm gì?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Giải thích speculative execution. Chuyện gì xảy ra khi change giữa queue fail? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Queue A → B → C. Zuul lạc quan giả định A và B sẽ pass, nên chạy đồng thời: A trên "main+A", B trên "main+A+B", C trên "main+A+B+C". Nếu B fail: A (không phụ thuộc B) vẫn merge; B bị loại và báo lỗi; C bị huỷ kết quả và <strong>test lại</strong> trên "main+A". Lợi ích là thông lượng gần như song song. Chi phí phát sinh chỉ khi có fail, nên flaky test làm hỏng cả queue. Zuul còn dùng <em>window</em> động để giới hạn số change chạy song song khi queue đang fail nhiều.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Bạn xử lý flaky test trong gate thế nào?</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Một thay đổi signal cần sửa cả repo ARXML config và repo SWC. Làm sao merge an toàn? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Tạo hai change, change SWC ghi <code>Depends-On: &lt;URL change config&gt;</code> trong commit message. Ở check, Zuul test SWC trên nền có sẵn change config chưa merge. Ở gate, nếu hai repo cùng shared queue, change config được xếp trước. Nếu config fail thì SWC cũng bị loại. Main không bao giờ có trạng thái config mới mà code cũ. Không có Zuul thì phải dùng cách thủ công: merge đồng thời, hoặc thiết kế tương thích ngược (feature flag) rồi merge từng bên.</p>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Chỉ có một HIL bench mà nhiều pipeline muốn dùng. Cấu hình thế nào? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Khoá độc quyền: Jenkins <code>lock('bench-01')</code> (Lockable Resources), GitLab <code>resource_group</code>, Zuul <em>semaphore</em> hoặc node tĩnh có label riêng. Phân tầng để giảm tải bench: check chỉ build + static + unit (không cần bench), gate chạy smoke ngắn trên bench, full regression trên bench chạy đêm (periodic). Thêm health-check và reset bench trước mỗi lần dùng để lỗi của run trước không làm fail run sau. Dài hạn: chuyển bớt test sang SIL/vECU (bài <a href="../K-vecu-sil.html">K</a>).</p>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Bạn chưa dùng Jenkins. Làm sao chứng minh sẽ bắt nhịp nhanh? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Map khái niệm (bảng mục 6): tôi đã tích hợp build, package và test workflow với Azure Pipelines và Conan, giúp các bước kỹ thuật lặp lại được và chạy theo CI/CD. Jenkinsfile declarative có cùng cấu trúc: agent/label, stages, parallel, post, shared library. Điểm khác là hệ plugin và Groovy, và tôi đã đọc qua cú pháp. Kèm một chi tiết cụ thể như <code>lock()</code> cho bench hoặc <code>stash</code> giữa agent để cho thấy đã tìm hiểu thật.</p>
+          </div></div>
+        </div>
+
+        <!-- ================= 9. Cheat-sheet ================= -->
+        <h2>🎯 9. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>Gerrit</h4><ul>
+            <li>push <code>HEAD:refs/for/main</code></li>
+            <li>Change-Id (hook commit-msg)</li>
+            <li>amend → patchset mới</li>
+            <li>CR −2..+2 (−2 veto), Verified −1..+1</li>
+            <li>submit requirements · stream-events</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Zuul</h4><ul>
+            <li>scheduler · merger · executor · web · ZooKeeper</li>
+            <li>job = Ansible playbook</li>
+            <li>check = independent · gate = dependent</li>
+            <li>speculative, fail → re-test phía sau</li>
+            <li>Depends-On · shared queue · window</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Jenkins</h4><ul>
+            <li>controller / agent + label</li>
+            <li>declarative: agent, stages, parallel, post</li>
+            <li>shared library <code>@Library</code></li>
+            <li><code>lock()</code> bench · stash · junit</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>GitLab CI</h4><ul>
+            <li>stages · needs (DAG) · rules</li>
+            <li>artifacts ≠ cache</li>
+            <li>runner tags · resource_group</li>
+            <li>merge train ≈ Zuul gate</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Câu chốt</h4><ul>
+            <li>"Gate tests the future state of main"</li>
+            <li>"Flaky tests poison the gate queue"</li>
+            <li>"Same concepts as Azure Pipelines"</li>
+          </ul></div>
+        </div>
+
+        <!-- ================= 10. Sources ================= -->
+        <h2>10. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li>Zuul — <a href="https://zuul-ci.org/docs/zuul/latest/gating.html" target="_blank" rel="noopener">Project Gating</a> (speculative execution, Depends-On, shared queue); <a href="https://zuul-ci.org/docs/zuul/latest/config/pipeline.html" target="_blank" rel="noopener">Pipeline configuration</a>; <a href="https://zuul-ci.org/users.html" target="_blank" rel="noopener">Users</a>.</li>
+          <li>Software Factory — <a href="https://www.softwarefactory-project.io/zuul-hands-on-part-4-the-gate-pipeline.html" target="_blank" rel="noopener">Zuul hands-on part 4: the gate pipeline</a>.</li>
+          <li>Gerrit Code Review — <a href="https://gerrit-review.googlesource.com/Documentation/dev-ci.html" target="_blank" rel="noopener">Documentation</a> (changes, patch sets, labels, submit requirements, stream-events).</li>
+          <li>Jenkins — Pipeline Syntax (declarative), Lockable Resources plugin, Gerrit Trigger plugin.</li>
+          <li>GitLab — CI/CD YAML syntax reference (needs, rules, resource_group, artifacts/cache, merge trains).</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi vẽ lại được luồng Gerrit → check → gate và giải thích speculative execution bằng lời.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">Chủ đề LX1 · Gerrit / Zuul / Jenkins / GitLab — Interview Prep</footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../../assets/js/app.js?v=7"></script>
+</body>
+</html>

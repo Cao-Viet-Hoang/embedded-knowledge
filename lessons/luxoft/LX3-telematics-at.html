@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LX3 · Telematics TCU · GSM/LTE · AT — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/css/style.css?v=7" />
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../../assets/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../../assets/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="../../assets/favicon.ico" />
+</head>
+<body data-page="LX3" data-root="../../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">LX3</span>
+            <span class="badge badge--bg">Background</span>
+            <span class="chip">Luxoft — TCU · CI &amp; Integration</span>
+          </div>
+          <h1>Telematics TCU · GSM/3G/4G · AT commands</h1>
+          <p class="lead">Đây là phần <strong>domain</strong> của dự án: Telematics Control Unit. Chưa làm telematics không sao, nhưng cần nói đúng: TCU gồm những khối nào, modem nói chuyện với MCU ra sao, <strong>2G/3G sunset</strong> và <strong>NG-eCall</strong> ảnh hưởng thế nào, đọc được một phiên <strong>AT command</strong> (3GPP TS 27.007/27.005), và thiết kế được một <strong>AT parser</strong> bằng C. Phần parser là nơi kinh nghiệm embedded và protocol debugging của bạn toả sáng.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> ➕ Kiến thức mới hoàn toàn: optional, đọc sau cùng</span>
+            <span><b>Gắn:</b> <a href="../F-mcu-peripherals.html">F</a> (UART/DMA), <a href="../B6-mode-management.html">B6</a> (wakeup), <a href="../E-protocols.html">E</a> (protocols)</span>
+          </div>
+
+        </div>
+
+        <div class="callout callout--key">
+          <div class="callout__icon">🧭</div>
+          <div class="callout__body">
+            <div class="callout__title">Chế độ "ôn cái đã biết trước"</div>
+            <p class="mb-0">CV không có telematics/modem. Toàn bộ bài là ➕. Chỉ đọc khi đã ôn chắc LX5, LX6, LX4, LX8, LX7. Nếu còn ít thời gian: đọc cheat-sheet để biết từ vựng (TCU, eCall, AT, CSQ, URC) là đủ.</p>
+            <p class="mb-0" style="margin-top:6px"><strong>Ký hiệu trên tiêu đề mục:</strong> ✅ đã biết theo CV, ôn cho thật chắc · 🎯 chưa biết nhưng JD gần như chắc hỏi, học mức tối thiểu · ➕ mới, optional.</p>
+          </div>
+        </div>
+
+        <!-- ================= 1 ================= -->
+        <h2>➕ 1. Kiến trúc TCU</h2>
+        <div class="figure">
+          <svg viewBox="0 0 720 320" role="img" aria-label="Kiến trúc khối Telematics Control Unit" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="lx3a" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="10" y="10" width="700" height="244" rx="12" fill="none" stroke="var(--border-strong)" stroke-dasharray="5 4"/>
+            <text x="24" y="30" class="dgm-layer" font-size="10">TCU</text>
+            <rect x="30" y="46" width="200" height="110" rx="9" fill="var(--brand-800)"/>
+            <text x="130" y="70" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Vehicle MCU</text>
+            <text x="130" y="88" text-anchor="middle" class="dgm-inv-sub" font-size="9">AUTOSAR Classic / OSEK</text>
+            <text x="130" y="104" text-anchor="middle" class="dgm-inv-sub" font-size="9">CAN · Diag · NvM · power mgmt</text>
+            <text x="130" y="120" text-anchor="middle" class="dgm-inv-sub" font-size="9">AT driver / modem manager</text>
+            <text x="130" y="140" text-anchor="middle" class="dgm-inv-sub" font-size="9">eCall state machine</text>
+            <rect x="260" y="46" width="200" height="110" rx="9" fill="var(--brand-600)"/>
+            <text x="360" y="70" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Cellular modem module</text>
+            <text x="360" y="88" text-anchor="middle" class="dgm-inv-sub" font-size="9">LTE Cat-1/Cat-4, 5G · fallback 2G/3G</text>
+            <text x="360" y="104" text-anchor="middle" class="dgm-inv-sub" font-size="9">baseband + IMS stack</text>
+            <text x="360" y="120" text-anchor="middle" class="dgm-inv-sub" font-size="9">GNSS thường tích hợp</text>
+            <text x="360" y="140" text-anchor="middle" class="dgm-inv-sub" font-size="9">eSIM (eUICC) / SIM</text>
+            <rect x="490" y="46" width="200" height="110" rx="9" fill="var(--core)"/>
+            <text x="590" y="70" text-anchor="middle" class="dgm-inv" font-size="11" font-weight="700">Application processor</text>
+            <text x="590" y="88" text-anchor="middle" class="dgm-inv-sub" font-size="9">Linux / QNX (tuỳ thiết kế)</text>
+            <text x="590" y="104" text-anchor="middle" class="dgm-inv-sub" font-size="9">OTA client · TLS · MQTT</text>
+            <text x="590" y="120" text-anchor="middle" class="dgm-inv-sub" font-size="9">Wi-Fi / BT · HSM</text>
+            <text x="590" y="140" text-anchor="middle" class="dgm-inv-sub" font-size="9">có thể gộp vào modem SoC</text>
+            <rect x="30" y="180" width="130" height="56" rx="8" fill="var(--ok)"/><text x="95" y="203" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Backup battery</text><text x="95" y="220" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">eCall sau va chạm</text>
+            <rect x="176" y="180" width="130" height="56" rx="8" fill="var(--defend)"/><text x="241" y="203" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Audio codec</text><text x="241" y="220" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">mic/loa gọi 112</text>
+            <rect x="322" y="180" width="130" height="56" rx="8" fill="var(--brand-900)"/><text x="387" y="203" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Antennas</text><text x="387" y="220" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">LTE MIMO · GNSS</text>
+            <rect x="468" y="180" width="222" height="56" rx="8" fill="var(--brand-400)"/><text x="579" y="203" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Nút SOS · accelerometer</text><text x="579" y="220" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">trigger thủ công / tự động</text>
+            <path d="M230,92 L256,92" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx3a)"/>
+            <path d="M256,112 L234,112" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx3a)"/>
+            <text x="243" y="84" text-anchor="middle" class="dgm-sub" font-size="7.5">UART</text>
+            <text x="243" y="126" text-anchor="middle" class="dgm-sub" font-size="7.5">RI</text>
+            <path d="M460,100 L486,100" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx3a)"/>
+            <text x="473" y="92" text-anchor="middle" class="dgm-sub" font-size="7.5">USB</text>
+            <path d="M130,256 L130,286" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx3a)"/>
+            <text x="140" y="300" class="dgm-label" font-size="10">CAN / CAN FD / Ethernet → gateway, airbag ECU, BCM</text>
+            <path d="M387,256 L387,286" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx3a)"/>
+            <text x="400" y="300" class="dgm-label" font-size="10">mạng di động → backend OEM / PSAP 112</text>
+          </svg>
+          <div class="figure__cap"><b>Ba bộ não.</b> MCU (thường AUTOSAR Classic/OSEK) lo phần xe: CAN, chẩn đoán, nguồn, eCall. Modem lo mạng di động. Application processor (hoặc chính SoC của modem) lo dịch vụ IP: OTA, kết nối backend. Dự án trong JD (Embedded C, CAN, OSEK, AT commands) nằm ở phía MCU và giao tiếp MCU ↔ modem.</div>
+        </div>
+        <dl class="kv">
+          <dt>Giao tiếp MCU ↔ modem</dt><dd><strong>UART</strong> (phổ biến nhất cho AT, có thể multiplex bằng CMUX), <strong>USB</strong> (nhiều interface: AT, diag, mạng ECM/RNDIS/QMI/MBIM), đôi khi PCIe hoặc SPI. Các chân điều khiển: <code>PWRKEY</code> (bật/tắt), <code>RESET_N</code>, <code>RI</code> (ring indicator, modem báo có sự kiện), <code>DTR</code> (MCU cho modem ngủ/thức), <code>STATUS</code>.</dd>
+          <dt>Wakeup từ xa</dt><dd>Xe tắt máy, TCU ngủ sâu nhưng modem vẫn đăng ký mạng ở chế độ tiết kiệm. Backend gửi SMS hoặc gói dữ liệu → modem kéo chân <strong>RI</strong> → là một <em>wakeup source</em> của EcuM → MCU thức, đọc lý do qua AT, xử lý (mở khoá từ xa, chẩn đoán). Gắn với <a href="../B6-mode-management.html">B6</a>: validate wakeup, rồi mới yêu cầu RUN.</dd>
+          <dt>Tiết kiệm năng lượng</dt><dd>Xe đỗ nhiều tuần, dòng tĩnh (quiescent current) của TCU phải rất nhỏ. Modem dùng <strong>PSM</strong> (Power Saving Mode, <code>AT+CPSMS</code>) và <strong>eDRX</strong> (<code>AT+CEDRXS</code>) để thức định kỳ. Cân bằng giữa độ trễ phản hồi lệnh từ xa và mức hao ắc quy.</dd>
+          <dt>eSIM / eUICC</dt><dd>SIM hàn trên bo, profile nhà mạng tải từ xa, vì xe bán sang nhiều quốc gia. Kiến trúc provisioning theo GSMA (M2M SGP.02, IoT SGP.32 mới hơn).</dd>
+          <dt>Dịch vụ</dt><dd>eCall, remote diagnostics, remote lock/unlock/điều hoà, stolen vehicle tracking, fleet, <strong>OTA</strong> (quy định UN R156 về software update) và an ninh mạng (UN R155). TCU là cửa ngõ ra Internet của xe nên là mục tiêu tấn công số một.</dd>
+        </dl>
+
+        <!-- ================= 2 ================= -->
+        <h2>➕ 2. Công nghệ di động: 2G → 5G và vì sao quan trọng với TCU</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Thế hệ</th><th>Chuẩn</th><th>Kiểu</th><th>Ý nghĩa với TCU</th></tr></thead>
+          <tbody>
+            <tr><td>2G</td><td>GSM / GPRS / EDGE</td><td>Thoại chuyển mạch kênh (CS); dữ liệu gói chậm</td><td>eCall đời đầu dùng thoại CS + modem in-band để gửi MSD. Phủ sóng rộng, đang bị tắt ở nhiều nước.</td></tr>
+            <tr><td>3G</td><td>UMTS / HSPA</td><td>CS + PS</td><td>Nhiều nhà mạng tắt 3G <em>trước</em> 2G. Ví dụ Mỹ tắt 3G năm 2022, làm mất dịch vụ kết nối trên nhiều xe đời cũ chỉ có modem 3G.</td></tr>
+            <tr><td>4G</td><td>LTE (Cat-1, Cat-4, Cat-M1, NB-IoT)</td><td><strong>Chỉ chuyển mạch gói</strong>; thoại qua IMS (VoLTE)</td><td>Chuẩn chính hiện nay. Cat-1 (~10 Mbps DL) đủ cho telematics cơ bản; Cat-4 (~150 Mbps) cho OTA lớn. Không có CS → eCall cũ không chạy thuần 4G.</td></tr>
+            <tr><td>5G</td><td>NR (NSA / SA), RedCap</td><td>Gói; thoại VoNR</td><td>Băng thông lớn cho OTA, V2X (C-V2X). RedCap là 5G giảm tính năng cho thiết bị IoT.</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout callout--key">
+          <div class="callout__icon">🔑</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Điểm mấu chốt:</strong> 4G/5G <em>không có</em> kênh thoại chuyển mạch kênh. Mọi thứ, kể cả cuộc gọi khẩn cấp, đi qua <strong>IMS</strong> trên IP. Đây là lý do eCall phải chuyển sang <strong>NG-eCall</strong>, và vì sao "2G/3G sunset" là rủi ro kỹ thuật thật cho TCU đời cũ.</p>
+          </div>
+        </div>
+
+        <!-- ================= 3 ECALL ================= -->
+        <h2>➕ 3. eCall → NG-eCall</h2>
+        <dl class="kv">
+          <dt>eCall là gì</dt><dd>Cuộc gọi khẩn cấp tự động tới <strong>112</strong> khi xe va chạm (trigger từ airbag/cảm biến) hoặc khi bấm nút SOS. Kèm theo gói dữ liệu <strong>MSD</strong> (Minimum Set of Data): vị trí GNSS, hướng, thời điểm, VIN, số người (nếu có), loại trigger. Bắt buộc tại EU cho mẫu xe M1/N1 mới được phê duyệt kiểu từ 31/03/2018 (Regulation (EU) 2015/758). Nga có hệ tương tự là ERA-GLONASS.</dd>
+          <dt>MSD</dt><dd>Tối đa <strong>140 byte</strong>, mã hoá ASN.1 PER, định nghĩa trong EN 15722. Với eCall cũ, MSD được gửi qua <strong>modem in-band</strong> ngay trên kênh thoại CS (tín hiệu số được điều chế thành âm thanh), sau đó kênh chuyển thành cuộc gọi thoại hai chiều với PSAP (trung tâm tiếp nhận).</dd>
+          <dt>NG-eCall</dt><dd>eCall trên <strong>IMS (4G/5G, chuyển mạch gói)</strong>. MSD được gửi dạng dữ liệu trong bản tin SIP khi thiết lập cuộc gọi, không cần modem in-band. Nhanh hơn, cho phép dữ liệu phong phú hơn, và không phụ thuộc mạng 2G/3G.</dd>
+          <dt>Mốc pháp lý</dt><dd>Delegated Regulation (EU) 2024/1180: NG-eCall bắt buộc cho <strong>mẫu xe M1/N1 mới từ 01/01/2026</strong> và <strong>mọi xe mới đăng ký từ 01/01/2027</strong>. Chuẩn kiểm thử cập nhật: EN 17184:2024 (NG-eCall end-to-end) và EN 17240:2024 (conformance). Tức là đúng thời điểm của dự án, TCU phải hỗ trợ NG-eCall và thường vẫn giữ eCall CS làm dự phòng khi nơi đó còn 2G/3G.</dd>
+          <dt>Yêu cầu kỹ thuật điển hình</dt><dd>Hoạt động sau va chạm bằng <strong>pin dự phòng</strong> (nguồn chính có thể đứt); ưu tiên cao nhất, huỷ mọi phiên dữ liệu khác; sau cuộc gọi phải giữ đăng ký mạng một khoảng để PSAP gọi lại (callback); tự chẩn đoán định kỳ (mic, loa, pin, GNSS, anten) và báo đèn cảnh báo khi hỏng.</dd>
+          <dt>Nơi MCU tham gia</dt><dd>Nhận trigger qua CAN từ airbag ECU, dựng MSD (vị trí từ GNSS, VIN từ NvM), điều khiển modem qua AT (quay số, gửi MSD), quản lý trạng thái cuộc gọi, lưu log sự kiện. Nhiều modem có sẵn lệnh AT riêng của hãng cho eCall.</dd>
+        </dl>
+
+        <!-- ================= 4 AT BASICS ================= -->
+        <h2>➕ 4. AT command: cú pháp nền</h2>
+        <dl class="kv">
+          <dt>Chuẩn</dt><dd><strong>ITU-T V.250</strong> định nghĩa cú pháp nền (lệnh cơ bản như <code>ATE</code>, <code>ATV</code>, <code>ATD</code>). <strong>3GPP TS 27.007</strong> định nghĩa lệnh mở rộng cho điện thoại di động (tiền tố <code>+C</code>: SIM, mạng, cuộc gọi, packet data). <strong>3GPP TS 27.005</strong> cho SMS (<code>+CMGF</code>, <code>+CMGS</code>). Nhà sản xuất modem thêm lệnh riêng (ví dụ tiền tố <code>+Q…</code>, <code>^…</code>, <code>#…</code>).</dd>
+          <dt>Bốn dạng lệnh</dt><dd><code>AT+CMD=?</code> <strong>test</strong> (hỏi dải giá trị hợp lệ) · <code>AT+CMD?</code> <strong>read</strong> (đọc giá trị hiện tại) · <code>AT+CMD=&lt;v&gt;</code> <strong>set</strong> · <code>AT+CMD</code> <strong>execute</strong>.</dd>
+          <dt>Khung truyền</dt><dd>Lệnh kết thúc bằng <code>&lt;CR&gt;</code> (0x0D, thanh ghi S3). Phản hồi dạng <code>&lt;CR&gt;&lt;LF&gt;nội dung&lt;CR&gt;&lt;LF&gt;</code> (chế độ verbose <code>ATV1</code>). Có thể có nhiều dòng <em>intermediate</em> (ví dụ <code>+CSQ: 20,99</code>) trước dòng <strong>final result code</strong>.</dd>
+          <dt>Final result code</dt><dd><code>OK</code>, <code>ERROR</code>, <code>+CME ERROR: &lt;err&gt;</code> (lỗi thiết bị/mạng), <code>+CMS ERROR: &lt;err&gt;</code> (lỗi SMS), và với cuộc gọi: <code>CONNECT</code>, <code>NO CARRIER</code>, <code>BUSY</code>, <code>NO ANSWER</code>. Bật mã lỗi chi tiết bằng <code>AT+CMEE=1</code> (số) hoặc <code>=2</code> (chữ). Mặc định chỉ có <code>ERROR</code>, rất khó debug.</dd>
+          <dt>URC</dt><dd><strong>Unsolicited Result Code</strong>: dòng modem tự gửi, không phải trả lời lệnh nào. Ví dụ <code>RING</code>, <code>+CLIP: "+84…"</code> (số gọi đến), <code>+CMTI: "SM",3</code> (SMS mới ở ô 3), <code>+CREG: 1</code> (đổi trạng thái mạng), hoặc URC báo modem khởi động xong (tên tuỳ hãng, ví dụ <code>RDY</code>). URC có thể đến <strong>bất kỳ lúc nào</strong>, kể cả giữa lúc đang chờ phản hồi lệnh khác. Đây là cái khó nhất khi viết parser.</dd>
+          <dt>Echo</dt><dd><code>ATE1</code> (mặc định) làm modem gửi lại chính lệnh vừa nhận. Trong phần mềm nhúng nên tắt bằng <code>ATE0</code> ngay khi khởi động để parser đơn giản hơn.</dd>
+          <dt>Command mode vs data mode</dt><dd>Sau <code>ATD*99#</code> (mở kết nối dữ liệu) modem trả <code>CONNECT</code> và chuyển sang <strong>data mode</strong>: mọi byte là dữ liệu PPP, không còn là AT. Thoát bằng chuỗi <code>+++</code> có khoảng lặng (guard time) trước và sau, quay lại bằng <code>ATO</code>. Vì vậy cần <strong>CMUX</strong> nếu muốn vừa có dữ liệu vừa gửi AT trên một UART.</dd>
+          <dt>CMUX (3GPP TS 27.010)</dt><dd>Giao thức ghép kênh trên một cổng serial thành nhiều kênh ảo (DLCI): ví dụ DLCI1 cho AT điều khiển, DLCI2 cho PPP dữ liệu, DLCI3 cho GNSS NMEA. Frame có cờ <code>0xF9</code>, địa chỉ, control, độ dài, FCS. Bật bằng <code>AT+CMUX=0</code>.</dd>
+        </dl>
+
+        <!-- ================= 5 AT TABLE ================= -->
+        <h2>➕ 5. Bộ lệnh cần thuộc</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Lệnh</th><th>Ý nghĩa</th><th>Phản hồi và cách đọc</th></tr></thead>
+          <tbody>
+            <tr><td><code>AT</code> / <code>ATE0</code> / <code>AT+CMEE=2</code></td><td>Kiểm tra sống, tắt echo, bật lỗi chi tiết</td><td><code>OK</code></td></tr>
+            <tr><td><code>ATI</code>, <code>AT+CGMR</code>, <code>AT+CGSN</code></td><td>Thông tin modem, firmware, IMEI</td><td>Dùng để log version modem trong test report.</td></tr>
+            <tr><td><code>AT+CPIN?</code></td><td>Trạng thái SIM</td><td><code>+CPIN: READY</code> · <code>SIM PIN</code> · <code>SIM PUK</code>. Không có SIM: <code>+CME ERROR: 10</code> (SIM not inserted).</td></tr>
+            <tr><td><code>AT+CSQ</code></td><td>Chất lượng tín hiệu (định nghĩa cho GSM/UMTS)</td><td><code>+CSQ: &lt;rssi&gt;,&lt;ber&gt;</code>. <strong>RSSI(dBm) = −113 + 2·rssi</strong>: 0 → ≤ −113, 31 → ≥ −51, <strong>99 = không đo được</strong>. Ví dụ 20 → −73 dBm.</td></tr>
+            <tr><td><code>AT+CESQ</code></td><td>Chất lượng tín hiệu mở rộng (có LTE)</td><td>Trả thêm RSRQ, RSRP. RSRP: 0 → &lt; −140 dBm, mỗi bước +1 dB, 97 → ≥ −44 dBm, 255 = không biết. Với LTE nên dùng lệnh này thay CSQ.</td></tr>
+            <tr><td><code>AT+CREG?</code> / <code>AT+CGREG?</code> / <code>AT+CEREG?</code></td><td>Đăng ký mạng: CS / GPRS (PS 2G-3G) / EPS (LTE)</td><td><code>+CEREG: &lt;n&gt;,&lt;stat&gt;[,&lt;tac&gt;,&lt;ci&gt;,&lt;AcT&gt;]</code>. <strong>stat</strong>: 0 chưa đăng ký, không tìm · <strong>1 home</strong> · 2 đang tìm · 3 bị từ chối · 4 không rõ · <strong>5 roaming</strong>. <code>n=2</code> bật URC kèm vị trí cell.</td></tr>
+            <tr><td><code>AT+COPS?</code> / <code>AT+COPS=?</code></td><td>Nhà mạng hiện tại / quét danh sách nhà mạng</td><td><code>+COPS: 0,0,"Viettel",7</code>. AcT: 0 GSM · 2 UTRAN · 7 E-UTRAN (LTE). <strong>Quét có thể mất tới vài phút</strong> → timeout riêng.</td></tr>
+            <tr><td><code>AT+CGDCONT=1,"IP","apn"</code></td><td>Khai báo PDP context (APN)</td><td>Loại <code>"IP"</code>, <code>"IPV6"</code>, <code>"IPV4V6"</code>. Sai APN: đăng ký mạng được nhưng không có dữ liệu.</td></tr>
+            <tr><td><code>AT+CGACT=1,1</code> / <code>AT+CGPADDR=1</code></td><td>Kích hoạt context, đọc IP</td><td>Trên LTE, default bearer thường được thiết lập ngay khi attach.</td></tr>
+            <tr><td><code>AT+CMGF=1</code> · <code>AT+CMGS="+84…"</code></td><td>SMS text mode, gửi SMS (27.005)</td><td>Modem trả prompt <code>&gt; </code> (<strong>không có CR/LF sau</strong>), gửi nội dung rồi <strong>Ctrl-Z (0x1A)</strong> để gửi, <strong>ESC (0x1B)</strong> để huỷ. Kết quả <code>+CMGS: &lt;mr&gt;</code> rồi <code>OK</code>.</td></tr>
+            <tr><td><code>AT+CMGR=3</code> / <code>AT+CMGD=3</code></td><td>Đọc / xoá SMS ở ô 3</td><td>Thường đi sau URC <code>+CMTI: "SM",3</code>.</td></tr>
+            <tr><td><code>ATD112;</code> · <code>ATA</code> · <code>ATH</code></td><td>Gọi thoại (dấu <code>;</code> = cuộc gọi thoại), nhận, gác máy</td><td>Trạng thái cuộc gọi qua <code>AT+CLCC</code>.</td></tr>
+            <tr><td><code>AT+CFUN=0/1/4</code></td><td>Chức năng modem</td><td>0 tối thiểu · 1 đầy đủ · 4 tắt RF (chế độ máy bay). Dùng để reset stack mạng mà không cắt nguồn.</td></tr>
+          </tbody>
+        </table></div>
+
+<pre><code># Phiên khởi động modem điển hình (→ gửi, ← nhận)
+→ AT                      ← OK
+→ ATE0                    ← OK
+→ AT+CMEE=2               ← OK
+→ AT+CPIN?                ← +CPIN: READY          ← OK
+→ AT+CGDCONT=1,"IP","m2m.oem"                     ← OK
+→ AT+CEREG=2              ← OK                     (bật URC đăng ký mạng)
+                          ← +CEREG: 2              (URC: đang tìm mạng)
+                          ← +CEREG: 1,"1A2B","01C3D401",7   (URC: đã đăng ký home, LTE)
+→ AT+CSQ                  ← +CSQ: 18,99            ← OK     (−77 dBm)
+→ AT+COPS?                ← +COPS: 0,0,"Operator",7 ← OK</code></pre>
+
+        <!-- ================= 6 PARSER ================= -->
+        <h2>➕ 6. Thiết kế AT parser bằng C (câu hỏi thiết kế hay gặp)</h2>
+        <div class="figure">
+          <svg viewBox="0 0 720 270" role="img" aria-label="Kiến trúc AT parser" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="lx3b" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="10" y="30" width="110" height="64" rx="8" fill="var(--brand-900)"/><text x="65" y="56" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">UART RX</text><text x="65" y="74" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">ISR / DMA</text>
+            <rect x="146" y="30" width="120" height="64" rx="8" fill="var(--brand-800)"/><text x="206" y="56" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Ring buffer</text><text x="206" y="74" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">lock-free SPSC</text>
+            <rect x="292" y="30" width="130" height="64" rx="8" fill="var(--brand-600)"/><text x="357" y="56" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Line assembler</text><text x="357" y="74" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">tách theo CR LF, bắt "&gt; "</text>
+            <rect x="448" y="30" width="130" height="64" rx="8" fill="var(--core)"/><text x="513" y="56" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">Classifier</text><text x="513" y="74" text-anchor="middle" class="dgm-inv-sub" font-size="8.5">response hay URC?</text>
+            <rect x="604" y="10" width="106" height="50" rx="8" fill="var(--ok)"/><text x="657" y="32" text-anchor="middle" class="dgm-inv" font-size="9.5" font-weight="700">Command FSM</text><text x="657" y="48" text-anchor="middle" class="dgm-inv-sub" font-size="8">OK/ERROR/timeout</text>
+            <rect x="604" y="70" width="106" height="50" rx="8" fill="var(--defend)"/><text x="657" y="92" text-anchor="middle" class="dgm-inv" font-size="9.5" font-weight="700">URC dispatch</text><text x="657" y="108" text-anchor="middle" class="dgm-inv-sub" font-size="8">bảng prefix → handler</text>
+            <path d="M120,62 L142,62" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx3b)"/>
+            <path d="M266,62 L288,62" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx3b)"/>
+            <path d="M422,62 L444,62" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx3b)"/>
+            <path d="M578,52 L600,38" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx3b)"/>
+            <path d="M578,72 L600,92" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx3b)"/>
+            <line x1="200" y1="118" x2="200" y2="140" stroke="var(--border-strong)" stroke-dasharray="3 3"/>
+            <text x="20" y="116" class="dgm-sub" font-size="8.5">ngữ cảnh ISR</text>
+            <text x="300" y="116" class="dgm-sub" font-size="8.5">ngữ cảnh task (cyclic MainFunction)</text>
+            <rect x="10" y="150" width="700" height="108" rx="9" fill="none" stroke="var(--border-strong)"/>
+            <text x="26" y="172" class="dgm-label" font-size="10.5" font-weight="700">Command FSM (một lệnh đang chờ tại một thời điểm)</text>
+            <rect x="30" y="186" width="110" height="50" rx="25" fill="var(--brand-400)"/><text x="85" y="215" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">IDLE</text>
+            <rect x="230" y="186" width="140" height="50" rx="25" fill="var(--brand-600)"/><text x="300" y="208" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">WAIT_RESP</text><text x="300" y="224" text-anchor="middle" class="dgm-inv-sub" font-size="8">gom intermediate</text>
+            <rect x="460" y="186" width="140" height="50" rx="25" fill="var(--core)"/><text x="530" y="208" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">WAIT_PROMPT</text><text x="530" y="224" text-anchor="middle" class="dgm-inv-sub" font-size="8">"&gt; " cho CMGS</text>
+            <path d="M140,202 L226,202" class="dgm-arrow" stroke-width="1.5" marker-end="url(#lx3b)"/><text x="183" y="196" text-anchor="middle" class="dgm-sub" font-size="8">send + t0</text>
+            <path d="M226,224 L144,224" class="dgm-arrow" stroke-width="1.5" marker-end="url(#lx3b)"/><text x="185" y="248" text-anchor="middle" class="dgm-sub" font-size="8">final / timeout → callback</text>
+            <path d="M370,202 L456,202" class="dgm-arrow" stroke-width="1.5" marker-end="url(#lx3b)"/><text x="413" y="196" text-anchor="middle" class="dgm-sub" font-size="8">lệnh có prompt</text>
+            <path d="M456,224 L374,224" class="dgm-arrow" stroke-width="1.5" marker-end="url(#lx3b)"/><text x="415" y="248" text-anchor="middle" class="dgm-sub" font-size="8">gửi text + 0x1A</text>
+            <text x="620" y="208" class="dgm-text" font-size="8.5">URC luôn được</text><text x="620" y="222" class="dgm-text" font-size="8.5">xử lý ở mọi state</text>
+          </svg>
+          <div class="figure__cap"><b>Tách lớp.</b> ISR chỉ đẩy byte vào ring buffer (ngắn, không parse). Task tách dòng, phân loại, rồi chuyển tới FSM của lệnh đang chờ hoặc tới bảng URC. Hầu hết modem chỉ xử lý một lệnh tại một thời điểm, nên FSM chỉ cho một lệnh chờ; các lệnh khác nằm trong hàng đợi.</div>
+        </div>
+
+<pre><code class="language-c">#define RX_SZ 512u                               /* luỹ thừa 2 để wrap bằng mask */
+static volatile uint8_t  rx_buf[RX_SZ];
+static volatile uint16_t rx_head, rx_tail;       /* ISR ghi head, task ghi tail (SPSC) */
+
+void Uart_RxIsr(uint8_t b)                       /* ISR: không parse, không gọi callback */
+{
+    uint16_t next = (uint16_t)((rx_head + 1u) &amp; (RX_SZ - 1u));
+    if (next != rx_tail) { rx_buf[rx_head] = b; rx_head = next; }
+    else                 { at_stat.rx_overflow++; }   /* đếm để phát hiện buffer quá nhỏ */
+}
+
+typedef struct {
+    const char *prefix;                          /* "+CSQ:" – dòng intermediate thuộc lệnh này */
+    uint32_t    timeout_ms;                      /* mỗi lệnh một timeout: COPS=? cần rất dài */
+    void      (*on_line)(const char *l);
+    void      (*on_done)(at_result_t r, int err);
+} at_cmd_t;
+
+static void handle_line(const char *l)
+{
+    /* 1. Dòng thuộc lệnh đang chờ? Kiểm tra TRƯỚC URC vì "+CEREG:" vừa là
+          response của AT+CEREG? vừa là URC. */
+    if ((st == AT_WAIT_RESP) &amp;&amp; (cur-&gt;prefix != NULL) &amp;&amp;
+        (strncmp(l, cur-&gt;prefix, strlen(cur-&gt;prefix)) == 0)) { cur-&gt;on_line(l); return; }
+    /* 2. URC (bảng prefix: RING, +CMTI:, +CEREG:, +CLIP:, khởi động modem…) */
+    if (urc_dispatch(l)) { return; }
+    /* 3. Final result code */
+    if (st == AT_IDLE)                           { at_stat.unexpected++; return; }
+    if (strcmp(l, "OK") == 0)                    { finish(AT_OK, 0); }
+    else if (strcmp(l, "ERROR") == 0)            { finish(AT_ERROR, 0); }
+    else if ((strncmp(l, "+CME ERROR:", 11u) == 0) ||
+             (strncmp(l, "+CMS ERROR:", 11u) == 0)) { finish(AT_CME, parse_int(&amp;l[11])); }
+    else                                         { at_stat.unknown_line++; }
+}
+
+void At_MainFunction(void)                       /* gọi cyclic, ví dụ 5 ms */
+{
+    while (rx_tail != rx_head) {
+        char c = (char)rx_buf[rx_tail];
+        rx_tail = (uint16_t)((rx_tail + 1u) &amp; (RX_SZ - 1u));
+        if ((st == AT_WAIT_PROMPT) &amp;&amp; (len == 0u) &amp;&amp; (c == '&gt;')) { send_payload_ctrl_z(); continue; }
+        if (c == '\r') { continue; }
+        if (c == '\n') { if (len &gt; 0u) { line[len] = '\0'; handle_line(line); len = 0u; } continue; }
+        if (len &lt; (sizeof(line) - 1u)) { line[len++] = c; } else { len = 0u; at_stat.line_overflow++; }
+    }
+    if ((st != AT_IDLE) &amp;&amp; ((now_ms() - t_sent) &gt; cur-&gt;timeout_ms)) { finish(AT_TIMEOUT, 0); }
+}</code></pre>
+        <dl class="kv">
+          <dt>Response vs URC trùng prefix</dt><dd>Response của <code>AT+CEREG?</code> là <code>+CEREG: &lt;n&gt;,&lt;stat&gt;…</code>, còn URC là <code>+CEREG: &lt;stat&gt;…</code> (không có <code>n</code>). Parser ưu tiên lệnh đang chờ, nhưng URC cùng prefix đến đúng lúc đó vẫn có thể bị nhận nhầm. Cách chắc hơn: kiểm tra số trường, hoặc sau khi lệnh xong đọc lại trạng thái.</dd>
+          <dt>Timeout theo từng lệnh</dt><dd>Lệnh thường trả lời trong vài trăm ms, nhưng quét nhà mạng, kích hoạt PDP, gửi SMS có thể mất hàng chục giây tới vài phút. Lấy giá trị tối đa từ tài liệu AT của hãng modem. Timeout chung cho mọi lệnh là lỗi thiết kế phổ biến.</dd>
+          <dt>Recovery</dt><dd>Timeout liên tiếp → gửi <code>AT</code> thăm dò → không trả lời → reset modem bằng chân <code>RESET_N</code>/<code>PWRKEY</code> → chờ URC khởi động → chạy lại chuỗi init (<code>ATE0</code>, <code>CMEE</code>, cấu hình URC). Cấu hình không lưu (<code>AT&amp;W</code>) sẽ mất sau reset.</dd>
+          <dt>Dữ liệu nhị phân</dt><dd>Một số lệnh đọc socket trả về <code>+XXX: &lt;len&gt;</code> rồi đúng <code>len</code> byte thô (có thể chứa CR/LF). Parser phải chuyển sang chế độ "đọc N byte" thay vì tách dòng.</dd>
+          <dt>Kiểm thử</dt><dd>Parser là code thuần, chạy được trên host: đưa log UART thật đã ghi lại (có URC chen giữa, dòng bị cắt, overflow) vào unit test. Có thể viết modem giả bằng Python (pyserial + cổng ảo) để test chuỗi init và recovery trên bench mà không cần mạng thật.</dd>
+        </dl>
+
+        <!-- ================= 7 EVO ================= -->
+        <h2>7. Trước (~2020) → Nay</h2>
+        <div class="evo">
+          <div class="evo__head">🔁 <span>Từ TCU 2G/3G + eCall CS → LTE/5G + NG-eCall + OTA</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (~2020)</div><p>Modem 2G/3G, eCall qua thoại CS với modem in-band, dịch vụ đơn giản (tracking, SMS lệnh). SIM vật lý. Cập nhật phần mềm chủ yếu tại xưởng.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay</div><p>LTE Cat-1/Cat-4 và 5G, 2G/3G đang bị tắt dần. <strong>NG-eCall</strong> qua IMS bắt buộc tại EU (mẫu mới 2026, mọi xe mới 2027). eSIM với profile tải từ xa. TCU là cổng OTA chịu UN R156 và cửa an ninh chịu UN R155. Xu hướng gộp TCU với gateway/central compute.</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> nói được "NG-eCall 2026/2027" và "4G không có CS" cho thấy bạn hiểu bối cảnh sản phẩm, dù chưa từng làm telematics.</div>
+        </div>
+
+        <!-- ================= 8 QA ================= -->
+        <h2>8. Tự kiểm tra</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+        <div class="qa"><div class="qa__q"><code>AT+CSQ</code> trả <code>+CSQ: 15,99</code>. Tín hiệu bao nhiêu dBm? Còn <code>99,99</code>? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">−113 + 2×15 = <strong>−83 dBm</strong> (khá). <code>ber</code> 99 = không biết. <code>99,99</code> = chưa đo được: chưa có mạng, anten hỏng, RF tắt (<code>CFUN=4</code>), hoặc modem ở LTE mà firmware không map CSQ. Với LTE nên dùng <code>AT+CESQ</code> để có RSRP/RSRQ.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">URC là gì và vì sao gây khó cho parser? <span class="qa__lv qa__lv--definition">Định nghĩa</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Dòng modem tự gửi khi có sự kiện (<code>RING</code>, <code>+CMTI</code>, <code>+CEREG</code>). Nó có thể xen vào giữa response của lệnh đang chờ, và có thể trùng prefix với response. Parser phải phân loại mỗi dòng: thuộc lệnh đang chờ, là URC, hay là final result code. Handler URC phải ngắn và không được gửi lệnh AT đồng bộ ngay trong đó (dễ deadlock với lệnh đang chờ); thay vào đó đặt cờ/đưa vào hàng đợi.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Modem báo <code>+CEREG: 1</code> nhưng không gửi được dữ liệu. Debug thế nào? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Đăng ký mạng ≠ có dữ liệu. Kiểm tra theo lớp: (1) <code>AT+CGDCONT?</code> APN đúng chưa, đúng loại IP/IPv6. (2) <code>AT+CGACT?</code> context đã active chưa, <code>AT+CGPADDR</code> có IP chưa. (3) Lỗi chi tiết với <code>AT+CMEE=2</code>. (4) Gói cước SIM có bật dữ liệu không. (5) Phía IP: DNS, firewall, TLS cert, thời gian hệ thống (TLS fail nếu đồng hồ sai). (6) Log phía modem (tool diag của hãng). Cách tiếp cận giống debug SENT: đi từng lớp, có bằng chứng ở mỗi lớp.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Thiết kế AT driver cho MCU chạy OSEK. Bạn chia task, ISR và buffer thế nào? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">ISR category 2 của UART RX (hoặc DMA + idle-line interrupt) chỉ ghi byte vào ring buffer SPSC; nếu cần báo thì <code>SetEvent</code> cho task AT (extended task chờ event) hoặc để task cyclic 5–10 ms tự quét. Task AT tách dòng, phân loại, chạy FSM lệnh (một lệnh chờ tại một thời điểm, các yêu cầu khác trong hàng đợi có độ ưu tiên: eCall cao nhất). URC được chuyển thành event cho các module khác (modem manager, SMS, eCall). Timeout dùng alarm hoặc tick. Không gọi API chặn trong ISR, không parse trong ISR. Dữ liệu dùng chung giữa task bảo vệ bằng resource (PCP). Xem thêm <a href="LX4-osek-rtos.html">LX4</a>.</p>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Ring buffer SPSC không cần khoá vì sao? Khi nào vẫn cần?</li><li>Buffer bao nhiêu byte là đủ? (tính theo baudrate × chu kỳ task)</li></ul></div>
+          </div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Vì sao eCall phải chuyển sang NG-eCall? Mốc thời gian? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">eCall cũ dùng thoại chuyển mạch kênh (2G/3G) và modem in-band để gửi MSD. 4G/5G chỉ có chuyển mạch gói, và 2G/3G đang bị tắt, nên eCall cũ sẽ không còn mạng để chạy. NG-eCall chạy trên IMS, gửi MSD trong bản tin SIP. Theo Delegated Regulation (EU) 2024/1180: mẫu xe M1/N1 mới từ 01/01/2026, mọi xe mới từ 01/01/2027.</p></div></div>
+        </div>
+        <div class="qa"><div class="qa__q">Bạn chưa làm telematics. Vì sao nghĩ mình làm được? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Bám CV: phần MCU của TCU là AUTOSAR Classic trên target như RH850, nơi tôi đã làm MCAL test và BSW integration (Can, Com, EcuM, OS, Mem…). AT command là giao thức text trên UART, và kinh nghiệm debug SENT ở mức timing/protocol trên ST và Infineon cho tôi cách tiếp cận: đọc spec, bắt tín hiệu, phân lớp lỗi. Tôi đã ôn 27.007 và NG-eCall để hiểu bối cảnh; phần chi tiết lệnh riêng của modem thì đọc tài liệu hãng.</p></div></div>
+        </div>
+
+        <!-- ================= 9 CHEAT ================= -->
+        <h2>9. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>TCU</h4><ul>
+            <li>MCU (Classic/OSEK) + modem + AP</li><li>UART/USB · PWRKEY · RI · DTR</li><li>RI = wakeup source (EcuM)</li><li>PSM/eDRX · eSIM · backup battery</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Mạng</h4><ul>
+            <li>2G/3G có CS, đang sunset</li><li>4G/5G chỉ PS → thoại qua IMS</li><li>Cat-1 ~10 Mbps · Cat-4 ~150 Mbps</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>eCall</h4><ul>
+            <li>112 + MSD ≤ 140 B (ASN.1)</li><li>cũ: CS + in-band modem</li><li>NG: IMS, MSD trong SIP</li><li>EU 2024/1180: 2026 mẫu mới, 2027 mọi xe mới</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>AT</h4><ul>
+            <li>V.250 · 27.007 · 27.005 · 27.010 CMUX</li><li>=? test · ? read · = set</li><li>CSQ: −113 + 2n, 99 = N/A</li><li>CEREG stat 1 home · 5 roaming · 3 denied</li><li>CMGS → "&gt; " → Ctrl-Z</li><li>CMEE=2 · ATE0</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Parser</h4><ul>
+            <li>ISR → ring buffer → task</li><li>response trước, URC sau, final cuối</li><li>timeout theo lệnh · recovery reset</li><li>test bằng log thật trên host</li>
+          </ul></div>
+        </div>
+
+        <h2>10. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li>3GPP <a href="https://www.3gpp.org/dynareport/27007.htm" target="_blank" rel="noopener">TS 27.007</a> (AT command set for UE: +CSQ, +CESQ, +CREG/+CEREG, +COPS, +CGDCONT, +CME ERROR); TS 27.005 (SMS); TS 27.010 (multiplexer).</li>
+          <li>ITU-T Recommendation V.250 (Serial asynchronous automatic dialling and control).</li>
+          <li>EUR-Lex — <a href="https://eur-lex.europa.eu/eli/reg_del/2024/1180/oj" target="_blank" rel="noopener">Commission Delegated Regulation (EU) 2024/1180</a> (NG-eCall); Regulation (EU) 2015/758 (eCall type-approval).</li>
+          <li>EN 15722 (eCall MSD), EN 17184:2024 và EN 17240:2024 (NG-eCall).</li>
+          <li>GSMA — eSIM specifications SGP.02 / SGP.32.</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi đọc hiểu được phiên AT ở mục 5 và vẽ lại kiến trúc parser.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">Chủ đề LX3 · Telematics TCU · GSM/LTE · AT — Interview Prep</footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../../assets/js/app.js?v=7"></script>
+</body>
+</html>

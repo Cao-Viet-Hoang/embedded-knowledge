@@ -29,7 +29,18 @@
     { id: "M", file: "M-host-runtime.html",     title: "Host Runtime — Win/POSIX & Build", prio: "core", group: "Vòng 2.5 — vECU & Mô phỏng (JD)", desc: "pthread/thread, timer, atomics, memory ordering, CMake/MSVC/Clang, VS debug." },
     { id: "H", file: "H-iso26262.html",         title: "ISO 26262 / Functional Safety", prio: "core", group: "Vòng 3 — Chiều sâu", desc: "ASIL, safe state, FMEA/FTA, vì sao MC/DC." },
     { id: "J", file: "J-cicd-cloud.html",       title: "Automation / CI-CD / Cloud",  prio: "core",   group: "Vòng 3 — Chiều sâu", desc: "Azure Pipelines, Conan, Docker, K8s, Terraform." },
-    { id: "I", file: "I-ai-llm.html",           title: "AI / LLM Engineering",        prio: "defend", group: "Vòng 4 — AI & tổng duyệt", desc: "RAG, agentic AI, prompt/context, governance." }
+    { id: "I", file: "I-ai-llm.html",           title: "AI / LLM Engineering",        prio: "defend", group: "Vòng 4 — AI & tổng duyệt", desc: "RAG, agentic AI, prompt/context, governance." },
+    { id: "LX0", file: "luxoft/LX0-jd-strategy.html",   title: "Luxoft JD — Gap map & Chiến lược", prio: "must", group: "Luxoft — TCU · CI & Integration", desc: "Đối chiếu JD ↔ CV, câu hỏi rủi ro, pitch riêng cho vị trí CI/Integration Lead." },
+    { id: "LX1", file: "luxoft/LX1-review-gating.html", title: "Gerrit · Zuul · Jenkins · GitLab (optional)",  prio: "bg", group: "Luxoft — TCU · CI & Integration", desc: "Code review Gerrit, gating Zuul (check/gate, speculative merge), Jenkinsfile, .gitlab-ci.yml." },
+    { id: "LX2", file: "luxoft/LX2-ci-infra-ops.html",  title: "CI Infra & Operations",            prio: "core", group: "Luxoft — TCU · CI & Integration", desc: "Ansible, Docker, Artifactory, AWS, Grafana/metrics, HIL bench trong CI, tối ưu tốc độ & ổn định." },
+    { id: "LX3", file: "luxoft/LX3-telematics-at.html", title: "Telematics TCU · AT (optional)",   prio: "bg", group: "Luxoft — TCU · CI & Integration", desc: "Kiến trúc TCU, 2G→4G/5G, eCall/NG-eCall, AT command 3GPP 27.007, thiết kế AT parser." },
+    { id: "LX4", file: "luxoft/LX4-osek-rtos.html",     title: "OSEK/VDX & RTOS (ôn lại)",        prio: "core", group: "Luxoft — TCU · CI & Integration", desc: "Task/conformance class, scheduling, PCP, alarm/event, OIL, ISR cat1/2, so sánh RTOS." },
+    { id: "LX5", file: "luxoft/LX5-autosar-eb-integration.html", title: "AUTOSAR Integration · EB tresos", prio: "must", group: "Luxoft — TCU · CI & Integration", desc: "ARXML flow, AUTOSAR Builder → tresos → RTE, lỗi integration điển hình, tối ưu code theo target/compiler." },
+    { id: "LX6", file: "luxoft/LX6-test-quality.html",  title: "Testing · VectorCAST · MISRA",     prio: "must", group: "Luxoft — TCU · CI & Integration", desc: "White/grey/black box, component & bench verification, VectorCAST, MISRA C, static analysis." },
+    { id: "LX7", file: "luxoft/LX7-aspice-8d-cm.html",  title: "ASPICE · 8D · Config Management",  prio: "core", group: "Luxoft — TCU · CI & Integration", desc: "ASPICE 4.0 SWE/SUP/MAN, integration strategy, CM & baseline, 8D problem solving." },
+    { id: "LX8", file: "luxoft/LX8-vector-tools-debug.html", title: "CANoe/CAPL/CANape · Debugger", prio: "core", group: "Luxoft — TCU · CI & Integration", desc: "CANalyzer/CANoe/CANape, CAPL, CAN FD/LIN/Ethernet, XCP/A2L, Lauterbach & iSystem." },
+    { id: "LX9", file: "luxoft/LX9-linux-git-flashing.html", title: "Linux · Git · UDS Flashing & OTA", prio: "core", group: "Luxoft — TCU · CI & Integration", desc: "Linux/QNX troubleshooting, systemd/journalctl, Git cho integration lead (bisect, cherry-pick), bootloader & trình tự flash UDS, OTA." },
+    { id: "LX10", file: "luxoft/LX10-project-deep-dive.html", title: "Project deep-dive (dự án của bạn)", prio: "must", group: "Luxoft — TCU · CI & Integration", desc: "Câu hỏi đào sâu theo từng dự án trong CV: CUBAS, MCAL, SENT debug, SENT automation, AI platform; bảng số liệu cần điền." }
   ];
 
   const PRIO_LABEL = {
