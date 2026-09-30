@@ -38,6 +38,7 @@
           "RESet\n" +
           "SYStem.CPU R7F7xxxxx          ; exact derivative from project config\n" +
           "SYStem.Up\n" +
+          "DO ~~/demo/rh850/flash/<derivative>.cmm PREPAREONLY  ; declares flash (FLASH.Create)\n" +
           "FLASH.ReProgram ALL\n" +
           "Data.LOAD.Elf \"out/app.elf\"\n" +
           "FLASH.ReProgram OFF\n" +
@@ -63,7 +64,7 @@
       "Conditional BPs can be intrusive (stop-check-resume)",
       "RH850 + Nexus: watchpoint can emit trace message, no halt"
     ],
-    answer: "A <strong>software breakpoint</strong> replaces the instruction at that address with a break instruction; the debugger restores it afterwards. You can have as many as you like, but the memory must be writable, so it's for code in RAM. A <strong>hardware or on-chip breakpoint</strong> uses comparators in the debug unit that match the program counter, so nothing is patched. There are only a few per core, but they're the only option for code executing from flash, which on an ECU is almost everything. TRACE32 picks on-chip automatically for flash, but I keep the budget in mind. A <strong>watchpoint</strong>, or data breakpoint, uses the same kind of comparators on data accesses: stop when this address is written, optionally only with a certain value or from a certain code range. That's my tool for 'who is overwriting this variable'. Conditional breakpoints are handy, but if the debugger evaluates the condition by stopping and resuming, it's intrusive and ruins real-time behaviour. On RH850 with Nexus a watchpoint can also just emit a trace message instead of halting, which keeps the system running.",
+    answer: "A <strong>software breakpoint</strong> replaces the instruction at that address with a break instruction; the debugger restores it afterwards. You can have as many as you like, but the memory must be writable, so they're mainly for code in RAM. Some tools can patch flash for software breakpoints, but that's slow and wears the flash. A <strong>hardware or on-chip breakpoint</strong> uses comparators in the debug unit that match the program counter, so nothing is patched. There are only a few per core, but they're the only option for code executing from flash, which on an ECU is almost everything. TRACE32 picks on-chip automatically for flash, but I keep the budget in mind. A <strong>watchpoint</strong>, or data breakpoint, uses the same kind of comparators on data accesses: stop when this address is written, optionally only with a certain value or from a certain code range. That's my tool for 'who is overwriting this variable'. Conditional breakpoints are handy, but if the debugger evaluates the condition by stopping and resuming, it's intrusive and ruins real-time behaviour. On RH850 with Nexus a watchpoint can also just emit a trace message instead of halting, which keeps the system running.",
     followups: ["What happens if you run out of on-chip breakpoints?", "How would you find who corrupts a variable?"]
   },
 
@@ -81,7 +82,7 @@
       "If halting hides it: data trace instead",
       "Add a regression test for the boundary"
     ],
-    answer: "First I look at the corrupted value itself: an ASCII pattern, something that looks like an address, or a counter value tells me a lot. Then I check the <strong>map file</strong> to see what's placed right before the variable, because an overrun in the neighbouring buffer is the classic cause. Next I set a <strong>write watchpoint</strong> on the address in TRACE32, qualified with a value condition if the variable is written legitimately a lot, and run the scenario. When it hits, the PC and call stack show the culprit. If the writer isn't the CPU — for example a <strong>DMA</strong> transfer with a wrong length or destination — the CPU watchpoint may not fire, so I check the DMA configuration and use trace that also records other bus masters. If stopping the CPU changes the behaviour, I use data trace instead of halting and read the history afterwards. Typical root causes: off-by-one index, wrong length in <code>memcpy</code>, stack overflowing into another section, a pointer to a local used after return, or a missing critical section so two contexts write the same data. After the fix I add a test that hits exactly that boundary.",
+    answer: "First I look at the corrupted value itself: an ASCII pattern, something that looks like an address, or a counter value tells me a lot. Then I check the <strong>map file</strong> to see what's placed right before the variable, because an overrun in the neighbouring buffer is the classic cause. Next I set a <strong>write watchpoint</strong> on the address in TRACE32, qualified with a value condition if the variable is written legitimately a lot, and run the scenario. When it hits, the PC and call stack show the culprit. If the writer isn't the CPU — for example a <strong>DMA</strong> transfer with a wrong length or destination — the CPU watchpoint may not fire, so I check the DMA configuration and use trace that also records other bus masters, if the trace unit supports it. If stopping the CPU changes the behaviour, I use data trace instead of halting and read the history afterwards. Typical root causes: off-by-one index, wrong length in <code>memcpy</code>, stack overflowing into another section, a pointer to a local used after return, or a missing critical section so two contexts write the same data. After the fix I add a test that hits exactly that boundary.",
     followups: ["What if the corruption only happens with the debugger detached?", "How do you protect shared data between an ISR and a task?"]
   },
 
@@ -151,7 +152,7 @@
       "Split HW vs SW; root cause + fix",
       "Failing case belongs in automated regression"
     ],
-    answer: "In my AUTOSAR Classic role I diagnosed and fixed SENT timing and signal-behavior defects on ST and Infineon targets using UDE. The symptom was [fill: symptom, e.g. frames rejected, wrong nibble values, intermittent CRC errors]. I started by <strong>reproducing and observing</strong> the signal at pulse level: tick time after calibration, the 56-tick sync pulse, data nibbles of 12 to 27 ticks, the pause pulse, and the CRC, all compared against SAE J2716 and the reference manual. Then in UDE I looked at the software side: the timer or capture registers, the configured peripheral clock and prescaler, and the decoded values in memory, to see whether what the driver computed matched what was on the wire. Comparing behaviour on the two target families helps separate a hardware or peripheral effect from a software bug. The root cause was [fill: root cause, e.g. clock/prescaler configuration, tick tolerance calculation, interrupt latency]. We fixed it by [fill: fix and how it was verified]. The lesson I took is that a case like this belongs in the automated regression, so it gets caught early next time.",
+    answer: "In my AUTOSAR Classic role I diagnosed and fixed SENT timing and signal-behavior defects on ST and Infineon targets using UDE. The symptom was [fill: symptom, e.g. frames rejected, wrong nibble values, intermittent CRC errors]. I started by <strong>reproducing and observing</strong> the signal at pulse level: tick time after calibration, the 56-tick sync pulse, the status nibble and data nibbles of 12 to 27 ticks, the CRC nibble, and the optional pause pulse, all compared against SAE J2716 and the reference manual. Then in UDE I looked at the software side: the timer or capture registers, the configured peripheral clock and prescaler, and the decoded values in memory, to see whether what the driver computed matched what was on the wire. Comparing behaviour on the two target families helps separate a hardware or peripheral effect from a software bug. The root cause was [fill: root cause, e.g. clock/prescaler configuration, tick tolerance calculation, interrupt latency]. We fixed it by [fill: fix and how it was verified]. The lesson I took is that a case like this belongs in the automated regression, so it gets caught early next time.",
     followups: ["How do you know whether it's a hardware or software problem?", "How did you verify the fix?"]
   },
 
@@ -276,11 +277,11 @@
     tags: ["CANalyzer", "CANoe", "Vector", "bus analysis", "simulation", "rest-bus", "test module", "phân tích bus"],
     key: [
       "CANalyzer: observe, log, filter, decode, simple send",
-      "CANoe: + network simulation, test modules, diagnostics, panels",
+      "CANoe: + node/rest-bus simulation, test modules with verdicts",
       "CANalyzer observes; CANoe simulates and tests",
       "I used CANoe, so CANalyzer features are familiar"
     ],
-    answer: "CANalyzer is essentially the <strong>analysis</strong> subset: you observe, log, filter and decode bus traffic, and you can send frames with the Interactive Generator or simple CAPL. CANoe adds everything for <strong>development and testing</strong>: simulating whole networks with multiple simulation nodes, rest-bus simulation, test modules with reports, the diagnostic console, panels and automation interfaces. CANoe is what I have in my toolchain, so CANalyzer wouldn't be new to me — the trace, logging and database handling are the same. A short way to put it: CANalyzer observes the bus, CANoe simulates and tests the network. In an integration role I'd use the CANalyzer-level features for a quick look at a bench, and CANoe when the ECU needs a realistic environment or I want automated, repeatable tests with a report.",
+    answer: "CANalyzer is essentially the <strong>analysis</strong> subset: you observe, log, filter and decode bus traffic, and you can send frames with the Interactive Generator or simple CAPL. CANoe adds everything for <strong>development and testing</strong>: simulating whole networks with multiple simulation nodes, rest-bus simulation, and test modules with verdicts and reports. Panels, diagnostics and the automation interface exist in both, depending on edition; the real difference is simulation and testing. CANoe is what I have in my toolchain, so CANalyzer wouldn't be new to me — the trace, logging and database handling are the same. A short way to put it: CANalyzer observes the bus, CANoe simulates and tests the network. In an integration role I'd use the CANalyzer-level features for a quick look at a bench, and CANoe when the ECU needs a realistic environment or I want automated, repeatable tests with a report.",
     followups: ["Where does CANape fit next to these two?"]
   },
 
@@ -340,6 +341,7 @@
           "}\n" +
           "on timer tTimeout {\n" +
           "  write(\"ERROR: Gateway_Response timeout\");\n" +
+          "  setTimer(tTimeout, 500);       // keep supervising\n" +
           "}",
     lang: "c",
     followups: ["How would you turn this into a test case with a verdict?", "What does 'this' refer to in an on message handler?"]
@@ -377,7 +379,7 @@
       "White = Cantata unit test; grey = CAN in + TRACE32 read",
       "Black = bench test via bus/UDS"
     ],
-    answer: "<strong>White-box</strong> testing is based on the code structure: I know the branches and conditions and design tests to exercise them, measured by coverage. Unit tests of an MCAL function in Cantata, with statement, branch and MC/DC coverage, are a typical example. <strong>Grey-box</strong> means I know the architecture and interfaces and can observe some internal state, but I test through interfaces. For instance, send a CAN frame into the ECU and read an internal state variable with TRACE32 to confirm the module reached the right mode — very common at component and integration level. <strong>Black-box</strong> uses only requirements and external inputs and outputs: stimulate the ECU on the bench over the bus or UDS and check the observable response, without looking inside. In practice you combine them: requirement-based black-box cases define what must be tested, and white-box coverage shows what those cases missed. Grey-box observation is what makes failures debuggable, because you can see where in the chain it went wrong.",
+    answer: "<strong>White-box</strong> testing is based on the code structure: I know the branches and conditions and design tests to exercise them, measured by coverage. Unit tests of an MCAL function in Cantata, measured with statement and branch coverage, and MC/DC where the ASIL requires it, are a typical example. <strong>Grey-box</strong> means I know the architecture and interfaces and can observe some internal state, but I test through interfaces. For instance, send a CAN frame into the ECU and read an internal state variable with TRACE32 to confirm the module reached the right mode — very common at component and integration level. <strong>Black-box</strong> uses only requirements and external inputs and outputs: stimulate the ECU on the bench over the bus or UDS and check the observable response, without looking inside. In practice you combine them: requirement-based black-box cases define what must be tested, and white-box coverage shows what those cases missed. Grey-box observation is what makes failures debuggable, because you can see where in the chain it went wrong.",
     followups: ["Why isn't 100% coverage the same as good testing?", "Which box type fits an integration test best?"]
   },
 
@@ -504,7 +506,7 @@
     id: "testing-08",
     topic: "testing",
     type: "practical",
-    q: "Why is MC/DC required for ASIL D, and how do you actually reach it?",
+    q: "Why is MC/DC expected for ASIL D, and how do you actually reach it?",
     tags: ["MC/DC", "ASIL D", "ISO 26262", "ISO 26262-6", "coverage gap", "dead code", "justification", "functional safety", "an toàn chức năng"],
     key: [
       "ISO 26262-6: MC/DC highly recommended at ASIL D (unit level)",
@@ -514,7 +516,7 @@
       "Justify unreachable code; simplify complex conditions",
       "Measure with the right compiler/target setup"
     ],
-    answer: "ISO 26262-6 recommends structural coverage at unit level by ASIL: statement coverage highly recommended for A and B, branch for B to D, and <strong>MC/DC highly recommended for ASIL D</strong>. The reason: in the most critical code a wrong logical decision can cause a hazard, and branch coverage doesn't prove that each sub-condition actually influences the result — a condition could be wrong or redundant and nobody would notice. MC/DC forces that evidence. How to reach it: first write requirement-based tests, including boundaries and fault injection, then measure — coverage should be a check, not the goal. Then do <strong>gap analysis</strong> on each uncovered condition: is it a missing test, then add a targeted case; dead code, then remove it; or defensive code that can't be reached in normal conditions, then use fault injection or stubs to reach it, or write a documented justification. Very complex conditions are a design smell — splitting them makes both the code and the MC/DC easier. On my project the coverage targets were [fill: coverage targets used on your project, e.g. statement/branch/MC/DC per module ASIL].",
+    answer: "Strictly speaking, ISO 26262 doesn't make it mandatory: it's '++', highly recommended, so skipping it needs a documented rationale, and in practice assessors expect it. ISO 26262-6 recommends structural coverage at unit level by ASIL: statement coverage highly recommended for A and B, branch for B to D, and <strong>MC/DC highly recommended for ASIL D</strong>. The reason: in the most critical code a wrong logical decision can cause a hazard, and branch coverage doesn't prove that each sub-condition actually influences the result — a condition could be wrong or redundant and nobody would notice. MC/DC forces that evidence. How to reach it: first write requirement-based tests, including boundaries and fault injection, then measure — coverage should be a check, not the goal. Then do <strong>gap analysis</strong> on each uncovered condition: is it a missing test, then add a targeted case; dead code, then remove it; deactivated code, like an unused variant or calibration path, then justify it rather than remove it; or defensive code that can't be reached in normal conditions, then use fault injection or stubs to reach it, or write a documented justification. Very complex conditions are a design smell — splitting them makes both the code and the MC/DC easier. On my project the coverage targets were [fill: coverage targets used on your project, e.g. statement/branch/MC/DC per module ASIL].",
     followups: ["What counts as an acceptable justification for uncovered code?", "Does 100% MC/DC mean the code is safe?"]
   },
 
@@ -583,7 +585,8 @@
           "    yield ecu\n" +
           "    ecu.disconnect()\n\n" +
           "# test_dio.py\n" +
-          "@pytest.mark.smoke\n" +
+          "import pytest\n\n" +
+          "@pytest.mark.smoke   # register in pytest.ini (markers = smoke: ...)\n" +
           "@pytest.mark.parametrize(\"level\", [0, 1])\n" +
           "def test_dio_write_read(ecu, level):\n" +
           "    ecu.dio_write(channel=3, level=level)\n" +
@@ -660,7 +663,7 @@
       "Honest: VECU + target benches, no full HIL rig",
       "Most tests on SIL in CI; HIL for I/O, timing, final integration"
     ],
-    answer: "They're steps along the same chain. <strong>MIL</strong> tests the model of the algorithm. <strong>SIL</strong> runs the production C code compiled for the host — a VECU is essentially SIL. <strong>PIL</strong> runs target-compiled code on the real processor or an instruction-set simulator, which catches compiler and arithmetic issues. <strong>HIL</strong> connects the real ECU to a real-time simulator of its environment through electrical I/O and buses. Going to the right you gain fidelity but lose speed, parallelism and cost efficiency. To be honest about my experience: I worked with VECU and with real target hardware using debuggers, CANoe and ECU-Test, but I haven't operated a full HIL rig with plant models. The principles carry over: the test is only as good as the environment model, rigs are scarce so they need resource management and scheduling, and results must be reproducible. In a CI setup I'd run most tests on SIL or VECU for every change and reserve benches or HIL for what truly needs hardware — electrical I/O, real timing and final integration.",
+    answer: "They're steps along the same chain. <strong>MIL</strong> tests the model of the algorithm. <strong>SIL</strong> runs the production C code compiled for the host — a host-compiled VECU is essentially SIL; a VECU that runs the target binary on an instruction-set simulator is closer to PIL. <strong>PIL</strong> runs target-compiled code on the real processor or an instruction-set simulator, which catches compiler and arithmetic issues. <strong>HIL</strong> connects the real ECU to a real-time simulator of its environment through electrical I/O and buses. Going to the right you gain fidelity but lose speed, parallelism and cost efficiency. To be honest about my experience: I worked with VECU and with real target hardware using debuggers, CANoe and ECU-Test, but I haven't operated a full HIL rig with plant models. The principles carry over: the test is only as good as the environment model, rigs are scarce so they need resource management and scheduling, and results must be reproducible. In a CI setup I'd run most tests on SIL or VECU for every change and reserve benches or HIL for what truly needs hardware — electrical I/O, real timing and final integration.",
     followups: ["What does a HIL system need that a VECU doesn't?", "How do you share a scarce bench across CI jobs?"]
   },
 
