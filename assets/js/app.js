@@ -40,7 +40,8 @@
     { id: "LX7", file: "luxoft/LX7-aspice-8d-cm.html",  title: "ASPICE · 8D · Config Management",  prio: "core", group: "Luxoft — TCU · CI & Integration", desc: "ASPICE 4.0 SWE/SUP/MAN, integration strategy, CM & baseline, 8D problem solving." },
     { id: "LX8", file: "luxoft/LX8-vector-tools-debug.html", title: "CANoe/CAPL/CANape · Debugger", prio: "core", group: "Luxoft — TCU · CI & Integration", desc: "CANalyzer/CANoe/CANape, CAPL, CAN FD/LIN/Ethernet, XCP/A2L, Lauterbach & iSystem." },
     { id: "LX9", file: "luxoft/LX9-linux-git-flashing.html", title: "Linux · Git · UDS Flashing & OTA", prio: "core", group: "Luxoft — TCU · CI & Integration", desc: "Linux/QNX troubleshooting, systemd/journalctl, Git cho integration lead (bisect, cherry-pick), bootloader & trình tự flash UDS, OTA." },
-    { id: "LX10", file: "luxoft/LX10-project-deep-dive.html", title: "Project deep-dive (dự án của bạn)", prio: "must", group: "Luxoft — TCU · CI & Integration", desc: "Câu hỏi đào sâu theo từng dự án trong CV: CUBAS, MCAL, SENT debug, SENT automation, AI platform; bảng số liệu cần điền." }
+    { id: "LX10", file: "luxoft/LX10-project-deep-dive.html", title: "Project deep-dive (dự án của bạn)", prio: "must", group: "Luxoft — TCU · CI & Integration", desc: "Câu hỏi đào sâu theo từng dự án trong CV: CUBAS, MCAL, SENT debug, SENT automation, AI platform; bảng số liệu cần điền." },
+    { id: "LX11", file: "luxoft/LX11-question-bank.html", title: "Question Bank (search nhanh)", prio: "must", group: "Luxoft — TCU · CI & Integration", desc: "Ngân hàng câu hỏi Theory/Practical/Behavioral theo CV, trả lời tiếng Anh, thanh search + lọc theo chủ đề để tra cứu khi phỏng vấn." }
   ];
 
   const PRIO_LABEL = {
@@ -348,7 +349,8 @@
   /* ---------- Simple search across lessons ---------- */
   function initSearch() {
     document.addEventListener("keydown", e => {
-      if (e.key === "/" && !/input|textarea/i.test(document.activeElement.tagName)) {
+      // The question-bank page binds "/" to its own search box.
+      if (e.key === "/" && PAGE !== "LX11" && !/input|textarea/i.test(document.activeElement.tagName)) {
         e.preventDefault(); openSearch();
       }
       if (e.key === "Escape") closeSearch();

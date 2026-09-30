@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LX11 · Question Bank — Luxoft Interview — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/css/style.css?v=8" />
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../../assets/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../../assets/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="../../assets/favicon.ico" />
+</head>
+<body data-page="LX11" data-root="../../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">LX11</span>
+            <span class="badge badge--must">Must-tell</span>
+            <span class="chip">Luxoft — TCU · CI &amp; Integration</span>
+          </div>
+          <h1>Question Bank — tra cứu nhanh khi phỏng vấn</h1>
+          <p class="lead"><b id="qbTotal">0</b> câu hỏi Theory / Practical / Behavioral, câu trả lời bằng tiếng Anh. Chỉ gồm những gì <strong>CV có</strong>; tool JD yêu cầu mà CV chỉ có tool tương đương được gắn nhãn <span class="qb-tag qb-tag--bridge">Bridge</span> (trả lời trung thực: "chưa dùng X, đã làm Y cùng khái niệm").</p>
+          <div class="page-head__meta">
+            <span><b>Phím tắt:</b> <code>/</code> focus ô tìm · <code>Enter</code> mở câu khớp nhất · <code>Esc</code> xoá</span>
+            <span><b>Tìm được cả không dấu:</b> "tu dong" khớp "tự động"</span>
+          </div>
+        </div>
+
+        <div class="callout callout--warn">
+          <div class="callout__icon">✍️</div>
+          <div class="callout__body">
+            <div class="callout__title">Điền số liệu thật trước buổi phỏng vấn</div>
+            <p class="mb-0">Chỗ nào CV không có chi tiết (quy mô team, số test case, defect cụ thể…) được để dạng <span class="qb-fill">[fill: …]</span>. Bấm nút <b>Cần điền</b> để lọc ra các câu này và sửa trực tiếp trong <code>assets/js/qbank/*.js</code>. Không nói con số mình không chắc.</p>
+          </div>
+        </div>
+
+        <div class="qb-toolbar">
+          <div class="qb-search">
+            <input id="qbSearch" type="search" placeholder="Search… (vd: NvM, bus-off, volatile, MC/DC, conan, 8D, SENT CRC)" autocomplete="off" spellcheck="false" />
+          </div>
+          <div class="qb-row" id="qbTypes"></div>
+          <div class="qb-row" id="qbTopics"></div>
+          <div class="qb-row">
+            <button type="button" class="qb-chip" id="qbBridge" title="Chỉ các câu trả lời bắc cầu cho tool chưa dùng">Bridge only</button>
+            <button type="button" class="qb-chip" id="qbFillBtn" title="Các câu còn chỗ [fill: …] cần điền số liệu thật">Cần điền</button>
+            <button type="button" class="btn btn--sm" id="qbExpand">Mở tất cả</button>
+            <button type="button" class="btn btn--sm" id="qbCollapse">Thu gọn</button>
+            <button type="button" class="btn btn--sm" id="qbRandom" title="Chọn ngẫu nhiên 1 câu để tự luyện">🎲 Luyện ngẫu nhiên</button>
+            <button type="button" class="btn btn--sm btn--ghost" id="qbReset">Reset</button>
+            <span class="qb-count" id="qbCount"></span>
+          </div>
+        </div>
+
+        <div class="qb-list" id="qbList"></div>
+        <div class="qb-empty" id="qbEmpty" hidden>Không có câu nào khớp. Thử từ khoá ngắn hơn hoặc bỏ bớt bộ lọc.</div>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi đã điền hết chỗ [fill: …] và luyện ngẫu nhiên trả lời trôi mà không mở đáp án.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">Chủ đề LX11 · Question Bank — Luxoft Interview — Interview Prep</footer>
+    </div>
+  </div>
+  <!-- Data files first, then the bank UI (renders cards), then app.js (highlights code in them). -->
+  <script src="../../assets/js/qbank/01-intro-project.js?v=8"></script>
+  <script src="../../assets/js/qbank/02-autosar.js?v=8"></script>
+  <script src="../../assets/js/qbank/03-embedded-protocols.js?v=8"></script>
+  <script src="../../assets/js/qbank/04-debug-testing.js?v=8"></script>
+  <script src="../../assets/js/qbank/05-process-linux.js?v=8"></script>
+  <script src="../../assets/js/qbank/06-cicd.js?v=8"></script>
+  <script src="../../assets/js/qbank.js?v=8"></script>
+  <script src="../../assets/js/app.js?v=8"></script>
+</body>
+</html>

@@ -1,0 +1,535 @@
+/* Question bank — embedded, protocols. Loaded by lessons/luxoft/LX11-question-bank.html */
+(window.QBANK = window.QBANK || []).push(
+
+  /* =========================== EMBEDDED C / MCU =========================== */
+
+  {
+    id: "embedded-01",
+    topic: "embedded",
+    type: "theory",
+    q: "What does volatile do and when must you use it?",
+    tags: ["volatile", "ISR", "register", "optimization", "-O2", "debug vs release", "biến volatile", "thanh ghi"],
+    key: ["Every access really goes to memory", "HW registers, ISR-shared vars, polled flags", "Not atomic, not a memory barrier", "Classic bug: works at -O0, hangs at -O2"],
+    answer: "<strong>volatile</strong> tells the compiler that the value can change outside the visible program flow, so it must not cache it in a register, merge accesses, or delete reads and writes it thinks are redundant. Every read and every write in the source becomes a real memory access, in program order relative to other volatile accesses.<br>I use it in three cases: <b>memory-mapped peripheral registers</b>, <b>variables shared between an ISR and the main loop or a task</b>, and variables modified by DMA or another core. The classic bug is a polling loop like <code>while (!flag) {}</code> where <code>flag</code> is set in an ISR: at <code>-O0</code> it works, at <code>-O2</code> the compiler hoists the read out of the loop and it spins forever.<br>What volatile does <em>not</em> do: it doesn't make a read-modify-write atomic, it doesn't stop the CPU from reordering non-volatile accesses around it, and it's not a memory barrier on multi-core. For that you still need critical sections, atomics or barrier instructions.",
+    code: "volatile uint8_t g_rxDone = 0u;      /* set in ISR */\n\nvoid UART_RxIsr(void) { g_rxDone = 1u; }\n\nvoid WaitRx(void)\n{\n    while (g_rxDone == 0u) { }        /* without volatile: may loop forever at -O2 */\n}",
+    lang: "c",
+    followups: ["Is volatile enough to protect a shared counter?", "Can a variable be both const and volatile?", "Why does a bug show only in the release build?"]
+  },
+
+  {
+    id: "embedded-02",
+    topic: "embedded",
+    type: "theory",
+    q: "Explain const in embedded C, including the different pointer placements and const volatile.",
+    tags: ["const", "pointer to const", "const pointer", "const volatile", "rodata", "flash", "hằng số", "con trỏ"],
+    key: ["Read right to left", "const data goes to .rodata / flash", "const volatile = read-only HW register", "const in API = contract, MISRA 8.13"],
+    answer: "const means the program promises not to modify the object through that name; the compiler enforces it and, for globals, usually places the data in <strong>.rodata</strong>, which on an MCU is flash, so it costs no RAM. That's why lookup tables and configuration structures, like AUTOSAR generated config, are const.<br>With pointers I read the declaration right to left: <code>const uint8_t *p</code> is a pointer to const data, I can move p but not write *p. <code>uint8_t * const p</code> is a const pointer, fixed address but writable data. Both const means neither changes.<br><b>const volatile</b> is not a contradiction: const says my code must not write it, volatile says it can still change underneath me. A read-only status register is the textbook example.<br>In APIs I mark input buffers as pointer-to-const, which documents the contract, lets the caller pass flash data, and is what MISRA Rule 8.13 recommends. One caution: casting away const and writing to something that really lives in flash will fault or silently fail.",
+    code: "const uint8_t kLut[4] = {0u, 1u, 3u, 7u};      /* .rodata -> flash */\nconst uint8_t *p1 = kLut;                      /* *p1 read-only, p1 movable */\nuint8_t * const p2 = rxBuf;                    /* p2 fixed, *p2 writable */\nconst uint8_t * const p3 = kLut;               /* both fixed */\n#define STAT_REG (*(const volatile uint32_t *)0xFFFF0010u) /* read-only HW reg */\nvoid Send(const uint8_t *data, uint16_t len);  /* promise: no write */",
+    lang: "c",
+    followups: ["Where does a const local variable inside a function live?", "What is the difference between const and #define for constants?"]
+  },
+
+  {
+    id: "embedded-03",
+    topic: "embedded",
+    type: "theory",
+    q: "What are all the meanings of the static keyword in C and C++?",
+    tags: ["static", "internal linkage", "storage duration", "encapsulation", "static member", "reentrancy", "từ khóa static", "phạm vi"],
+    key: ["File scope: internal linkage (private to .c)", "Function scope: persists, lives in .data/.bss", "C++: class-level member / function", "Static locals break reentrancy"],
+    answer: "static has two different jobs depending on where it appears.<br><b>At file scope</b>, on a global variable or a function, it gives <strong>internal linkage</strong>: the symbol is visible only inside that .c file. That's my main encapsulation tool in C, the module's private state and helper functions stay hidden, which avoids name clashes at link time and lets the compiler inline or drop unused functions. In AUTOSAR modules almost all internal functions are static.<br><b>Inside a function</b>, it changes the <strong>storage duration</strong>: the variable is not on the stack, it lives in .data or .bss for the whole program, is initialized once, and keeps its value between calls. Useful for a counter or state machine state, but it makes the function non-reentrant, so it's dangerous if the function is called from both a task and an ISR.<br><b>In C++</b>, a static data member is shared by all objects of the class, and a static member function has no <code>this</code> pointer, which is handy for C-style callbacks like an ISR entry. There's also the rare C99 <code>int a[static 4]</code> meaning 'at least 4 elements'.",
+    followups: ["Where is a static local variable stored and when is it initialized?", "Why can static locals be a problem with interrupts?"]
+  },
+
+  {
+    id: "embedded-04",
+    topic: "embedded",
+    type: "theory",
+    q: "Describe the memory layout of an embedded C program. Where does each variable in this code end up?",
+    tags: ["memory layout", ".text", ".data", ".bss", ".rodata", "stack", "heap", "LMA VMA", "bố cục bộ nhớ", "vùng nhớ"],
+    key: [".text/.rodata: flash", ".data: init value in flash, copied to RAM", ".bss: zeroed at startup, no image space", "Stack grows down, heap up"],
+    answer: "On a typical MCU, <strong>.text</strong> holds the code and <strong>.rodata</strong> the constants, both in flash. <strong>.data</strong> holds globals and statics with a non-zero initializer: the variable lives in RAM, but its initial value is stored in flash and the startup code copies it over. <strong>.bss</strong> holds globals and statics that are zero or uninitialized; it takes no space in the binary, the startup code just zero-fills it. Then there's the <strong>stack</strong> for locals, return addresses and saved context, usually growing downward, and optionally a <strong>heap</strong> for malloc growing the other way.<br>In the snippet: <code>g_init</code> is .data, <code>g_zero</code> and <code>s_zero</code> are .bss, even though s_zero is explicitly zero, <code>k_table</code> is .rodata in flash, <code>local</code> is on the stack or just in a register, <code>count</code> is .bss because it's a static local, and for <code>p</code> the pointer itself is on the stack while the 16 bytes are on the heap.<br>In an AUTOSAR project the MemMap sections refine this further, for example no-init RAM that survives a reset, or core-local RAM on RH850.",
+    code: "int g_init = 5;                  /* ? */\nint g_zero;                      /* ? */\nstatic int s_zero = 0;           /* ? */\nconst int k_table[] = {1, 2, 3}; /* ? */\n\nvoid f(void)\n{\n    int local;                   /* ? */\n    static int count;            /* ? */\n    char *p = malloc(16);        /* p ? , 16 bytes ? */\n}",
+    lang: "c",
+    followups: ["Why does .bss not increase the size of the flash image?", "What happens when stack and heap collide?"]
+  },
+
+  {
+    id: "embedded-05",
+    topic: "embedded",
+    type: "theory",
+    q: "What does the startup code do before main(), and what is the role of the linker script?",
+    tags: ["startup code", "crt0", "reset vector", "linker script", "LMA", "VMA", "ECC RAM init", "khởi động", "linker"],
+    key: ["Reset vector -> set SP -> basic HW init", "Copy .data flash->RAM, zero .bss", "Run C++ constructors, then main()", "Linker script: MEMORY + SECTIONS + symbols"],
+    answer: "After reset the CPU fetches the reset vector and jumps to startup code, usually assembly. It sets up the <strong>stack pointer</strong> and core registers, often configures the minimum hardware like disabling or configuring the watchdog, flash wait states and sometimes the clock. On safety MCUs like RH850 or AURIX it typically also has to <b>initialize RAM for ECC</b>, because reading uninitialized ECC-protected RAM can raise an error. Then it does the C runtime part: <strong>copy .data</strong> from its load address in flash to its run address in RAM, <strong>zero .bss</strong>, run C++ global constructors if any, and finally call main.<br>The <strong>linker script</strong> describes the memory map, the <code>MEMORY</code> regions with origin and length, and in <code>SECTIONS</code> which input sections go into which region. For .data it gives two addresses, the VMA in RAM and the LMA in flash via <code>AT&gt;</code>, and exports symbols like start and end of .data and .bss that the startup code uses in its copy loops. It's also where you place the vector table, keep it with <code>KEEP</code>, reserve the stack and put special sections like fast RAM code.",
+    code: "MEMORY {\n  FLASH (rx)  : ORIGIN = 0x00000000, LENGTH = 2M\n  RAM   (rwx) : ORIGIN = 0xFEDE0000, LENGTH = 128K\n}\nSECTIONS {\n  .text   : { KEEP(*(.vectors)) *(.text*) *(.rodata*) } > FLASH\n  .data   : { _sdata = .; *(.data*) _edata = .; } > RAM AT> FLASH\n  _sidata = LOADADDR(.data);\n  .bss    : { _sbss = .; *(.bss*) *(COMMON) _ebss = .; } > RAM\n}",
+    lang: "text",
+    followups: ["What is the difference between LMA and VMA?", "What goes wrong if .bss is not zeroed?"]
+  },
+
+  {
+    id: "embedded-06",
+    topic: "embedded",
+    type: "theory",
+    q: "What are the rules for writing an ISR, and what does reentrancy mean?",
+    tags: ["ISR", "interrupt", "reentrancy", "reentrant", "Cat1 Cat2", "AUTOSAR OS", "ngắt", "hàm tái nhập"],
+    key: ["Short: set flag / buffer, defer work to task", "No blocking, no printf/malloc", "Clear the source flag correctly", "Reentrant = no unprotected static/global state"],
+    answer: "My rules for an ISR: keep it <strong>short and deterministic</strong>, read the hardware, store the data in a buffer or set a flag, and defer heavy processing to a task, in AUTOSAR OS for example by activating a task or setting an event from a Category 2 ISR. No blocking calls, no busy waits, no printf or malloc, which are non-reentrant and non-deterministic. Variables shared with the main context are volatile and multi-step accesses are protected. <b>Clear the interrupt source</b> correctly, and on some buses read the register back so the write has landed before returning, otherwise you get a spurious second entry. Be careful with floating point if the FPU context isn't saved. Also, a Category 1 ISR must not call OS services, a Category 2 ISR may.<br><strong>Reentrancy</strong> means a function can be interrupted in the middle and called again, from an ISR or another task, and both calls still work correctly. That requires it to use only locals and parameters, or to protect any shared static or global state. <code>strtok</code> is the classic non-reentrant example because of its hidden static pointer.",
+    followups: ["How do you pass data from an ISR to a task safely?", "What is the difference between Cat1 and Cat2 ISRs?", "Is a reentrant function automatically thread-safe?"]
+  },
+
+  {
+    id: "embedded-07",
+    topic: "embedded",
+    type: "practical",
+    q: "What is wrong with this code that shares a counter between an ISR and a task, and how do you fix it?",
+    tags: ["race condition", "critical section", "read-modify-write", "exclusive area", "SchM", "SuspendAllInterrupts", "tranh chấp", "vùng găng"],
+    key: ["rx_count-- is load/modify/store, ISR can cut in", "volatile alone doesn't help", "Fix: short critical section / exclusive area", "Save and restore, don't blindly enable"],
+    answer: "It's a <strong>race condition</strong>. <code>rx_count--</code> is a read-modify-write: the CPU loads the value, decrements it in a register and stores it back. If the UART interrupt fires between the load and the store, the ISR increments the memory value, and then the task overwrites it with its stale value minus one, so one received byte is lost. Also the check and the decrement are two separate steps. volatile doesn't help here, it only guarantees the accesses happen, not that they're indivisible.<br>The fix is a <strong>critical section</strong> around the check and the update: lock out the interrupt, do the minimum, restore. In an AUTOSAR stack I'd use the module's exclusive area, <code>SchM_Enter_...</code> and <code>SchM_Exit_...</code>, which the integrator maps to OS interrupt locking, or <code>SuspendAllInterrupts</code>/<code>ResumeAllInterrupts</code> directly. On bare metal, save the interrupt state, disable, restore, rather than unconditionally enabling at the end, so nesting works. Keep the section a few instructions long so interrupt latency doesn't suffer, and don't call process() inside it. Alternatives are atomic instructions or a lock-free single-producer single-consumer ring buffer.",
+    code: "volatile uint16_t rx_count;\n\nvoid UART_RxIsr(void) { rx_count++; }\n\nvoid Task_Rx(void)\n{\n    if (rx_count > 0u) {\n        rx_count--;              /* BUG: not atomic vs. ISR */\n        Process();\n    }\n}\n\n/* Fix */\nvoid Task_Rx_Fixed(void)\n{\n    boolean have = FALSE;\n    SchM_Enter_Uart_RX_EXCLUSIVE_AREA();\n    if (rx_count > 0u) { rx_count--; have = TRUE; }\n    SchM_Exit_Uart_RX_EXCLUSIVE_AREA();\n    if (have == TRUE) { Process(); }\n}",
+    lang: "c",
+    followups: ["Why save and restore the interrupt state instead of just enabling?", "How would a lock-free ring buffer avoid the lock?", "What changes on a multi-core RH850?"]
+  },
+
+  {
+    id: "embedded-08",
+    topic: "embedded",
+    type: "practical",
+    q: "A 32-bit millisecond counter is incremented in a timer ISR. Is reading it atomic on a 16-bit MCU? On a 32-bit MCU?",
+    tags: ["atomicity", "torn read", "16-bit", "32-bit", "tick counter", "LDREX STREX", "nguyên tử", "đọc bị xé"],
+    key: ["16-bit: two bus accesses -> torn read", "32-bit aligned load/store is atomic", "++ is still non-atomic RMW everywhere", "64-bit on 32-bit core: torn again", "Fix: lock, or read-until-stable"],
+    answer: "On a <strong>16-bit MCU</strong> a 32-bit read takes two 16-bit accesses. If the ISR fires between them and the counter rolls from 0x0000FFFF to 0x00010000, I might read the old low half and the new high half, or the opposite, and get a value that's off by 65536. That's a <strong>torn read</strong>, and it's rare, which makes it nasty to find.<br>On a <strong>32-bit MCU</strong> like RH850 or a Cortex-M, a naturally aligned 32-bit load or store is a single access, so a plain read of the counter is atomic. But the increment itself is still a read-modify-write, so if two contexts write it you still need protection. And the same tearing problem comes back for 64-bit values on a 32-bit core, or for a misaligned field in a packed struct.<br>Fixes: a short critical section around the read, or the lock-free trick of reading until two consecutive reads match, which works when only the ISR writes. For concurrent updates, use exclusive-access instructions like LDREX/STREX on ARM, or C11 atomics if the toolchain supports them.",
+    code: "volatile uint32_t g_ms;          /* ++ in 1 ms timer ISR */\n\nuint32_t GetMs(void)             /* safe on 16-bit MCU too */\n{\n    uint32_t a, b;\n    do {\n        a = g_ms;\n        b = g_ms;\n    } while (a != b);\n    return a;\n}",
+    lang: "c",
+    followups: ["Why does the read-twice trick fail if two writers exist?", "How is the 64-bit OS tick handled on a 32-bit core?"]
+  },
+
+  {
+    id: "embedded-09",
+    topic: "embedded",
+    type: "practical",
+    q: "Write macros to set, clear and write a multi-bit field in a memory-mapped register. What pitfalls do you watch for?",
+    tags: ["bit manipulation", "register access", "mask", "shift", "write-1-to-clear", "W1C", "macro", "thao tác bit", "thanh ghi"],
+    key: ["Set |=, clear &= ~, toggle ^=", "Field: clear mask then OR shifted value", "Always unsigned literals (1UL)", "W1C flags: never read-modify-write", "Parenthesize macro args, use volatile"],
+    answer: "Set is OR with a mask, clear is AND with the inverted mask, toggle is XOR, and writing a field is clear-then-OR: mask out the old bits, shift the new value into position, mask it again so an oversized value can't spill into neighbours.<br>Pitfalls I watch for: always use <strong>unsigned literals</strong> like <code>1UL</code>, because <code>1 &lt;&lt; 31</code> on a signed int is undefined behaviour and MISRA flags it. <strong>Parenthesize</strong> every macro parameter. Access registers through a <strong>volatile</strong> pointer. The big one is <strong>write-1-to-clear</strong> status registers: if I do <code>STATUS |= FLAG_A</code>, the read-modify-write reads back every pending flag as 1 and writes them all back, clearing flags I never meant to touch. For those you write only the bit you want. Similarly, some registers are write-only or have side effects on read, like reading a data register that pops a FIFO. Also, a read-modify-write on a shared register is itself a race with ISRs, which is why many MCUs offer separate set and clear registers, and RH850 protects some critical registers with a write-protection command sequence.",
+    code: "#define REG32(addr)        (*(volatile uint32_t *)(addr))\n#define BIT(n)             (1UL << (n))\n#define SET_BIT(r, n)      ((r) |=  BIT(n))\n#define CLR_BIT(r, n)      ((r) &= ~BIT(n))\n#define FIELD_MASK(w, p)   ((((1UL << (w)) - 1UL)) << (p))\n#define FIELD_WR(r, w, p, v) \\\n    ((r) = ((r) & ~FIELD_MASK(w, p)) | (((uint32_t)(v) << (p)) & FIELD_MASK(w, p)))\n\n/* W1C status: write ONLY the bit to clear */\nSTATUS_REG = BIT(3);          /* correct */\n/* STATUS_REG |= BIT(3);         wrong: clears every pending flag */",
+    lang: "c",
+    followups: ["Why use bit-fields or not for register maps?", "What is a set/clear register pair and why does it help?"]
+  },
+
+  {
+    id: "embedded-10",
+    topic: "embedded",
+    type: "practical",
+    q: "What is sizeof each of these structs on a 32-bit MCU, and what are the risks of packing?",
+    tags: ["struct padding", "alignment", "packed", "pragma pack", "sizeof", "unaligned access", "căn lề", "đệm struct"],
+    key: ["A = 12, B = 8, C = 7", "Each member aligned to its size; tail pad to max align", "Order members largest first", "Packed: unaligned access = slow or fault", "Don't memcmp structs / map raw frames"],
+    answer: "Assuming 4-byte alignment for uint32_t: <b>A is 12</b>. a at offset 0, three bytes padding so b starts at 4, c at 8, then two bytes tail padding so the size is a multiple of the largest alignment, which matters for arrays. <b>B is 8</b>: b at 0, c at 4, a at 6, one byte tail pad. Same members, just sorted largest first. <b>C is 7</b>, no padding at all.<br>On a 16-bit MCU the answer can differ because the max alignment may be 2, which is exactly why I don't hard-code struct sizes.<br>Packing risks: members become <strong>misaligned</strong>. Depending on the core, an unaligned access is either split into several slower accesses, or raises an alignment exception. Taking a pointer to a packed member and passing it to a function that assumes alignment is a classic crash. Unaligned access can also break atomicity. So I avoid overlaying packed structs on protocol frames or registers; I prefer explicit serialization with shifts, which also fixes endianness. And never <code>memcmp</code> padded structs, padding bytes are indeterminate.",
+    code: "struct A { uint8_t a; uint32_t b; uint16_t c; };\nstruct B { uint32_t b; uint16_t c; uint8_t a; };\nstruct __attribute__((packed)) C { uint8_t a; uint32_t b; uint16_t c; };\n/* sizeof(A) = ?  sizeof(B) = ?  sizeof(C) = ? */",
+    lang: "c",
+    followups: ["How do you check the layout the compiler actually chose?", "Why is using a packed struct to parse a CAN frame a portability problem?"]
+  },
+
+  {
+    id: "embedded-11",
+    topic: "embedded",
+    type: "theory",
+    q: "What is endianness, which MCUs use which, and how do you write endian-independent code?",
+    tags: ["endianness", "little-endian", "big-endian", "byte order", "Intel Motorola", "CAN signal", "PowerPC", "thứ tự byte"],
+    key: ["LE: LSB at lowest address; BE: MSB first", "RH850, TriCore, Cortex-M: little-endian", "PowerPC e200: big-endian; network: BE", "CAN signals: Intel vs Motorola order", "Serialize with shifts, not casts"],
+    answer: "Endianness is the byte order of a multi-byte value in memory. <strong>Little-endian</strong> puts the least significant byte at the lowest address, <strong>big-endian</strong> the most significant. RH850, Infineon TriCore and ARM Cortex-M as usually configured are little-endian; the classic Freescale/NXP PowerPC e200 parts are big-endian, and network byte order is big-endian.<br>In automotive it shows up constantly on CAN: signals in a DBC or ARXML are either <b>Intel</b> byte order, little-endian, or <b>Motorola</b>, big-endian, and the Com module packs and unpacks accordingly. A wrong byte order setting gives you values that look like garbage, for example 0x0102 read as 0x0201.<br>For portable code I never cast a byte buffer to a <code>uint32_t*</code>; that's both endian-dependent and potentially an unaligned access and a strict-aliasing violation. I assemble values with shifts, which gives the same result on any core, and the compiler usually turns it into a single load or byte-swap instruction anyway.",
+    code: "static inline uint32_t Rd_Be32(const uint8_t *p)\n{\n    return ((uint32_t)p[0] << 24) | ((uint32_t)p[1] << 16) |\n           ((uint32_t)p[2] << 8)  |  (uint32_t)p[3];\n}\n\n/* runtime check */\nuint16_t t = 1u;\nboolean isLittle = (*(uint8_t *)&t == 1u);",
+    lang: "c",
+    followups: ["How is a 12-bit Motorola signal spread across bytes?", "Where did endianness bite you when porting code?"]
+  },
+
+  {
+    id: "embedded-12",
+    topic: "embedded",
+    type: "practical",
+    q: "What does this code print, and why? (integer promotion and signed/unsigned pitfalls)",
+    tags: ["integer promotion", "usual arithmetic conversions", "signed unsigned", "overflow", "undefined behavior", "MISRA essential type", "ép kiểu", "tràn số"],
+    key: ["(1) c = 44: wraps mod 256", "(2) 'greater': -1 converts to UINT_MAX", "(3) nothing: ~x is int 0xFFFFFFF0", "(4) UB: uint16 promotes to signed int", "Fix: cast before the operation"],
+    answer: "Everything smaller than int is <strong>promoted to int</strong> before arithmetic, and mixed signed/unsigned operands of the same rank convert to unsigned.<br>(1) a + b is computed as int 300, then truncated on assignment to uint8_t: <b>c is 44</b>.<br>(2) i is converted to unsigned for the comparison, so -1 becomes 0xFFFFFFFF, which is bigger than 1: it prints <b>greater</b>.<br>(3) x promotes to int 0x0000000F, the complement is 0xFFFFFFF0, not 0xF0, so <b>nothing is printed</b>. You need <code>(uint8_t)~x</code>.<br>(4) The subtle one: on a 32-bit-int target, uint16_t promotes to <em>signed</em> int, and 50000 times 50000 is 2.5 billion, which overflows int: <b>undefined behaviour</b>, even though every variable is unsigned. On a 16-bit-int MCU it promotes to unsigned int and silently wraps modulo 65536. Same source, different results per platform. The fix is <code>(uint32_t)m * n</code>.<br>This is exactly why MISRA's essential type rules exist, and why conversion warnings should be enabled and static analysis run on this kind of code.",
+    code: "uint8_t  a = 200u, b = 100u;\nuint8_t  c = a + b;                    /* (1) c = ? */\n\nint      i = -1;\nunsigned u = 1u;\nif (i < u) { puts(\"less\"); }          /* (2) which one? */\nelse       { puts(\"greater\"); }\n\nuint8_t  x = 0x0Fu;\nif (~x == 0xF0u) { puts(\"match\"); }   /* (3) printed? */\n\nuint16_t m = 50000u, n = 50000u;\nuint32_t p = m * n;                    /* (4) correct on 32-bit int? */",
+    lang: "c",
+    followups: ["What is the difference between implementation-defined and undefined behaviour?", "Which MISRA rules catch these?"]
+  },
+
+  {
+    id: "embedded-13",
+    topic: "embedded",
+    type: "theory",
+    q: "Why use fixed-width integer types, and what are their limits for portability?",
+    tags: ["stdint", "uint8_t", "fixed-width types", "Platform_Types", "sint16", "int size", "portability", "kiểu dữ liệu"],
+    key: ["int is 16 or 32 bits depending on target", "uint8_t/uint32_t or AUTOSAR uint8/uint32", "Fast/least types for loop counters", "Promotion rules still apply"],
+    answer: "The size of <code>int</code> and <code>long</code> is implementation-defined: int is 16 bits on many 16-bit MCUs and 32 bits on RH850, TriCore or ARM. If I write a register map, a protocol frame or a counter with plain int, the behaviour changes when the code moves to another target. Fixed-width types like <code>uint8_t</code>, <code>uint16_t</code>, <code>int32_t</code> from stdint.h say exactly what I mean. In AUTOSAR we use <code>uint8</code>, <code>sint16</code>, <code>uint32</code>, <code>boolean</code> from Platform_Types.h, which the platform integrator provides per CPU and compiler, and MISRA requires size-specific types instead of basic ones.<br>Limits: the exact-width types are optional in the standard, a DSP like TI C28x has no 8-bit type at all because char is 16 bits. Fixed width also doesn't change the promotion rules, uint16_t arithmetic still happens in int. And for performance, a <code>uint8_t</code> loop counter on a 32-bit core may cost extra masking instructions, so for local counters I use the native width or <code>uint_fast8_t</code>.",
+    followups: ["What does Platform_Types.h contain in AUTOSAR?", "Why can a uint8_t loop counter be slower on a 32-bit core?"]
+  },
+
+  {
+    id: "embedded-14",
+    topic: "embedded",
+    type: "practical",
+    q: "Pointer arithmetic quiz: evaluate each expression, assuming arr is at 0x1000 on a little-endian 32-bit MCU.",
+    tags: ["pointer arithmetic", "array decay", "sizeof", "pointer cast", "strict aliasing", "con trỏ", "mảng"],
+    key: ["Arithmetic scales by pointed-to type size", "(1) 0x1004 (2) 30 (3) 0x1001 (4) 20", "(5) &arr+1 = 0x1010: whole array", "(6) array param decays: sizeof = 4"],
+    answer: "Pointer arithmetic is scaled by the size of the pointed-to type.<br>(1) <code>p + 1</code> is <b>0x1004</b>, one uint32_t further.<br>(2) <code>*(p + 2)</code> is the same as <code>arr[2]</code>, so <b>30</b>.<br>(3) <code>b</code> is a byte pointer, so <code>b + 1</code> is <b>0x1001</b>.<br>(4) <code>b[4]</code> is the first byte of arr[1]; on little-endian that's its least significant byte, <b>20</b>. On a big-endian core it would be 0.<br>(5) <code>&amp;arr</code> has type pointer-to-array-of-4, so adding one skips the whole array: <b>0x1010</b>.<br>(6) An array parameter decays to a pointer, so <code>sizeof(a)</code> inside f is the pointer size, <b>4</b>, not 16. That's a classic bug when people compute buffer lengths inside a function, which is why APIs pass the length explicitly.<br>Reading through a byte pointer is allowed, char types may alias anything. Going the other way, casting a byte buffer to <code>uint32_t*</code>, risks misalignment and violates strict aliasing, and MISRA restricts those casts.",
+    code: "uint32_t arr[4] = {10u, 20u, 30u, 40u};\nuint32_t *p = arr;\nuint8_t  *b = (uint8_t *)arr;\n\n/* (1) p + 1        (2) *(p + 2)\n   (3) b + 1        (4) b[4]\n   (5) &arr + 1                    */\n\nvoid f(uint32_t a[4]) { size_t s = sizeof(a); }  /* (6) s = ? */",
+    lang: "c",
+    followups: ["What is the strict aliasing rule?", "Is pointer arithmetic outside the array bounds legal?"]
+  },
+
+  {
+    id: "embedded-15",
+    topic: "embedded",
+    type: "theory",
+    q: "How are function pointers used in embedded software? Show a callback or dispatch table.",
+    tags: ["function pointer", "callback", "dispatch table", "jump table", "vector table", "notification", "con trỏ hàm", "bảng tra"],
+    key: ["Vector tables, callbacks, notifications", "Const table replaces big switch", "Put table in flash: const", "Check NULL; no casts between fn types", "Cost: indirect call, no inlining"],
+    answer: "Function pointers are how C does late binding, and they're everywhere in embedded. The <b>interrupt vector table</b> is an array of function pointers. <b>Callbacks and notifications</b> are how lower layers call upward without depending on them; in AUTOSAR the generated configuration holds pointers to notification functions like transmit confirmation or ICU edge notification, so the driver code stays generic. And <b>dispatch tables</b> replace a large switch, for example mapping a UDS service ID to its handler, or a state machine where each state has a handler.<br>Practices I follow: make the table <code>const</code> so it lives in flash and can't be corrupted by a stray write, which matters for safety. Check for NULL before calling optional callbacks. Never cast between incompatible function pointer types, that's undefined behaviour and MISRA forbids it. Use a typedef so the signatures are readable.<br>The costs are an indirect call, which the compiler can't inline, sometimes a pipeline penalty, and it makes static call-graph analysis for stack usage harder.",
+    code: "typedef Std_ReturnType (*UdsHandler)(const uint8 *req, uint16 len);\ntypedef struct { uint8 sid; UdsHandler fn; } UdsEntry;\n\nstatic const UdsEntry kUdsTable[] = {        /* in flash */\n    { 0x10u, Uds_SessionControl },\n    { 0x22u, Uds_ReadDid },\n    { 0x2Eu, Uds_WriteDid },\n};\n\nfor (i = 0u; i < (sizeof(kUdsTable) / sizeof(kUdsTable[0])); i++) {\n    if ((kUdsTable[i].sid == sid) && (kUdsTable[i].fn != NULL_PTR)) {\n        return kUdsTable[i].fn(req, len);\n    }\n}",
+    lang: "c",
+    followups: ["How does a function pointer table affect stack analysis?", "How would you do the same in C++ without virtual?"]
+  },
+
+  {
+    id: "embedded-16",
+    topic: "embedded",
+    type: "theory",
+    q: "Why is dynamic memory allocation usually avoided in embedded and automotive software? What do you use instead?",
+    tags: ["malloc", "heap", "dynamic allocation", "fragmentation", "MISRA 21.3", "memory pool", "static allocation", "cấp phát động"],
+    key: ["Non-deterministic timing", "Fragmentation -> failure after hours", "Failure path hard to handle/test", "MISRA 21.3 bans malloc/free", "Use static buffers, pools at init"],
+    answer: "Three main reasons. First, <strong>determinism</strong>: malloc and free have execution times that depend on the heap state, which is bad for a real-time system where I need a worst-case execution time. Second, <strong>fragmentation</strong>: after many allocations of different sizes, there can be plenty of free memory in total but no contiguous block large enough, so an allocation fails after hours or days in the field, which is almost impossible to reproduce in a test. Third, the <strong>failure path</strong>: what does an airbag or brake ECU do when malloc returns NULL? There's usually no sensible answer. Plus malloc isn't reentrant, so you can't use it from ISRs, and memory leaks are a risk.<br>That's why MISRA C Rule 21.3 forbids the standard heap functions, and AUTOSAR Classic is designed around static configuration: every buffer, queue and PDU size is known at build time and dimensioned in the config. Instead I use <b>static allocation</b>, <b>fixed-size block pools</b> if something really needs to be dynamic, and at most allocation once during init, never at runtime. The map file then tells me the exact RAM budget.",
+    followups: ["How does a fixed-block memory pool avoid fragmentation?", "What about C++ new and STL containers?"]
+  },
+
+  {
+    id: "embedded-17",
+    topic: "embedded",
+    type: "practical",
+    q: "How do you size the stack and detect a stack overflow on an MCU?",
+    tags: ["stack overflow", "stack painting", "high water mark", "MPU", "stack monitoring", "E_OS_STACKFAULT", "TRACE32", "tràn stack"],
+    key: ["Static: worst-case call graph analysis", "Dynamic: paint pattern, read high-water mark", "Runtime: MPU guard / stack limit / OS monitor", "Symptoms: random resets, corrupted globals", "Add ISR nesting + margin"],
+    answer: "I combine static and dynamic methods. <strong>Statically</strong>, the compiler can emit per-function stack usage, like GCC's <code>-fstack-usage</code>, and a tool such as StackAnalyzer builds the call graph to get the worst case. Function pointers and recursion make that incomplete, so I also measure. <strong>Dynamically</strong>, the stack is filled with a known pattern at startup, then after running the worst-case scenarios I read the stack in the debugger, for example with TRACE32, and find how much was overwritten: that's the high-water mark. Then I add the worst-case interrupt nesting on top and a safety margin.<br>For <strong>runtime detection</strong>: an MPU guard region below the stack that faults on access, stack-limit registers on cores that have them, a canary word checked periodically, or AUTOSAR OS stack monitoring, which checks at context switch and calls the ProtectionHook with E_OS_STACKFAULT.<br>Typical symptoms of an overflow are random resets, a corrupted global next to the stack, or a return to a garbage address. So when I see a crash that moves around when I add code, the stack is one of the first things I check.",
+    followups: ["Why does OS stack monitoring not catch every overflow?", "How do you account for ISRs on a task stack?"]
+  },
+
+  {
+    id: "embedded-18",
+    topic: "embedded",
+    type: "theory",
+    q: "How should a watchdog be used correctly? What is a window watchdog?",
+    tags: ["watchdog", "WDG", "window watchdog", "WdgM", "alive supervision", "reset cause", "RH850 WDTA", "bộ giám sát"],
+    key: ["Kick only when the system proves it's healthy", "Never kick from a timer ISR", "Window: too early is also an error", "Check reset cause at startup", "AUTOSAR: Wdg driver + WdgM supervision"],
+    answer: "A watchdog resets the MCU if software fails to service it in time, so the point is that <strong>servicing it must prove the system is healthy</strong>. The common mistake is kicking it from a periodic timer ISR: the timer keeps firing even if the main loop or a task is stuck, so the watchdog never helps. Better: kick from the lowest-priority context after checking that all the important tasks have checked in.<br>A <strong>window watchdog</strong>, like WDTA on RH850, also rejects a trigger that comes <em>too early</em>. So it catches not only a hang, but also code running too fast, like a skipped part of the loop or a runaway loop that keeps kicking. An independent watchdog with its own clock catches the case where the main clock itself dies.<br>In AUTOSAR that's split into the Wdg driver, WdgIf, and the <b>Watchdog Manager</b>, which does alive, deadline and logical supervision of checkpoints and only triggers the hardware if all supervised entities are OK. Other points: read the reset cause at startup to log watchdog resets, and freeze the watchdog on debugger halt. Watchdog was one of the MCAL driver groups I validated, on target and VECU.",
+    followups: ["What is the difference between alive, deadline and logical supervision?", "How do you test that the watchdog really resets the ECU?"]
+  },
+
+  {
+    id: "embedded-19",
+    topic: "embedded",
+    type: "theory",
+    q: "What are the practical differences between 16-bit and 32-bit microcontrollers for a software developer?",
+    tags: ["16-bit MCU", "32-bit MCU", "word size", "int size", "address space", "hardware divide", "atomicity", "vi điều khiển"],
+    key: ["int often 16-bit: overflow surprises", "32-bit math = multiple instructions", "Wider accesses not atomic", "Smaller address space / memory models", "Porting: types, alignment, near/far"],
+    answer: "The register and ALU width change how code behaves and performs. On a 16-bit MCU <code>int</code> is usually 16 bits, so something like a millisecond timeout multiplied by a factor can overflow at 32767 where the same code is fine on a 32-bit core. 32-bit arithmetic compiles into multiple instructions, and multiply or divide may have no hardware support, so they're slow. Reads and writes wider than 16 bits aren't atomic, which creates torn-read races with ISRs.<br>The <b>address space</b> is often smaller or segmented, so some toolchains have near and far pointers or memory models. Alignment rules differ, so struct layouts change. On the other hand, 16-bit parts are usually cheaper, lower power, with fast interrupt response for simple tasks.<br>32-bit cores like RH850, TriCore or Cortex-M give a flat address space, single-cycle 32-bit operations, hardware divide, often FPU, caches and multi-core, which you need for an AUTOSAR stack. My hands-on experience is on 32-bit targets, RH850, Infineon and ST, but when porting between widths I'd review types, promotion, atomicity, alignment and any assumptions about pointer size.",
+    followups: ["Which bugs typically appear when porting from 32-bit to 16-bit?", "Why do 16-bit MCUs still exist in cars?"]
+  },
+
+  {
+    id: "embedded-20",
+    topic: "embedded",
+    type: "theory",
+    q: "Explain Harvard vs von Neumann architecture, and how flash wait states and caches affect performance and determinism.",
+    tags: ["Harvard", "von Neumann", "flash wait states", "cache", "prefetch", "DMA coherency", "WCET", "kiến trúc bộ nhớ", "bộ nhớ đệm"],
+    key: ["Harvard: separate instruction/data buses", "Modified Harvard: one address space, split buses", "Flash slower than CPU -> wait states", "Set wait states BEFORE raising clock", "Cache: fast but less deterministic; DMA coherency"],
+    answer: "<strong>Von Neumann</strong> uses one bus and one memory for code and data, so an instruction fetch and a data access compete. <strong>Harvard</strong> separates them, so the CPU can fetch and access data in the same cycle. Pure Harvard parts like AVR or many DSPs even have separate address spaces, which is why reading a constant table from flash needs special instructions. Most modern MCUs are <b>modified Harvard</b>: separate buses or caches, but one unified address map.<br>Flash is slower than the CPU at high clock, so the flash controller inserts <strong>wait states</strong>. The number depends on the frequency, and a classic bring-up bug is raising the PLL before setting enough wait states: the CPU reads garbage and crashes. Prefetch buffers and caches hide the latency.<br>Caches bring two issues. <b>Determinism</b>: the same code takes different time depending on hits and misses, which complicates worst-case timing. <b>Coherency</b>: DMA writes to RAM behind the data cache, so you have to invalidate or clean the cache, or put DMA buffers in a non-cacheable region. For hot ISRs I'd place code or data in local RAM, on RH850 the core-local RAM, to avoid flash latency.",
+    followups: ["How do you configure a DMA buffer to avoid cache coherency problems?", "Why does code run faster from RAM than flash?"]
+  },
+
+  {
+    id: "embedded-21",
+    topic: "embedded",
+    type: "theory",
+    q: "What contributes to interrupt latency, and how do priorities and nesting work?",
+    tags: ["interrupt latency", "priority", "nesting", "preemption", "INTC", "NVIC", "critical section", "độ trễ ngắt", "ưu tiên ngắt"],
+    key: ["Latency = request -> first ISR instruction", "Adds: current instruction, context save, wait states", "Biggest killer: long interrupts-disabled sections", "Higher priority preempts lower (nesting)", "Cat1 vs Cat2 in AUTOSAR OS"],
+    answer: "Interrupt latency is the time from the interrupt request to the first instruction of the handler. It includes synchronizing the request, finishing or abandoning the current instruction, saving context, either by hardware stacking like on Cortex-M or by software prologue, fetching the vector, and flash wait states or cache misses on the way. But in practice the biggest contributors are software: <strong>time spent with interrupts disabled</strong> in critical sections, and a <strong>higher or equal priority ISR already running</strong>. That's why critical sections must be short.<br>For <b>priorities and nesting</b>: the interrupt controller, INTC on RH850 or NVIC on ARM, assigns each source a priority. If a higher-priority request arrives while a lower ISR runs, it preempts it; equal or lower priority waits pending. Nesting improves response for urgent events but needs more stack, since every level adds a context frame.<br>In AUTOSAR OS, Category 1 ISRs bypass the OS for minimum latency but can't use OS services; Category 2 are OS-managed and must sit below the Cat1 priorities. Fast, frequent events, like capturing SENT edges, need either a high priority or hardware support like DMA or timestamp buffers.",
+    followups: ["How do you measure interrupt latency on real hardware?", "What is priority inversion and how does OSEK avoid it?"]
+  },
+
+  {
+    id: "embedded-22",
+    topic: "embedded",
+    type: "practical",
+    q: "The JD mentions 'code optimization for specific targets and compilers'. How do you approach it?",
+    tags: ["code optimization", "compiler flags", "-Os", "-O2", "profiling", "cycle counter", "trace", "map file", "tối ưu code"],
+    key: ["Measure first: trace, cycle counter, map file", "Pick level per file: speed for hot, -Os elsewhere", "Fix the algorithm/data before micro-tricks", "Place hot code/data in fast RAM", "Re-verify: tests on target, release build"],
+    answer: "I start by <strong>measuring</strong>, because intuition about hotspots is often wrong. For speed: a cycle counter or timer read around the function, toggling a GPIO and looking at a scope, or TRACE32 trace, which gives function-level runtime without changing the code. For size: the map file and per-object size reports, tracked build over build.<br>Then I work from big to small. <b>Algorithm and data</b> first: avoid repeated work, use lookup tables, reduce copying of large structs. Then <b>compiler settings</b>: commercial toolchains like Green Hills, TASKING or Diab let you pick optimization per file or per function, so hot ISRs and math get speed optimization while the rest uses <code>-Os</code> to save flash. <b>Memory placement</b>: hot code and data into fast local RAM through MemMap and the linker script. Then <b>target-specific details</b>: native word size for loop variables, fixed-point instead of float on cores without FPU, shifts and masks instead of division, <code>static inline</code> for tiny accessors, compiler intrinsics.<br>Finally, re-measure, and rerun the tests on the target with the release build, because higher optimization exposes latent bugs like missing volatile or undefined behaviour.",
+    followups: ["What is the risk of -O3 on a small MCU?", "How do you check what the compiler actually generated?", "Have you ever had to meet a CPU load budget?"]
+  },
+
+  {
+    id: "embedded-23",
+    topic: "embedded",
+    type: "practical",
+    q: "Give concrete low-level optimization techniques: avoiding float, lookup tables, intrinsics, loop unrolling.",
+    tags: ["fixed-point", "Q15", "lookup table", "LUT", "intrinsics", "loop unrolling", "inline", "no FPU", "số thực dấu phẩy tĩnh"],
+    key: ["No FPU: fixed-point (Q format)", "LUT + interpolation instead of heavy math", "Power-of-two sizes: mask instead of %", "Intrinsics: CLZ, saturation, DI/EI", "Unroll/inline trade speed for flash"],
+    answer: "On a core <strong>without an FPU</strong>, every float operation becomes a software library call, tens to hundreds of cycles. I use <b>fixed-point</b> instead: store values scaled by a power of two, for example Q15, where multiply is a 32-bit product shifted right by 15. Even with an FPU, avoiding float in ISRs can save the FPU context save.<br><b>Lookup tables</b> in flash replace expensive functions like sine or sensor linearization; with linear interpolation between points, accuracy is usually fine. <b>Power-of-two sizes</b> let me replace modulo and division with a mask or shift, which matters on cores where division is slow.<br><b>Intrinsics</b> give access to special instructions without assembly: count leading zeros, saturating arithmetic, byte-swap, and interrupt enable/disable, for example <code>__DI()</code>/<code>__EI()</code> style intrinsics on RH850 compilers or <code>__disable_irq()</code> on Cortex-M. They're compiler-specific, so I wrap them in a small abstraction header.<br><b>Loop unrolling and inlining</b> remove branch and call overhead but grow code size, which can hurt cache hit rate and flash budget, so I only apply them where measurement shows a gain.",
+    code: "/* Q15 multiply, no FPU needed */\nstatic inline int16_t Q15_Mul(int16_t a, int16_t b)\n{\n    return (int16_t)(((int32_t)a * (int32_t)b) >> 15);\n}\n\n/* Ring buffer with power-of-two size: mask instead of % */\n#define RB_SIZE 64u\nidx = (idx + 1u) & (RB_SIZE - 1u);",
+    lang: "c",
+    followups: ["How do you choose the Q format for a sensor value?", "When does inlining make code slower?"]
+  },
+
+  {
+    id: "embedded-24",
+    topic: "embedded",
+    type: "practical",
+    q: "How do you handle typical compiler and linker errors, and what do you look for in a map file?",
+    tags: ["linker error", "undefined reference", "multiple definition", "region overflow", "map file", "MemMap", "section", "lỗi liên kết", "map file"],
+    key: ["Undefined ref: missing object/lib, name, extern C", "Multiple definition: definition in a header", "Region overflow: find biggest consumers", "Map: sections, sizes, symbol addresses", "Check vars landed in intended section"],
+    answer: "The common ones: <b>undefined reference</b> means the linker can't find a definition, so the object or library isn't in the build, the name or signature differs, the function is static in another file, or a C function is called from C++ without <code>extern \"C\"</code>. <b>Multiple definition</b> usually means a variable is defined, not just declared, in a header included by several files; the fix is <code>extern</code> in the header and one definition in a .c file. Newer GCC versions default to <code>-fno-common</code>, so legacy code that relied on tentative definitions starts failing. <b>Region overflow</b> means a section doesn't fit its memory region.<br>The <strong>map file</strong> is my main tool: it lists memory regions and their usage, each output section with its address and size, which object contributed how many bytes, symbol addresses, and discarded sections. I use it to find what grew the flash or RAM, to confirm a variable really landed in the intended section, for example no-init RAM or core-local RAM after a MemMap change, and to look up an address from a crash. During BSW integration on RH850, MemMap and section placement were a common source of issues. [fill: a concrete linker or MemMap issue you resolved during RH850 integration]",
+    followups: ["How would you track flash usage growth in CI?", "What is the difference between a declaration and a definition?"]
+  },
+
+  {
+    id: "embedded-25",
+    topic: "embedded",
+    type: "theory",
+    q: "How do you write portable, reusable and modular embedded software?",
+    tags: ["portability", "HAL", "abstraction", "modular", "Compiler.h", "MemMap", "Platform_Types", "AUTOSAR layers", "tái sử dụng", "khả chuyển"],
+    key: ["Layering: app / services / HAL (MCAL)", "Hardware only behind driver interfaces", "Compiler specifics in one abstraction header", "Separate config from code", "Clear headers, static internals, no globals"],
+    answer: "The main idea is to keep hardware and compiler dependencies in as few places as possible. <b>Layering</b>: application logic talks to services, services talk to a hardware abstraction layer, and only the lowest layer touches registers. AUTOSAR Classic is the formal version of this: SWCs see the RTE, the BSW sits on the MCAL, and only the MCAL is MCU-specific, so the same application runs on RH850 or AURIX with a different MCAL.<br><b>Compiler and platform abstraction</b>: types from Platform_Types.h, compiler-specific keywords and pragmas behind macros in Compiler.h, and memory placement through MemMap headers that translate to the right <code>#pragma section</code> for each toolchain. No inline assembly or intrinsics scattered through the code.<br><b>Configuration separated from code</b>: channel counts, IDs and feature switches live in generated config files, so the same source is reused across projects.<br><b>Module discipline</b>: a small public header, everything else static, no shared globals, clear init and main function, and no assumptions about endianness, int size or alignment. And unit tests on host or VECU, which only work if the hardware is abstracted.",
+    code: "/* Classic AUTOSAR style: compiler/memory abstraction */\n#define CANIF_START_SEC_CODE\n#include \"CanIf_MemMap.h\"\nFUNC(Std_ReturnType, CANIF_CODE) CanIf_Transmit(\n    PduIdType TxPduId,\n    P2CONST(PduInfoType, AUTOMATIC, CANIF_APPL_DATA) PduInfoPtr);\n#define CANIF_STOP_SEC_CODE\n#include \"CanIf_MemMap.h\"",
+    lang: "c",
+    followups: ["What is the difference between pre-compile, link-time and post-build configuration?", "How does a HAL help unit testing?"]
+  },
+
+  {
+    id: "embedded-26",
+    topic: "embedded",
+    type: "theory",
+    q: "What parts of C++ are fine in embedded, and what do you avoid? What does a virtual call cost?",
+    tags: ["C++", "RAII", "virtual", "vtable", "exceptions", "RTTI", "templates", "constexpr", "C++ nhúng"],
+    key: ["Use: classes, RAII, templates, constexpr, std::array", "Avoid in RT: heap, exceptions, RTTI", "Virtual: vptr/object, vtable/class, no inline", "Static polymorphism (templates/CRTP) as alternative", "Mind global constructor order"],
+    answer: "I use the zero-cost parts: <b>classes</b> for encapsulation, <b>RAII</b>, for example a lock guard whose constructor enters a critical section and destructor leaves it, so no early return can forget to restore interrupts, <b>templates</b> and <b>constexpr</b> for compile-time computation, <code>std::array</code> instead of raw arrays, namespaces, and <code>enum class</code>.<br>I avoid, at least in real-time or safety code: <b>heap</b> usage including most STL containers, <b>exceptions</b>, which cost flash and have non-deterministic unwinding, so they're usually disabled with <code>-fno-exceptions</code>, and <b>RTTI</b>. These are also restricted by AUTOSAR C++14 and MISRA C++ guidelines.<br>A <b>virtual call</b> costs one hidden vptr per object, one vtable per class in flash, and an indirect call through the table. The call itself is only a few cycles, but it prevents inlining. For fixed configurations, templates or CRTP give static polymorphism at zero runtime cost, and <code>final</code> lets the compiler devirtualize. Also watch global constructors: they run in startup before main, and their order across files is unspecified.",
+    code: "class IrqLock {\npublic:\n    IrqLock()  : saved_(Irq_SaveAndDisable()) {}\n    ~IrqLock() { Irq_Restore(saved_); }\n    IrqLock(const IrqLock&) = delete;\n    IrqLock& operator=(const IrqLock&) = delete;\nprivate:\n    uint32_t saved_;\n};\n\nvoid Update() {\n    IrqLock lock;           // restored on every return path\n    g_shared++;\n}",
+    lang: "cpp",
+    followups: ["Why does a polymorphic base class need a virtual destructor?", "What is CRTP?"]
+  },
+
+  {
+    id: "embedded-27",
+    topic: "embedded",
+    type: "practical",
+    q: "Walk me through bringing up a peripheral from the datasheet and reference manual. What goes wrong most often?",
+    tags: ["datasheet", "reference manual", "peripheral bring-up", "clock gating", "pin mux", "errata", "TRACE32 register view", "đọc datasheet", "khởi tạo ngoại vi"],
+    key: ["Read chapter overview + init sequence", "Clock enable / module standby first", "Pin mux (PORT/alternate function)", "Config registers, then interrupt, then enable", "Check errata; verify in debugger + scope"],
+    answer: "I start with the peripheral chapter overview and block diagram, then look for the <b>initialization sequence</b> the manual recommends, because order often matters. My checklist: first, the peripheral's <strong>clock</strong>, its clock source, prescaler, and releasing it from module standby or clock gating. Second, <strong>pin configuration</strong>: port mode and alternate function, on RH850 that's registers like PMC and PFC, plus direction, pull-ups, drive strength. Third, the peripheral's own <strong>configuration registers</strong> with the module disabled, then the <strong>interrupt</strong> controller channel and priority, and only then enable the module. I also check for write-protected registers that need an unlock sequence, the electrical and timing characteristics in the datasheet, and the <b>errata sheet</b>, which has saved people days.<br>To verify, I look at the registers in TRACE32 or UDE and compare them bit by bit with what I intended, and use a scope or logic analyzer on the pins. The most frequent causes of a silent peripheral are a missing clock enable, wrong pin mux, and an interrupt enabled at the peripheral but not at the controller. [fill: a peripheral you brought up or debugged and what the actual root cause was]",
+    followups: ["How do you confirm the PLL is really running at the expected frequency?", "What is an errata sheet?"]
+  },
+
+  {
+    id: "embedded-28",
+    topic: "embedded",
+    type: "practical",
+    bridge: true,
+    q: "The JD lists Freescale/NXP PowerPC, TI DSP and Microchip. Have you worked with those, and how would you ramp up on a new MCU family?",
+    tags: ["new MCU", "PowerPC", "NXP", "Freescale", "TI DSP", "C2000", "Microchip", "ramp-up", "bridge", "học MCU mới"],
+    key: ["Honest: hands-on RH850, Infineon, ST", "Core manual: ABI, interrupts, endianness", "Toolchain, startup, linker, errata", "Blinky -> timer ISR -> comm peripheral", "Watch traps: PPC big-endian, C28x 16-bit char"],
+    answer: "To be honest, my hands-on targets are Renesas RH850 D3/D4/D5, Infineon and ST, plus R-Car and Raspberry Pi on the Adaptive side. I haven't worked directly on NXP PowerPC, TI DSPs or Microchip parts. But the concepts transfer, and I have a routine for ramping up.<br>First the <b>core architecture manual</b>: register set, calling convention, interrupt and exception model, memory map, endianness and alignment rules. Then the <b>toolchain</b>: compiler options, intrinsics, startup code and linker script, and the <b>errata</b>. Then a staged bring-up: clock and a GPIO toggle, a timer interrupt, then a communication peripheral, verifying each in the debugger. TRACE32, which I know well, supports all of these families, so the debug workflow stays familiar.<br>I'd also watch for family-specific traps. The PowerPC e200 cores in NXP MPC5xxx parts are big-endian, so byte-order assumptions in shared code break. TI C28x DSPs have a 16-bit char, so there's no uint8_t and sizeof behaves differently. 16-bit Microchip parts have a 16-bit int. With AUTOSAR the MCAL hides most of this from the upper layers, so the integration work carries over directly.",
+    followups: ["What would you check first when porting an RH850 BSW integration to a PowerPC target?", "How long do you think you'd need to become productive?"]
+  },
+
+  /* =============================== PROTOCOLS =============================== */
+
+  {
+    id: "protocols-01",
+    topic: "protocols",
+    type: "theory",
+    q: "Explain UART framing and how baud rate error affects communication. Can you calculate one?",
+    tags: ["UART", "framing", "8N1", "baud rate", "baud error", "oversampling", "parity", "framing error", "truyền nối tiếp"],
+    key: ["Idle high; start 0, data LSB first, parity, stop 1", "8N1 = 10 bits per byte", "Receiver syncs on start edge, samples mid-bit", "Keep each side under ~2% error", "16 MHz, x16, 115200: div 9 -> -3.5%"],
+    answer: "UART is asynchronous, there's no clock line, so both sides agree on the format beforehand. The line idles high; a frame is a <b>start bit</b> at 0, 5 to 9 data bits LSB first, optional parity, and one or two <b>stop bits</b> at 1. With 8N1 that's 10 bit times per byte, so 80 percent efficiency.<br>The receiver synchronizes on the falling edge of the start bit and then samples each bit near its middle, typically with 16x oversampling and majority voting. Because it only resynchronizes once per frame, clock mismatch accumulates over the frame, and by the stop bit the sample point must still be inside the bit. That gives a theoretical total budget of a few percent, around 4 to 5 percent between both sides, so in practice we keep each side under about 2 percent. Otherwise you get framing errors or garbage.<br>Example: 16 MHz peripheral clock, 16x oversampling, target 115200. The divider is 16 MHz over 16 times 115200, which is 8.68. An integer divider of 9 gives 111111 baud, <b>minus 3.5 percent</b>, too much. A fractional divider of 8.6875 gives about 115108, under 0.1 percent, or you pick a crystal that divides cleanly.",
+    followups: ["What must match between two UART devices?", "What is the difference between a framing error and an overrun error?"]
+  },
+
+  {
+    id: "protocols-02",
+    topic: "protocols",
+    type: "theory",
+    q: "Explain SPI: signals, the four modes, chip select behaviour and typical problems.",
+    tags: ["SPI", "CPOL", "CPHA", "SPI mode", "chip select", "MOSI", "MISO", "full-duplex", "daisy chain", "giao tiếp SPI"],
+    key: ["SCLK, MOSI, MISO + one CS per slave", "Synchronous, full-duplex, master-driven clock", "CPOL = idle level, CPHA = sample edge", "Mode 0: idle low, sample rising", "No ACK: verify with readback/CRC"],
+    answer: "SPI is synchronous and full-duplex: the master drives SCLK, shifts data out on MOSI and simultaneously in on MISO, so every transfer is an exchange. Each slave has its own <strong>chip select</strong>, usually active low; many devices also use the CS edge to frame a command, so deasserting CS between bytes can abort a transaction or, on some devices, is required to latch it.<br>The mode is <b>CPOL</b>, the idle level of the clock, and <b>CPHA</b>, whether data is sampled on the first or second clock edge. Mode 0 is idle low, sample on the rising edge, the most common; mode 3 is idle high, sample on the rising, which is the second edge. Master and slave must match, otherwise every bit is shifted by half a clock and you read garbage or values off by a factor of two.<br>Typical problems: wrong mode, CS setup and hold times violated, clock too fast for the slave or the wiring, MSB versus LSB first, and word size. SPI has <strong>no acknowledge</strong>, so the master can't tell if a slave is even present; you verify by reading back an ID register, or with a CRC in the protocol, as many automotive SBCs and sensors do.",
+    followups: ["How would you debug an SPI sensor that always returns 0xFF?", "What is daisy chaining in SPI?"]
+  },
+
+  {
+    id: "protocols-03",
+    topic: "protocols",
+    type: "theory",
+    q: "Explain I2C: addressing, ACK/NACK, clock stretching and arbitration.",
+    tags: ["I2C", "SDA", "SCL", "open-drain", "7-bit address", "ACK NACK", "clock stretching", "repeated start", "arbitration", "giao tiếp I2C"],
+    key: ["2 wires, open-drain + pull-ups", "START, addr(7) + R/W, ACK per byte, STOP", "NACK: no device, busy, or end of read", "Clock stretching: slave holds SCL low", "Arbitration: wired-AND, loser backs off"],
+    answer: "I2C uses two open-drain lines, SDA and SCL, with pull-up resistors, so any device can pull a line low and a high level means everyone released it. A transaction starts with a <b>START</b>, SDA falling while SCL is high, then a 7-bit address plus the R/W bit, then every byte is followed by an <b>ACK</b> bit on the ninth clock where the receiver pulls SDA low. It ends with a <b>STOP</b>, SDA rising while SCL is high. A <b>repeated START</b> lets the master write a register address and then read without releasing the bus. There's also 10-bit addressing using a reserved prefix.<br>A <b>NACK</b> after the address means no device answered or it's busy; a NACK from the master after the last byte of a read is normal and tells the slave to stop sending.<br><b>Clock stretching</b>: a slave that needs time holds SCL low after a byte, and the master must wait until SCL actually goes high. Masters that ignore it cause corrupted data.<br><b>Arbitration</b>: in multi-master setups, a master that sends a 1 but sees a 0 on SDA has lost and stops, without destroying the winner's frame. Speeds are 100k, 400k, 1 MHz Fast-mode Plus, and 3.4 MHz high-speed.",
+    followups: ["How do you choose the pull-up resistor value?", "What happens if two devices have the same address?"]
+  },
+
+  {
+    id: "protocols-04",
+    topic: "protocols",
+    type: "practical",
+    q: "The I2C bus is stuck: SDA stays low and the master can't generate a START. What happened and how do you recover?",
+    tags: ["I2C bus stuck", "bus recovery", "SDA low", "9 clocks", "reset", "timeout", "khôi phục bus", "treo bus"],
+    key: ["Usual cause: master reset mid-transfer", "Slave still driving a 0 bit / ACK", "Recovery: switch SCL to GPIO, clock up to 9 times", "Then generate STOP, reinit controller", "Prevent: timeouts, slave reset pin"],
+    answer: "The typical cause is that the master was reset or aborted in the middle of a read while a slave was driving a 0 on SDA. The slave is still waiting for clocks to finish its byte, and it will hold SDA low forever because nothing clocks it. The master sees a busy bus and can't generate a START.<br>The standard recovery, also described in the I2C specification, is: reconfigure SCL as a GPIO, open-drain, and toggle it up to <b>nine times</b> while watching SDA. At some point the slave finishes shifting out its byte and releases SDA, or sees a NACK and stops. Once SDA is high, generate a <b>STOP</b> condition manually, then hand the pins back to the I2C peripheral and reinitialize the controller, which may itself be stuck in a busy state and need a reset.<br>If that fails, use a hardware reset line of the slave or power-cycle it. To prevent and detect it: run the recovery sequence at startup by default, put timeouts on every I2C operation, similar to the SMBus 35 ms timeout, and check for a low SDA before the first transaction. Also check pull-up strength and bus capacitance, since slow rise times cause similar symptoms.",
+    followups: ["Why nine clocks?", "How would you detect a stuck bus in the driver automatically?"]
+  },
+
+  {
+    id: "protocols-05",
+    topic: "protocols",
+    type: "theory",
+    q: "How does the 1-Wire protocol work?",
+    tags: ["1-Wire", "OneWire", "reset pulse", "presence pulse", "ROM ID", "search ROM", "DS18B20", "parasitic power", "giao thức 1 dây"],
+    key: ["One data line + ground, open-drain, pull-up", "Reset ~480 µs low -> presence pulse", "Bits in time slots (~60 µs), master starts each", "64-bit ROM: family + serial + CRC8", "Commands: Skip/Match/Search ROM"],
+    answer: "1-Wire uses a single open-drain data line plus ground, with a pull-up; devices can even be powered parasitically from the data line. It's master-driven and timing-based, standard speed is about 15 kbit/s.<br>Every transaction starts with a <b>reset pulse</b>: the master pulls the line low for at least 480 µs and releases it; each present slave answers with a <b>presence pulse</b>, pulling low for roughly 60 to 240 µs. Then data moves in <b>time slots</b> of about 60 µs, each started by the master pulling low. To write a 1 it releases after a few microseconds; to write a 0 it holds low for most of the slot. To read, it pulls low briefly, releases, and samples within about 15 µs: if the slave holds the line low, it's a 0.<br>Each device has a unique <b>64-bit ROM code</b>: 8-bit family code, 48-bit serial number and a CRC-8. ROM commands select devices: Skip ROM for a single device, Match ROM to address one, and Search ROM, a binary-tree algorithm to discover all IDs on the bus. Then function commands follow, for a DS18B20 temperature sensor for example Convert T and Read Scratchpad. [fill: where you used 1-Wire, for example which device and platform]",
+    followups: ["How does the Search ROM algorithm find all devices?", "Why do interrupts cause problems with bit-banged 1-Wire?"]
+  },
+
+  {
+    id: "protocols-06",
+    topic: "protocols",
+    type: "theory",
+    q: "Describe the classical CAN data frame and how arbitration works.",
+    tags: ["CAN", "CAN frame", "arbitration", "dominant", "recessive", "identifier", "CSMA/CR", "DLC", "khung CAN", "phân xử"],
+    key: ["SOF, ID+RTR, IDE/r0/DLC, 0-8 data, CRC15, ACK, EOF", "Dominant 0 overrides recessive 1 (wired-AND)", "Bitwise, non-destructive: lowest ID wins", "Losers retry automatically", "Message-based, not node addresses"],
+    answer: "A classical CAN data frame has: <b>SOF</b>, one dominant bit; the <b>arbitration field</b>, an 11-bit identifier plus RTR, or 29 bits for extended frames; the <b>control field</b> with IDE, a reserved bit and the 4-bit DLC; 0 to 8 <b>data bytes</b>; a 15-bit <b>CRC</b> plus delimiter; the <b>ACK slot</b>, where any receiver that got the frame correctly overwrites the transmitter's recessive bit with dominant, plus delimiter; and 7 recessive bits of <b>EOF</b>, followed by 3 bits intermission.<br>The bus is wired-AND: a <strong>dominant 0 overrides a recessive 1</strong>. Every node may start transmitting when the bus is idle. During the arbitration field, each transmitter reads back every bit it sends. A node that sends recessive but reads dominant knows a higher-priority frame is on the bus, stops sending and becomes a receiver. So the <strong>lowest identifier wins</strong>, and the winning frame is never damaged, which is why it's called non-destructive, CSMA/CR. The loser retries automatically after the frame.<br>For the same base ID, a data frame beats a remote frame, and a standard frame beats an extended one. CAN addresses messages, not nodes, so the ID also defines the priority, which is why ID assignment is part of the network design.",
+    followups: ["Why can two nodes never send the same ID at the same time?", "What does a missing ACK tell you?"]
+  },
+
+  {
+    id: "protocols-07",
+    topic: "protocols",
+    type: "theory",
+    q: "Explain CAN bit stuffing, error detection and fault confinement up to bus-off.",
+    tags: ["bit stuffing", "error frame", "TEC", "REC", "error passive", "bus-off", "CanSM", "fault confinement", "lỗi CAN", "bus-off"],
+    key: ["Stuff bit after 5 equal bits (SOF..CRC)", "5 checks: bit, stuff, CRC, form, ACK", "Error-active below 128, passive at 128+", "Bus-off when TEC > 255", "Recover after 128 x 11 recessive bits"],
+    answer: "<b>Bit stuffing</b>: CAN is NRZ, so after five consecutive bits of the same level the transmitter inserts one bit of the opposite level, from SOF to the end of the CRC sequence. This guarantees edges for receiver resynchronization; the fixed-form fields like delimiters, ACK and EOF are not stuffed.<br>There are five <b>error detection</b> mechanisms: <b>bit</b> error, when a transmitter reads back a different level outside arbitration and the ACK slot; <b>stuff</b> error, six equal bits; <b>CRC</b> error; <b>form</b> error, a fixed-format bit with the wrong value; and <b>ACK</b> error, when nobody acknowledged. A node detecting an error sends an error frame, which destroys the frame for everyone, and the transmitter retries.<br><b>Fault confinement</b> uses a transmit and a receive error counter. Roughly, a transmit error adds 8, a receive error adds 1, and successful frames decrement them. Below 128 a node is <b>error-active</b> and sends dominant error flags. At 128 or more it's <b>error-passive</b>: it sends recessive flags and waits extra before retransmitting, so it can't disrupt the bus. When the TEC exceeds 255 the node goes <b>bus-off</b> and stops transmitting until it has seen 128 sequences of 11 recessive bits and software requests recovery. In AUTOSAR, CanSM handles bus-off recovery and reports it to Dem.",
+    followups: ["Why does a single node alone on the bus not go bus-off from ACK errors?", "How does CanSM recover from bus-off?"]
+  },
+
+  {
+    id: "protocols-08",
+    topic: "protocols",
+    type: "theory",
+    q: "What are the differences between classical CAN and CAN FD?",
+    tags: ["CAN FD", "BRS", "FDF", "ESI", "64 bytes", "CRC-17", "CRC-21", "data phase", "bit rate switch", "CAN tốc độ cao"],
+    key: ["Payload up to 64 bytes (DLC 9-15 -> 12..64)", "BRS: faster data phase, same arbitration", "New bits: FDF, BRS, ESI; no remote frames", "CRC-17/21 + stuff bit count", "Needs FD transceivers + two bit timings"],
+    answer: "CAN FD keeps the arbitration mechanism but changes three main things. First, <strong>payload</strong> up to 64 bytes instead of 8. DLC values 9 to 15 map to 12, 16, 20, 24, 32, 48 and 64 bytes, so Com and PDU lengths must use those sizes, with padding.<br>Second, <strong>bit rate switching</strong>: arbitration runs at the nominal rate, typically 500 kbit/s, so all nodes can still compete, and after the BRS bit the data phase switches to a higher rate, often 2 Mbit/s or more, switching back at the CRC delimiter. That needs two bit-timing configurations, and at high data rates transmitter delay compensation.<br>Third, <strong>robustness</strong>: a stronger CRC, CRC-17 for up to 16 bytes and CRC-21 above, plus a stuff-bit counter and fixed stuff bits in the CRC field, because the classical CRC had a weakness with stuff bits.<br>New control bits: <b>FDF</b> marks an FD frame, <b>BRS</b> selects rate switching, <b>ESI</b> shows if the transmitter is error-passive. Remote frames don't exist in FD. Practically, a classical CAN controller on the same bus will destroy FD frames with error frames, so all nodes must be FD-tolerant, and transceivers must be rated for the data rate.",
+    followups: ["Why is arbitration still limited to about 1 Mbit/s?", "What is transmitter delay compensation?"]
+  },
+
+  {
+    id: "protocols-09",
+    topic: "protocols",
+    type: "practical",
+    q: "How is CAN bit timing configured, and how do you choose the sample point?",
+    tags: ["CAN bit timing", "time quantum", "TQ", "sample point", "SJW", "prescaler", "TSEG1", "TSEG2", "resynchronization", "điểm lấy mẫu"],
+    key: ["Bit = Sync(1) + Prop + Phase1 + Phase2 in TQ", "Sample point = end of Phase1", "Typical SP 75-87.5% (CiA: 87.5%)", "SJW limits resync correction", "All nodes: same rate, similar SP"],
+    answer: "A CAN bit is divided into <strong>time quanta</strong>, derived from the CAN clock through a prescaler. The bit consists of the <b>Sync segment</b>, always 1 TQ, where an edge is expected, the <b>propagation segment</b> compensating for bus and transceiver delays, <b>Phase segment 1</b>, and <b>Phase segment 2</b>. The <strong>sample point</strong> is at the end of Phase 1; in many controllers Prop and Phase 1 are combined into TSEG1. The <b>SJW</b>, synchronization jump width, is how much the controller may lengthen Phase 1 or shorten Phase 2 when it resynchronizes on an edge, to absorb oscillator tolerance.<br>Example: 80 MHz CAN clock and 500 kbit/s means 160 clocks per bit. With prescaler 10, a bit is 16 TQ: Sync 1, TSEG1 13, TSEG2 2, which puts the sample point at 14 over 16, <b>87.5 percent</b>. CiA recommends around 87.5 percent for classical CAN; CAN FD data phases often use lower values like 70 to 80 percent.<br>A late sample point tolerates longer buses and slow edges; an earlier one gives more room for resynchronization. All nodes must use the same bit rate and a consistent sample point, usually defined by the OEM. A mismatch shows up as error frames that appear only with certain nodes or cable lengths.",
+    followups: ["What symptoms do you see in CANoe with a wrong sample point?", "Why are more time quanta per bit usually better?"]
+  },
+
+  {
+    id: "protocols-10",
+    topic: "protocols",
+    type: "theory",
+    q: "Explain the SENT protocol (SAE J2716): how is data encoded and what does a fast-channel frame look like?",
+    tags: ["SENT", "SAE J2716", "nibble", "tick", "calibration pulse", "sync pulse", "fast channel", "pause pulse", "cảm biến SENT", "giao thức SENT"],
+    key: ["Unidirectional sensor -> ECU, one signal wire", "Data = time between falling edges, in ticks", "Tick 3-90 µs; sync/calibration = 56 ticks", "Nibble = 12-27 ticks -> value 0-15", "Frame: sync, status, up to 6 data, CRC4, [pause]"],
+    answer: "SENT, Single Edge Nibble Transmission, is a <b>unidirectional, point-to-point</b> protocol from a sensor to an ECU, typically for pressure, position or flow sensors. Physically it's one signal line plus supply and ground, with no clock and no addressing. The information is encoded in <strong>time</strong>: the interval between two consecutive falling edges, measured in <strong>ticks</strong>. The tick is chosen by the sensor, between 3 and 90 µs, 3 µs being common.<br>Every frame starts with a <b>synchronization/calibration pulse</b> of 56 ticks. Because the sensor's clock may deviate up to plus or minus 20 percent, the receiver measures this pulse, divides by 56 and uses that as the actual tick for the frame. Each <b>nibble</b> pulse has a short fixed low phase and a variable high phase; its total length is 12 to 27 ticks, so the value is the tick count minus 12, from 0 to 15.<br>A fast-channel frame is: calibration pulse, a <b>status and communication nibble</b>, typically six <b>data nibbles</b>, for example two 12-bit signals, a <b>CRC-4</b> nibble over the data nibbles, and an optional <b>pause pulse</b> that makes the total frame length constant.<br>This was a core part of my work, the SENT stack automation and SENT defects on ST and Infineon targets.",
+    followups: ["Why is SENT sensitive to jitter?", "How long is a frame with six data nibbles?", "Why is there no ACK?"]
+  },
+
+  {
+    id: "protocols-11",
+    topic: "protocols",
+    type: "theory",
+    q: "Go deeper on SENT: slow channel, CRC, clock tolerance checks and the pause pulse.",
+    tags: ["SENT slow channel", "short serial message", "enhanced serial message", "CRC-4", "calibration tolerance", "1/64", "pause pulse", "SPC", "kênh chậm"],
+    key: ["Status nibble bits 2/3 carry slow channel", "Short serial msg: 16 frames, 4-bit ID, 8-bit data", "Enhanced: 18 frames, CRC-6, 12/16-bit data", "Successive cal. pulses within 1/64 (~1.56%)", "Pause 12-768 ticks -> constant frame length"],
+    answer: "The <strong>slow channel</strong> is built from two bits of the status nibble, spread over many frames, so it carries slowly changing data like sensor ID, diagnostics or temperature. The <b>short serial message</b> uses 16 frames: bit 3 marks the start, bit 2 carries 16 bits made of a 4-bit ID, 8-bit data and a 4-bit CRC. The <b>enhanced serial message</b> uses 18 frames, both bits, a sync pattern, and allows 12-bit data with 8-bit ID or 16-bit data with 4-bit ID, protected by a 6-bit CRC. The other two status bits are application specific, often error flags.<br>The <strong>CRC-4</strong> covers the data nibbles, with polynomial x⁴+x³+x²+1 and seed 0101. There's a legacy variant and the recommended variant from the 2010 revision that adds an extra zero nibble, and sensor and receiver must agree on which, a classic interoperability issue.<br><b>Clock checks</b>: besides the plus or minus 20 percent nominal tolerance, the receiver compares each calibration pulse with the previous one, and rejects the frame if they differ by more than 1/64, about 1.56 percent. Some implementations also check that the frame length matches the calibration.<br>The <b>pause pulse</b>, 12 to 768 ticks, pads frames to a constant length. The related SPC variant adds ECU-triggered transmission.",
+    followups: ["What does the receiver do with a frame that fails the calibration check?", "How do you configure a receiver for frames with vs without pause?"]
+  },
+
+  {
+    id: "protocols-12",
+    topic: "protocols",
+    type: "practical",
+    q: "How do you measure and decode SENT with an input capture unit, and what timing defects are typical? Tell me about one you debugged.",
+    tags: ["SENT", "ICU", "input capture", "timestamp", "timing defect", "UDE", "jitter", "prescaler", "ST", "Infineon", "đo xung", "lỗi timing"],
+    key: ["Capture falling-edge timestamps (ICU timestamp/DMA)", "tick = cal/56; nibble = round(dt/tick) - 12", "Timer resolution vs range (overflow)", "Defects: rounding, missed edges, wrong CRC variant", "Debug: UDE + scope, cross-check ST vs Infineon"],
+    answer: "Decoding means timestamping every <b>falling edge</b>. With an ICU in timestamp mode, ideally filled by DMA or a dedicated SENT receiver module, I get a buffer of edge times. The calibration interval divided by 56 gives the tick; each nibble is the interval divided by the tick, <b>rounded</b>, minus 12, and must be between 0 and 15. Then check the calibration against the previous one, verify the CRC and assemble the signals.<br>Typical defects: timer <b>prescaler</b> trade-off, too coarse loses resolution, too fine overflows on long pulses like the pause or a 90 µs tick; <b>truncation instead of rounding</b>, giving nibbles off by one near boundaries; <b>missed edges</b> when capture relies on an ISR that's delayed by higher-priority interrupts; wrong <b>CRC variant</b> or wrong frame-with-pause configuration; and receiver tolerance windows set too tight for a real sensor's clock drift.<br>On ST and Infineon targets I debugged SENT timing and signal-behavior defects with UDE: I compared the measured pulse timing against J2716, ran the same software on both targets to separate hardware from software, and checked timer and clock configuration. [fill: which SENT parameter was out of spec, the root cause, and the fix] Afterwards the case went into the automated test suite.",
+    code: "/* ts[]: 16-bit falling-edge timestamps; unsigned diff handles one wrap */\nuint32_t cal      = (uint16_t)(ts[1] - ts[0]);\nuint32_t tick_x64 = (cal * 64u) / 56u;          /* tick, scaled x64 */\nfor (i = 0u; i < 8u; i++) {                      /* status + 6 data + CRC */\n    uint32_t dt    = (uint16_t)(ts[i + 2u] - ts[i + 1u]);\n    uint32_t ticks = ((dt * 64u) + (tick_x64 / 2u)) / tick_x64;  /* round */\n    if ((ticks < 12u) || (ticks > 27u)) { return SENT_E_NIBBLE; }\n    nib[i] = (uint8)(ticks - 12u);\n}",
+    lang: "c",
+    followups: ["Why use timestamp mode rather than an ISR per edge?", "How did you isolate hardware vs software causes?", "How did you turn the fix into an automated test?"]
+  },
+
+  {
+    id: "protocols-13",
+    topic: "protocols",
+    type: "theory",
+    q: "Walk me through the main UDS services, the response format and the common NRCs.",
+    tags: ["UDS", "ISO 14229", "SID", "NRC", "negative response", "0x22", "0x2E", "0x19", "0x14", "0x31", "0x11", "chẩn đoán"],
+    key: ["Positive = SID + 0x40; negative = 7F SID NRC", "10 session, 11 reset, 22/2E DID, 27 security", "19 read DTC, 14 clear DTC, 31 routine", "34/36/37 download; 3E tester present", "NRC 11,12,13,22,31,33,35,78,7F"],
+    answer: "UDS is request/response between tester and ECU; in AUTOSAR the Dcm handles it, with Dem providing the DTCs. A <b>positive response</b> echoes the SID plus 0x40, a <b>negative response</b> is <code>7F</code>, the SID, and an NRC.<br>The main services: <b>0x10</b> DiagnosticSessionControl; <b>0x11</b> ECUReset, hard, key-off-on or soft; <b>0x22</b> ReadDataByIdentifier and <b>0x2E</b> WriteDataByIdentifier for DIDs, like 22 F1 90 for the VIN; <b>0x27</b> SecurityAccess; <b>0x19</b> ReadDTCInformation, for example sub-function 02 to report DTCs by status mask; <b>0x14</b> ClearDiagnosticInformation, FFFFFF for all groups; <b>0x31</b> RoutineControl with start, stop and request results; <b>0x34</b>, <b>0x36</b>, <b>0x37</b> RequestDownload, TransferData and RequestTransferExit for flashing; <b>0x3E</b> TesterPresent. Setting bit 7 of the sub-function suppresses the positive response.<br>Common NRCs: <b>0x11</b> service not supported, <b>0x12</b> sub-function not supported, <b>0x13</b> incorrect length, <b>0x22</b> conditions not correct, <b>0x24</b> request sequence error, <b>0x31</b> request out of range, <b>0x33</b> security access denied, <b>0x35</b> invalid key, <b>0x78</b> response pending, and <b>0x7F</b> service not supported in active session.",
+    followups: ["What is the DTC status byte?", "What does 0x7E mean compared to 0x7F?"]
+  },
+
+  {
+    id: "protocols-14",
+    topic: "protocols",
+    type: "theory",
+    q: "Explain UDS sessions, security access and the P2/P2* timing with response pending.",
+    tags: ["UDS session", "0x10", "security access", "0x27", "seed key", "P2", "P2*", "0x78", "S3", "TesterPresent", "phiên chẩn đoán"],
+    key: ["Sessions: 01 default, 02 programming, 03 extended", "S3 ~5 s: no TesterPresent -> back to default", "27 odd = seed, even = key; NRC 35/36/37", "P2 default 50 ms, P2* 5000 ms", "0x78 extends wait to P2*"],
+    answer: "An ECU is always in a <b>session</b>: 01 default after reset, 02 programming for flashing, 03 extended for more services like writing DIDs or routines. The 0x10 positive response returns the P2 and P2* values the ECU uses. In a non-default session the tester sends <b>TesterPresent 0x3E</b> periodically; if nothing arrives for S3, about 5 seconds, the ECU falls back to default, which also relocks security.<br><b>Security access 0x27</b> is a seed-and-key challenge: an odd sub-function requests a seed for that level, the ECU returns a random seed, the tester computes the key with a secret algorithm and sends it with the next even sub-function. Wrong key gives NRC 0x35, too many attempts 0x36, and during the lockout delay 0x37; sending a key without requesting a seed gives 0x24. If the level is already unlocked, the seed is all zeros.<br><b>Timing</b>: P2 is the maximum time for the ECU to start responding, 50 ms by default. If a request takes longer, for example erasing flash, the ECU sends NRC <b>0x78 responsePending</b>, which extends the tester's timeout to <b>P2*</b>, 5000 ms by default, and it can repeat 0x78 until done. Forgetting 0x78 for a slow routine is a typical cause of tester timeouts.",
+    followups: ["Why does the security level reset on session change?", "Who is responsible for sending 0x78 in AUTOSAR, the Dcm or the application?"]
+  },
+
+  {
+    id: "protocols-15",
+    topic: "protocols",
+    type: "practical",
+    q: "Describe a typical UDS reprogramming (flashing) sequence using 0x34, 0x36 and 0x37.",
+    tags: ["UDS flashing", "reprogramming", "0x34", "0x36", "0x37", "RequestDownload", "TransferData", "bootloader", "block sequence counter", "nạp phần mềm"],
+    key: ["Extended session, preconditions, 85 off, 28 comm off", "10 02 programming -> 27 unlock", "31 erase -> 34 download (max block length)", "36 blocks with sequence counter -> 37 exit", "31 check dependencies -> 11 reset"],
+    answer: "The exact sequence is OEM-specific, but the typical flow is: switch to <b>extended session</b> 10 03, run a routine checking preconditions like vehicle speed zero, disable DTC setting with <b>85 02</b>, and silence normal communication with <b>28</b> CommunicationControl. Then <b>10 02</b> programming session, which usually jumps into the bootloader, and <b>27</b> to unlock the programming security level. Often a fingerprint DID is written with 2E.<br>Then <b>31 01 FF 00</b> erase memory, the ISO-defined routine ID, using response pending while the erase runs. <b>34 RequestDownload</b> gives the data format, the address and the size; the positive response 74 returns the <b>maximum block length</b>. Then <b>36 TransferData</b> repeats with a <b>block sequence counter</b> starting at 01 and wrapping from FF to 00; a wrong counter gives NRC 0x73, and repeating the last block is allowed for retries. <b>37 RequestTransferExit</b> closes the download.<br>Then <b>31 01 FF 01</b> check programming dependencies, or an OEM checksum routine, and finally <b>11 01</b> hard reset so the ECU starts the new application. [fill: whether you ran or tested a flash sequence yourself, and with which tool, e.g. CANoe]",
+    followups: ["What happens if power is lost in the middle of flashing?", "Why disable DTC setting and normal communication before flashing?"]
+  },
+
+  {
+    id: "protocols-16",
+    topic: "protocols",
+    type: "practical",
+    q: "After integration, the ECU doesn't send or receive CAN messages. How do you debug it?",
+    tags: ["CAN debugging", "CANoe", "no communication", "termination", "transceiver", "error frames", "CanIf", "Com", "PduR", "BswM", "gỡ lỗi CAN"],
+    key: ["Physical: 60 Ω termination, supply, transceiver enable", "CANoe: error frames? ACK errors? bit timing", "Controller started? CanSM/ComM state", "Com I-PDU group started via BswM", "Trace Com -> PduR -> CanIf -> Can, check HOH/filters"],
+    answer: "I go bottom-up. <b>Physical layer</b>: measure about 60 ohms between CAN_H and CAN_L with power off for two terminations, check the transceiver supply and that its standby or enable pin is actually driven to normal mode, which is often controlled by the Dio config or an SBC over SPI.<br><b>Bus level in CANoe</b>: if CANoe shows error frames or the ECU goes bus-off, suspect bit timing, baud rate or sample point mismatch. If the ECU is alone and nobody acknowledges, it will keep retransmitting with ACK errors, so CANoe must be active on the bus to acknowledge.<br><b>Controller and state machines</b>: is the CAN controller really in STARTED mode? That depends on EcuM and BswM requesting communication through ComM and CanSM. A very common cause is that the <b>Com I-PDU groups</b> were never started by the BswM rules, so Com simply doesn't transmit.<br><b>Routing and config</b>: follow a PDU from Com through PduR to CanIf and Can with TRACE32 breakpoints on the transmit functions and confirmations, check the PDU IDs, DLC, and for reception the hardware filters and HRH configuration. [fill: a concrete CAN or Com integration issue you found on RH850 and its root cause]",
+    followups: ["How do you tell a bit timing problem from a wiring problem?", "What does BswM have to do with Com transmitting?"]
+  },
+
+  {
+    id: "protocols-17",
+    topic: "protocols",
+    type: "theory",
+    q: "Compare UART, SPI, I2C, CAN and SENT. How would you choose between them?",
+    tags: ["protocol comparison", "UART", "SPI", "I2C", "CAN", "SENT", "1-Wire", "on-board", "off-board", "so sánh giao thức"],
+    key: ["On-board, fast, simple: SPI", "On-board, few pins, many slow devices: I2C", "Point-to-point debug/modules: UART", "Robust multi-node vehicle network: CAN/CAN FD", "Cheap digital sensor -> ECU: SENT"],
+    answer: "I think about where the link runs, how many nodes, speed, and robustness.<br><b>SPI</b> is for on-board links to fast peripherals like flash, ADCs, SBCs: tens of MHz, full-duplex, simple, but one chip select per slave and no acknowledge. <b>I2C</b> is on-board too, two wires for many slow devices like EEPROMs or small sensors, with addressing and per-byte ACK, but slower, half-duplex, and sensitive to bus capacitance. <b>UART</b> is point-to-point and asynchronous: debug consoles, modems, simple module links; easy, but no addressing and it depends on accurate clocks. <b>1-Wire</b> trades speed for a single wire and unique IDs.<br>Off-board in the vehicle, <b>CAN</b> is the standard: differential and noise-robust, multi-master with priority arbitration, strong error detection and fault confinement, up to 1 Mbit/s, and <b>CAN FD</b> when you need more payload and bandwidth. <b>SENT</b> is for a sensor sending to one ECU: cheaper than CAN, more resolution and robustness than an analog signal, but unidirectional and timing-sensitive. And <b>UDS</b> isn't a bus at all, it's the diagnostic application layer running on top of CAN via ISO-TP, or DoIP.",
+    followups: ["Why not use CAN for every sensor?", "Why is SENT preferred over an analog output for a pressure sensor?"]
+  }
+);
