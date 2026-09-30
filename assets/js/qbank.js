@@ -30,7 +30,9 @@
   const host = document.getElementById("qbList");
   if (!host) return;
 
-  const state = { q: "", topic: "all", type: "all", bridge: false, fill: false };
+  const state = { q: "", topic: "all", type: "all", bridge: false, fill: false, all: false };
+  const LIMIT = 8;       // while searching, show at most this many results...
+  const CUTOFF = 0.4;    // ...and only those scoring within 40% of the best one
 
   /* ---------- Helpers ---------- */
   // Lower-case and strip Vietnamese diacritics so "tu dong" matches "tự động".
@@ -49,6 +51,13 @@
     map.push(raw.length);
     return { low, map };
   }
+  // Fields and queries are split into words the same way, so "mc/dc", "bus-off"
+  // and "tự động" compare word by word; " word word " lets includes(" " + t) test word starts.
+  const words = s => norm(s).split(/[^a-z0-9]+/).filter(Boolean);
+  const field = s => " " + words(s).join(" ") + " ";
+  // Same, but keeping diacritics, so a typed "lương" can outrank "luồng".
+  const rawWords = s => (s || "").toLowerCase().normalize("NFC").split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+  const hasMarks = s => norm(s) !== s.toLowerCase().normalize("NFC");
   const esc = s => (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const stripTags = s => (s || "").replace(/<[^>]+>/g, " ");
   const markFill = html => html.replace(FILL_RE, m => `<span class="qb-fill">${m}</span>`);
@@ -89,10 +98,11 @@
       // Weighted search fields: question and tags count more than body text.
       // The Vietnamese question/tags are search aids and weigh like their English twins.
       f: {
-        q: norm(it.q + " " + (it.vi || "")),
-        tags: norm(it.tags.join(" ") + " " + (it.viTags || []).join(" ") + " " + it.id + " " + TOPICS[it.topic]),
-        key: norm(it.key.join(" ")),
-        body: norm(stripTags(it.answer) + " " + (it.followups || []).join(" ") + " " + (it.code || ""))
+        q: field(it.q + " " + (it.vi || "")),
+        tags: field(it.tags.join(" ") + " " + (it.viTags || []).join(" ") + " " + it.id + " " + TOPICS[it.topic]),
+        key: field(it.key.join(" ")),
+        body: field(stripTags(it.answer) + " " + (it.followups || []).join(" ") + " " + (it.code || "")),
+        vi: " " + rawWords((it.vi || "") + " " + (it.viTags || []).join(" ") + " " + it.tags.join(" ")).join(" ") + " "
       }
     };
   });
@@ -107,12 +117,21 @@
   chipRow("qbTopics", "topic", [["all", "All topics"], ...Object.entries(TOPICS).filter(([k]) => DATA.some(d => d.topic === k))]);
 
   /* ---------- Search ---------- */
-  function score(c, terms) {
+  function score(c, terms, marked) {
     let s = 0;
-    for (const t of terms) {
-      const w = (c.f.q.includes(t) ? 8 : 0) + (c.f.tags.includes(t) ? 6 : 0) + (c.f.key.includes(t) ? 3 : 0) + (c.f.body.includes(t) ? 1 : 0);
-      if (!w) return 0;              // every term must match somewhere (AND)
+    for (let i = 0; i < terms.length; i++) {
+      const t = terms[i], p = " " + t;   // word-start match: "os" hits "OS", not "cost"
+      let w = (c.f.q.includes(p) ? 8 : 0) + (c.f.tags.includes(p) ? 6 : 0) + (c.f.key.includes(p) ? 3 : 0) +
+              (t.length > 2 && c.f.body.includes(p) ? 1 : 0);
+      if (!w) return 0;                  // every term must match somewhere (AND)
+      // A term typed with diacritics that only matches after stripping them ("luồng" for "lương") counts a quarter.
+      if (marked[i] && !c.f.vi.includes(" " + marked[i])) w = Math.ceil(w / 4);
       s += w;
+    }
+    if (terms.length > 1) {          // the whole query as a phrase ranks highest
+      const ph = " " + terms.join(" ");
+      if (c.f.q.includes(ph)) s += 12;
+      else if (c.f.tags.includes(ph)) s += 8;
     }
     return s;
   }
@@ -137,7 +156,13 @@
     nodes.forEach(n => {
       const raw = n.nodeValue, { low, map } = normMap(raw);
       const ranges = [];
-      terms.forEach(t => { let i = low.indexOf(t); while (i !== -1) { ranges.push([map[i], map[i + t.length]]); i = low.indexOf(t, i + t.length); } });
+      terms.forEach(t => {
+        let i = low.indexOf(t);
+        while (i !== -1) {
+          if (i === 0 || !/[a-z0-9]/.test(low[i - 1])) ranges.push([map[i], map[i + t.length]]);   // word starts only, like score()
+          i = low.indexOf(t, i + t.length);
+        }
+      });
       if (!ranges.length) return;
       ranges.sort((a, b) => a[0] - b[0]);
       const frag = document.createDocumentFragment();
@@ -153,28 +178,57 @@
     });
   }
 
+  /* ---------- Result cursor (↑/↓ while typing) ---------- */
+  let shown = [], sel = -1;
+  function select(i, scroll) {
+    if (shown[sel]) shown[sel].el.classList.remove("qb-card--sel");
+    sel = i;
+    const c = shown[sel];
+    if (!c) return;
+    c.el.classList.add("qb-card--sel");
+    if (scroll) c.el.scrollIntoView({ block: "nearest" });
+  }
+
   function apply() {
-    const terms = norm(state.q).split(/\s+/).filter(Boolean);
-    const shown = [];
+    const terms = words(state.q);
+    // Raw typed word per term when it carries diacritics (null otherwise); see score().
+    const raw = rawWords(state.q);
+    const marked = terms.map((t, i) => raw.length === terms.length && hasMarks(raw[i]) ? raw[i] : null);
+    const matched = [];
     cards.forEach(c => {
-      const s = terms.length ? score(c, terms) : 1;
-      const ok = s > 0 && passes(c);
-      c.el.hidden = !ok;
-      if (ok) shown.push([s, c]);
-      else if (c.marked) { c.hl.forEach((n, i) => { n.innerHTML = c.orig[i]; }); c.marked = false; }
+      c.s = terms.length ? score(c, terms, marked) : 1;
+      if (c.s > 0 && passes(c)) matched.push(c);
     });
     // Best matches first while searching; natural topic order otherwise.
-    if (terms.length) shown.sort((a, b) => b[0] - a[0]);
-    shown.forEach(([, c]) => host.appendChild(c.el));
-    shown.forEach(([, c]) => highlight(c, terms));
+    if (terms.length) matched.sort((a, b) => b.s - a.s);
+    // While searching, keep only the strong head of the list so the answer is quick to spot.
+    const min = terms.length && matched.length ? matched[0].s * CUTOFF : 0;
+    const next = terms.length && !state.all ? matched.filter((c, i) => i < LIMIT && c.s >= min) : matched;
 
-    document.getElementById("qbCount").textContent = `${shown.length} / ${cards.length} câu`;
-    document.getElementById("qbEmpty").hidden = shown.length > 0;
+    select(-1);
+    const vis = new Set(next);
+    cards.forEach(c => {
+      c.el.hidden = !vis.has(c);
+      if (c.el.hidden && c.marked) { c.hl.forEach((n, i) => { n.innerHTML = c.orig[i]; }); c.marked = false; }
+    });
+    next.forEach(c => host.appendChild(c.el));
+    next.forEach(c => highlight(c, terms));
+    shown = next;
+    host.classList.toggle("qb-list--compact", terms.length > 0);
+    if (terms.length) select(0);
+
+    const more = document.getElementById("qbMore");
+    more.hidden = next.length === matched.length;
+    more.textContent = `Hiện thêm ${matched.length - next.length} câu khớp yếu hơn`;
+    document.getElementById("qbCount").textContent = terms.length
+      ? `${next.length} / ${matched.length} khớp · ${cards.length} câu`
+      : `${next.length} / ${cards.length} câu`;
+    document.getElementById("qbEmpty").hidden = next.length > 0;
 
     // Chip counts reflect the search + the *other* filters.
     document.querySelectorAll("[data-count]").forEach(el => {
       const [name, v] = el.getAttribute("data-count").split(":");
-      const n = cards.filter(c => (terms.length ? score(c, terms) > 0 : true) && passes(c, name) &&
+      const n = cards.filter(c => (terms.length ? score(c, terms, marked) > 0 : true) && passes(c, name) &&
         (v === "all" || c.it[name] === v)).length;
       el.textContent = n;
     });
@@ -186,12 +240,21 @@
   /* ---------- Wiring ---------- */
   const input = document.getElementById("qbSearch");
   let t;
-  input.addEventListener("input", () => { clearTimeout(t); t = setTimeout(() => { state.q = input.value; apply(); }, 80); });
+  input.addEventListener("input", () => { clearTimeout(t); t = setTimeout(() => { state.q = input.value; state.all = false; apply(); }, 80); });
   input.addEventListener("keydown", e => {
-    if (e.key === "Escape") { input.value = ""; state.q = ""; apply(); }
-    if (e.key === "Enter") {   // jump to + open the best match
-      const first = host.querySelector(".qb-card:not([hidden])");
-      if (first) { first.classList.add("open"); first.scrollIntoView({ block: "start", behavior: "smooth" }); }
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {   // move the cursor, keep typing focus
+      if (!shown.length) return;
+      e.preventDefault();
+      select(Math.max(0, Math.min(shown.length - 1, sel + (e.key === "ArrowDown" ? 1 : -1))), true);
+    }
+    if (e.key === "Escape") {   // first close open answers, then clear the search
+      const open = host.querySelectorAll(".qb-card.open");
+      if (open.length) open.forEach(c => c.classList.remove("open"));
+      else { input.value = ""; state.q = ""; state.all = false; apply(); }
+    }
+    if (e.key === "Enter") {    // open/close the selected (or best) match
+      const c = shown[sel] || shown[0];
+      if (c) { c.el.classList.toggle("open"); c.el.scrollIntoView({ block: "start", behavior: "smooth" }); }
     }
   });
 
@@ -200,10 +263,11 @@
     if (chip) { state[chip.dataset.f] = chip.dataset.v; apply(); return; }
     if (e.target.closest("#qbBridge")) { state.bridge = !state.bridge; apply(); return; }
     if (e.target.closest("#qbFillBtn")) { state.fill = !state.fill; apply(); return; }
+    if (e.target.closest("#qbMore")) { state.all = true; apply(); return; }
     if (e.target.closest("#qbExpand")) { host.querySelectorAll(".qb-card:not([hidden])").forEach(c => c.classList.add("open")); return; }
     if (e.target.closest("#qbCollapse")) { host.querySelectorAll(".qb-card").forEach(c => c.classList.remove("open")); return; }
     if (e.target.closest("#qbReset")) {
-      Object.assign(state, { q: "", topic: "all", type: "all", bridge: false, fill: false });
+      Object.assign(state, { q: "", topic: "all", type: "all", bridge: false, fill: false, all: false });
       input.value = ""; apply(); input.focus(); return;
     }
     if (e.target.closest("#qbRandom")) {
@@ -216,7 +280,15 @@
       return;
     }
     const tog = e.target.closest(".qb-card__toggle");
-    if (tog) tog.closest(".qb-card").classList.toggle("open");
+    if (tog) { tog.closest(".qb-card").classList.toggle("open"); return; }
+    // Compact results: clicking a card's header or question selects and opens it,
+    // then hands focus back to the search box so ↑/↓ keep working.
+    const card = e.target.closest(".qb-list--compact .qb-card");
+    if (card && !e.target.closest(".qb-card__answer, a, button")) {
+      select(shown.findIndex(c => c.el === card));
+      card.classList.toggle("open");
+      input.focus({ preventScroll: true });
+    }
   });
 
   // "/" focuses the bank search on this page (app.js skips its lesson-search modal here).
