@@ -9,6 +9,7 @@
 
   const TOPICS = {
     intro:     "Intro & Behavioral",
+    hm:        "Hiring Manager",
     project:   "Project deep-dive",
     autosar:   "AUTOSAR Classic",
     embedded:  "Embedded C / MCU",
@@ -66,6 +67,7 @@
           <a class="qb-card__id" href="#${it.id}" title="Link tới câu này">${it.id}</a>
         </div>
         <h3 class="qb-card__q" data-hl>${esc(it.q)}</h3>
+        ${it.vi ? `<p class="qb-card__vi" lang="vi" data-hl>${esc(it.vi)}</p>` : ""}
         <ul class="qb-card__key" data-hl>${keys}</ul>
         <button class="btn btn--sm qb-card__toggle" type="button">Model answer ▾</button>
         <div class="qb-card__answer">
@@ -85,9 +87,10 @@
       orig: hl.map(n => n.innerHTML),
       hasFill: HAS_FILL.test(it.key.join(" ") + it.answer),
       // Weighted search fields: question and tags count more than body text.
+      // The Vietnamese question/tags are search aids and weigh like their English twins.
       f: {
-        q: norm(it.q),
-        tags: norm(it.tags.join(" ") + " " + it.id + " " + TOPICS[it.topic]),
+        q: norm(it.q + " " + (it.vi || "")),
+        tags: norm(it.tags.join(" ") + " " + (it.viTags || []).join(" ") + " " + it.id + " " + TOPICS[it.topic]),
         key: norm(it.key.join(" ")),
         body: norm(stripTags(it.answer) + " " + (it.followups || []).join(" ") + " " + (it.code || ""))
       }

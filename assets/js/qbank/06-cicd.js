@@ -5,7 +5,9 @@
     topic: "cicd",
     type: "theory",
     q: "What is the difference between Continuous Integration, Continuous Delivery and Continuous Deployment?",
+    vi: "Tích hợp liên tục, chuyển giao liên tục và triển khai liên tục khác nhau như thế nào?",
     tags: ["CI", "CD", "continuous integration", "continuous delivery", "continuous deployment", "release", "khái niệm"],
+    viTags: ["tích hợp liên tục", "chuyển giao liên tục", "triển khai liên tục", "phân biệt ci cd", "khái niệm ci/cd", "phát hành phần mềm"],
     key: [
       "CI: every change is built + tested automatically, merged often",
       "Delivery: every green build is releasable, human approves release",
@@ -20,7 +22,9 @@
     topic: "cicd",
     type: "theory",
     q: "Walk me through the anatomy of a CI pipeline for embedded / AUTOSAR software.",
+    vi: "Hãy mô tả cấu trúc một CI pipeline cho phần mềm nhúng / AUTOSAR.",
     tags: ["pipeline", "stages", "cross-compiler", "VECU", "bench", "HIL", "SIL", "evidence", "embedded CI", "quy trình"],
+    viTags: ["cấu trúc pipeline", "đường ống build", "ci cho phần mềm nhúng", "các stage của pipeline", "biên dịch chéo", "kiểm thử trên bench", "bằng chứng kiểm thử"],
     key: [
       "Checkout + fetch pinned deps (Conan, lockfile)",
       "Cross-compile in pinned toolchain image, static checks",
@@ -36,7 +40,9 @@
     topic: "cicd",
     type: "behavioral",
     q: "Tell me about your hands-on experience with CI/CD.",
+    vi: "Kể về kinh nghiệm thực tế của bạn với CI/CD.",
     tags: ["experience", "Azure Pipelines", "Conan", "SENT", "ARA", "kinh nghiệm", "CI/CD"],
+    viTags: ["kinh nghiệm thực tế", "kinh nghiệm ci/cd", "dự án đã làm", "giới thiệu bản thân", "phỏng vấn devops"],
     key: [
       "ARA team: build, package, test integrated with Azure Pipelines + Conan",
       "SENT automation: 1-2 months to 2-3 days",
@@ -52,7 +58,9 @@
     topic: "cicd",
     type: "theory",
     q: "Explain the main building blocks of Azure Pipelines.",
+    vi: "Giải thích các thành phần chính của Azure Pipelines.",
     tags: ["Azure Pipelines", "Azure DevOps", "stage", "job", "step", "agent", "template", "variables", "artifact", "trigger"],
+    viTags: ["thành phần azure pipelines", "cấu trúc pipeline", "stage job step", "máy build agent", "biến pipeline", "kích hoạt pipeline", "mẫu pipeline"],
     key: [
       "Pipeline > Stage > Job > Step (YAML in repo)",
       "Job runs on one agent; agent runs one job at a time",
@@ -68,7 +76,9 @@
     topic: "cicd",
     type: "practical",
     q: "Sketch a representative multi-stage YAML pipeline for an embedded project.",
+    vi: "Phác thảo một YAML pipeline nhiều stage điển hình cho dự án nhúng.",
     tags: ["YAML", "azure-pipelines.yml", "multi-stage", "template", "artifact", "PublishTestResults", "Conan", "ví dụ"],
+    viTags: ["pipeline nhiều giai đoạn", "ví dụ file yaml", "mẫu pipeline", "xuất kết quả test", "đóng gói artifact", "pipeline cho dự án nhúng"],
     key: [
       "Triggers on main + PR",
       "Build stage in pinned container, Conan with lockfile",
@@ -86,7 +96,9 @@
     topic: "cicd",
     type: "practical",
     q: "Why and how would you use self-hosted agents with hardware attached?",
+    vi: "Tại sao và làm thế nào để dùng self-hosted agent có gắn phần cứng?",
     tags: ["self-hosted agent", "agent pool", "capabilities", "demands", "bench", "HIL", "debugger", "máy build"],
+    viTags: ["máy build tự quản lý", "agent tự host", "gắn phần cứng", "nhóm agent", "phần cứng thật", "máy build riêng", "debugger trên agent"],
     key: [
       "Needed for debuggers, CAN interfaces, licenses, big caches",
       "Label via capabilities, select via demands",
@@ -102,7 +114,9 @@
     topic: "cicd",
     type: "theory",
     q: "What is Conan and what are its key concepts?",
+    vi: "Conan là gì và các khái niệm chính của nó là gì?",
     tags: ["Conan", "package manager", "C/C++", "recipe", "conanfile", "profile", "remote", "lockfile", "binary cache", "quản lý gói"],
+    viTags: ["quản lý gói", "trình quản lý gói c/c++", "công thức đóng gói", "khóa phiên bản phụ thuộc", "bộ nhớ đệm binary", "quản lý thư viện phụ thuộc"],
     key: [
       "C/C++ package manager: versions + binaries per configuration",
       "Recipe (conanfile.py): deps, build, package",
@@ -119,7 +133,9 @@
     topic: "cicd",
     type: "practical",
     q: "How do you set up Conan for cross-compilation?",
+    vi: "Làm thế nào để cấu hình Conan cho biên dịch chéo?",
     tags: ["Conan", "cross-compilation", "profile", "toolchain", "-pr:h", "-pr:b", "biên dịch chéo"],
+    viTags: ["biên dịch chéo", "cross compile", "cấu hình profile conan", "bộ công cụ biên dịch", "profile host và build", "build cho vi điều khiển"],
     key: [
       "Host profile = target; build profile = CI machine",
       "Toolchain path via [buildenv] or [conf]",
@@ -137,7 +153,9 @@
     topic: "cicd",
     type: "practical",
     q: "How do you make builds reproducible?",
+    vi: "Làm thế nào để các bản build có thể tái lập được?",
     tags: ["reproducible build", "lockfile", "Docker", "pinned toolchain", "digest", "determinism", "tái lập", "works on my machine"],
+    viTags: ["build tái lập", "tái tạo bản build", "cố định phiên bản toolchain", "khóa phụ thuộc", "tính tất định", "máy tôi chạy được", "môi trường build nhất quán"],
     key: [
       "Pin toolchain: versioned Docker image, ideally by digest",
       "Pin dependencies: Conan lockfile committed",
@@ -153,7 +171,9 @@
     topic: "cicd",
     type: "theory",
     q: "Docker: what is the difference between an image and a container, and how does layer caching work?",
+    vi: "Docker: image và container khác nhau thế nào, và cơ chế cache theo layer hoạt động ra sao?",
     tags: ["Docker", "image", "container", "layer", "cache", "Dockerfile", "container vs VM", "lớp"],
+    viTags: ["phân biệt image và container", "bộ nhớ đệm layer", "lớp image", "container và máy ảo", "tối ưu dockerfile", "đóng gói ứng dụng"],
     key: [
       "Image: read-only template of stacked layers",
       "Container: running instance + thin writable layer",
@@ -171,7 +191,9 @@
     topic: "cicd",
     type: "practical",
     q: "Why containerize embedded toolchains, and what are the limits, e.g. for USB debuggers?",
+    vi: "Tại sao nên container hoá toolchain nhúng, và giới hạn là gì, ví dụ với debugger USB?",
     tags: ["Docker", "toolchain", "multi-stage build", "USB", "device passthrough", "license server", "debugger", "container hoá"],
+    viTags: ["container hoá toolchain", "đóng gói môi trường build", "truy cập thiết bị usb", "máy chủ bản quyền", "giới hạn của docker", "debugger trong container"],
     key: [
       "Same compiler everywhere, disposable, fast agent setup",
       "Multi-stage: build tools in stage 1, copy result only",
@@ -187,7 +209,9 @@
     topic: "cicd",
     type: "theory",
     q: "Give me the Kubernetes basics. When does it make sense?",
+    vi: "Trình bày kiến thức cơ bản về Kubernetes. Khi nào thì nên dùng nó?",
     tags: ["Kubernetes", "K8s", "pod", "deployment", "service", "ingress", "ConfigMap", "Secret", "AKS", "GKE"],
+    viTags: ["cơ bản kubernetes", "điều phối container", "khi nào dùng k8s", "triển khai ứng dụng", "cụm máy chủ", "quản lý container"],
     key: [
       "Pod: smallest unit, 1+ containers sharing network",
       "Deployment: N replicas, rolling update, rollback",
@@ -203,7 +227,9 @@
     topic: "cicd",
     type: "theory",
     q: "Explain Terraform: state, plan/apply, modules and drift.",
+    vi: "Giải thích Terraform: state, plan/apply, module và drift.",
     tags: ["Terraform", "IaC", "infrastructure as code", "state", "plan", "apply", "module", "drift", "HCL", "hạ tầng"],
+    viTags: ["hạ tầng dạng code", "quản lý hạ tầng", "trạng thái terraform", "lệch cấu hình", "mô-đun terraform", "tự động hoá hạ tầng"],
     key: [
       "Declarative HCL: describe desired state",
       "State maps code to real resource IDs; remote + locked",
@@ -221,7 +247,9 @@
     topic: "cicd",
     type: "practical",
     q: "Your integration CI takes 2 hours. How do you speed it up?",
+    vi: "CI tích hợp của bạn mất 2 tiếng. Bạn sẽ làm thế nào để tăng tốc?",
     tags: ["slow pipeline", "performance", "cache", "parallelization", "incremental build", "test selection", "SENT", "tối ưu", "tăng tốc"],
+    viTags: ["tăng tốc build", "pipeline chậm", "tối ưu thời gian build", "chạy song song", "build tăng dần", "bộ nhớ đệm", "chọn lọc test"],
     key: [
       "Measure first: per-stage time, queue time",
       "Cache: Conan binaries, Docker layers, compiler cache",
@@ -237,7 +265,9 @@
     topic: "cicd",
     type: "practical",
     q: "The pipeline fails randomly. How do you make CI stable?",
+    vi: "Pipeline lỗi ngẫu nhiên. Làm thế nào để CI chạy ổn định?",
     tags: ["flaky test", "stability", "retry", "quarantine", "infra error", "timeout", "health check", "ổn định", "lỗi ngẫu nhiên"],
+    viTags: ["pipeline chập chờn", "lỗi ngẫu nhiên", "test không ổn định", "ổn định ci", "chạy lại khi lỗi", "cách ly test lỗi", "lỗi hạ tầng"],
     key: [
       "Classify: PASS / FAIL (code) / INFRA_ERROR",
       "Retry only infrastructure errors, never real failures",
@@ -253,7 +283,9 @@
     topic: "cicd",
     type: "practical",
     q: "How do you run tests on real hardware as part of CI?",
+    vi: "Làm thế nào để chạy test trên phần cứng thật như một phần của CI?",
     tags: ["HIL", "bench", "hardware in the loop", "flash", "TRACE32", "VECU", "real target", "test trên phần cứng"],
+    viTags: ["phần cứng thật", "kiểm thử trên phần cứng", "phần cứng trong vòng lặp", "nạp firmware", "test trên bench", "board thật"],
     key: [
       "Lock bench exclusively (one job per agent)",
       "Health check: power cycle, debugger reachable",
@@ -269,7 +301,9 @@
     topic: "cicd",
     type: "practical",
     q: "How do you handle secrets and credentials in a pipeline?",
+    vi: "Bạn xử lý secret và thông tin đăng nhập trong pipeline như thế nào?",
     tags: ["secrets", "credentials", "variable group", "Key Vault", "masking", "least privilege", "service connection", "bảo mật"],
+    viTags: ["bảo mật mật khẩu", "quản lý bí mật", "thông tin đăng nhập", "che giấu biến nhạy cảm", "quyền tối thiểu", "kho khóa bí mật", "bảo mật pipeline"],
     key: [
       "Never in the repo, not even in history",
       "Pipeline secret store / vault, referenced by name",
@@ -287,7 +321,9 @@
     topic: "cicd",
     type: "practical",
     q: "How do you integrate Pytest into CI?",
+    vi: "Làm thế nào để tích hợp Pytest vào CI?",
     tags: ["Pytest", "Python", "JUnit XML", "virtualenv", "venv", "requirements", "markers", "fixture", "báo cáo test"],
+    viTags: ["tích hợp pytest", "kiểm thử python", "báo cáo kết quả test", "môi trường ảo python", "tự động hoá kiểm thử", "chạy test trong pipeline"],
     key: [
       "Isolated venv, pinned requirements",
       "--junitxml so CI shows results and trends",
@@ -305,7 +341,9 @@
     topic: "cicd",
     type: "practical",
     q: "Show me a small Bash script you would use as pipeline glue. What makes it robust?",
+    vi: "Cho xem một đoạn script Bash nhỏ bạn dùng để kết nối các bước trong pipeline. Điều gì làm nó chắc chắn?",
     tags: ["Bash", "shell", "set -euo pipefail", "trap", "scripting", "glue", "PowerShell", "script"],
+    viTags: ["viết script bash", "kịch bản shell", "script kết nối pipeline", "xử lý lỗi trong bash", "script an toàn", "dừng khi lỗi"],
     key: [
       "set -e: stop on first error",
       "set -u: fail on undefined variable",
@@ -323,7 +361,9 @@
     topic: "cicd",
     type: "theory",
     q: "What are common YAML pitfalls in pipeline definitions?",
+    vi: "Những lỗi YAML thường gặp khi định nghĩa pipeline là gì?",
     tags: ["YAML", "pitfalls", "indentation", "Norway problem", "quoting", "multiline", "anchors", "lỗi cú pháp"],
+    viTags: ["lỗi cú pháp yaml", "lỗi thụt lề", "bẫy yaml", "dấu nháy trong yaml", "chuỗi nhiều dòng", "cấu hình pipeline sai"],
     key: [
       "Indentation defines structure; spaces only, no tabs",
       "Implicit types: yes/no/on/off, 1.10 vs \"1.10\"",
@@ -339,7 +379,9 @@
     topic: "cicd",
     type: "practical",
     q: "How do you use Git and branch policies as a quality gate in CI?",
+    vi: "Làm thế nào để dùng Git và branch policy làm cổng chất lượng trong CI?",
     tags: ["Git", "pull request", "PR", "branch policy", "required checks", "protected branch", "quality gate", "code review", "merge"],
+    viTags: ["cổng chất lượng", "chính sách nhánh", "bảo vệ nhánh", "yêu cầu hợp nhất", "review code", "kiểm tra bắt buộc trước khi merge"],
     key: [
       "Feature branch, PR into protected main",
       "PR trigger runs validation pipeline",
@@ -355,7 +397,9 @@
     topic: "cicd",
     type: "theory",
     q: "How do you manage and version build artifacts?",
+    vi: "Bạn quản lý và đánh phiên bản cho các artifact build như thế nào?",
     tags: ["artifact", "versioning", "semantic versioning", "build once", "promotion", "retention", "traceability", "phiên bản"],
+    viTags: ["quản lý phiên bản", "đánh số phiên bản", "quản lý artifact", "build một lần", "truy vết bản build", "thời gian lưu trữ", "thăng cấp artifact"],
     key: [
       "Build once, promote the same binary through stages",
       "Unique version: semver + build number + commit",
@@ -372,7 +416,9 @@
     type: "theory",
     bridge: true,
     q: "Have you worked with Jenkins? How would you write a Jenkins pipeline?",
+    vi: "Bạn đã làm việc với Jenkins chưa? Bạn sẽ viết một Jenkins pipeline như thế nào?",
     tags: ["Jenkins", "Jenkinsfile", "declarative pipeline", "agent", "label", "stage", "post", "bridge", "Azure Pipelines"],
+    viTags: ["viết jenkinsfile", "pipeline khai báo", "kinh nghiệm jenkins", "so sánh jenkins và azure", "máy build jenkins", "chuyển đổi công cụ ci"],
     key: [
       "Honest: not in a project; used Azure Pipelines",
       "Jenkinsfile in repo = azure-pipelines.yml",
@@ -391,7 +437,9 @@
     type: "theory",
     bridge: true,
     q: "What do you know about GitLab CI?",
+    vi: "Bạn biết gì về GitLab CI?",
     tags: ["GitLab", "GitLab CI", ".gitlab-ci.yml", "runner", "executor", "needs", "DAG", "rules", "bridge"],
+    viTags: ["kiến thức gitlab ci", "file cấu hình gitlab", "máy chạy runner", "phụ thuộc giữa các job", "quy tắc chạy job", "so sánh công cụ ci"],
     key: [
       "Honest: not in a project; concepts from Azure Pipelines",
       ".gitlab-ci.yml = azure-pipelines.yml",
@@ -410,7 +458,9 @@
     type: "theory",
     bridge: true,
     q: "Have you used Artifactory? How does it relate to Conan?",
+    vi: "Bạn đã dùng Artifactory chưa? Nó liên quan thế nào đến Conan?",
     tags: ["Artifactory", "JFrog", "Conan remote", "repository", "local", "remote", "virtual", "promotion", "bridge", "kho artifact"],
+    viTags: ["kho artifact", "kho lưu trữ gói", "máy chủ conan", "kho nhị phân", "thăng cấp gói", "quản lý gói"],
     key: [
       "Honest: used Conan in CI, not Artifactory itself",
       "Artifactory can host Conan repos (a Conan remote)",
@@ -427,7 +477,9 @@
     type: "theory",
     bridge: true,
     q: "Do you know Ansible? How does it compare to Terraform?",
+    vi: "Bạn có biết Ansible không? So với Terraform thì thế nào?",
     tags: ["Ansible", "Terraform", "configuration management", "provisioning", "playbook", "idempotent", "agentless", "SSH", "bridge", "IaC"],
+    viTags: ["quản lý cấu hình", "cấp phát hạ tầng", "so sánh ansible terraform", "hạ tầng dạng code", "tự động hoá máy chủ", "không cần agent"],
     key: [
       "Honest: Terraform yes, Ansible not in a project",
       "Terraform: provisions infra (VMs, networks), keeps state",
@@ -444,7 +496,9 @@
     type: "theory",
     bridge: true,
     q: "The JD mentions AWS. What is your cloud experience?",
+    vi: "Mô tả công việc có nhắc đến AWS. Kinh nghiệm về cloud của bạn thế nào?",
     tags: ["AWS", "Azure", "GCP", "EC2", "S3", "IAM", "EKS", "AKS", "Entra ID", "cloud", "bridge"],
+    viTags: ["điện toán đám mây", "kinh nghiệm cloud", "kinh nghiệm aws", "nền tảng đám mây", "quản lý quyền truy cập", "yêu cầu công việc"],
     key: [
       "Honest: Azure + GCP in production, not AWS",
       "EC2 = Azure VM / GCE; S3 = Blob / Cloud Storage",
@@ -460,7 +514,9 @@
     topic: "cicd",
     type: "behavioral",
     q: "Tell me about the infrastructure you operate today: deployment, access control, cost.",
+    vi: "Kể về hạ tầng bạn đang vận hành hiện nay: triển khai, kiểm soát truy cập, chi phí.",
     tags: ["AI platform", "operations", "Azure", "GCP", "access control", "Entra ID", "cost governance", "Terraform", "vận hành"],
+    viTags: ["vận hành hạ tầng", "kiểm soát truy cập", "quản lý chi phí", "nền tảng ai", "triển khai hệ thống", "chi phí cloud", "hạ tầng hiện tại"],
     key: [
       "Internal engineering platform on Azure + GCP",
       "Deploy with Terraform, Docker, Kubernetes, App Service",

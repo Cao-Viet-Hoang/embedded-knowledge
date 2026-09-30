@@ -7,7 +7,9 @@
     topic: "autosar",
     type: "theory",
     q: "Explain the AUTOSAR Classic layered architecture.",
+    vi: "Giải thích kiến trúc phân lớp của AUTOSAR Classic.",
     tags: ["layered architecture", "overview", "ASW", "RTE", "BSW", "MCAL", "service layer", "ECU abstraction", "CDD", "kiến trúc phân lớp"],
+    viTags: ["kiến trúc phân lớp", "các lớp phần mềm", "lớp ứng dụng", "lớp dịch vụ", "lớp trừu tượng ecu", "tổng quan autosar"],
     key: [
       "ASW: SWCs, hardware-independent, talk only via ports",
       "RTE: generated glue, implements the VFB on one ECU",
@@ -23,7 +25,9 @@
     topic: "autosar",
     type: "theory",
     q: "What is the Virtual Functional Bus (VFB) and how does the RTE relate to it?",
+    vi: "Virtual Functional Bus (VFB) là gì và RTE liên quan đến nó như thế nào?",
     tags: ["VFB", "virtual functional bus", "RTE", "system design", "ECU mapping", "intra-ECU", "inter-ECU", "bus ảo"],
+    viTags: ["bus chức năng ảo", "bus ảo", "thiết kế hệ thống", "ánh xạ lên ecu", "giao tiếp giữa các ecu", "giao tiếp trong ecu"],
     key: [
       "VFB: design-time abstraction, SWCs connected ignoring ECUs",
       "RTE: the concrete implementation of the VFB per ECU",
@@ -40,7 +44,9 @@
     topic: "autosar",
     type: "theory",
     q: "What is AUTOSAR and why does the automotive industry use it?",
+    vi: "AUTOSAR là gì và tại sao ngành ô tô lại sử dụng nó?",
     tags: ["overview", "what is AUTOSAR", "introduction", "why AUTOSAR", "Classic", "Adaptive", "partnership", "tổng quan", "giới thiệu"],
+    viTags: ["autosar là gì", "giới thiệu autosar", "tổng quan", "tiêu chuẩn phần mềm ô tô", "tại sao dùng autosar", "chuẩn hóa"],
     key: [
       "Partnership of OEMs, Tier-1s, tool & silicon vendors (since 2003)",
       "Standardizes architecture, interfaces, methodology & exchange format (ARXML)",
@@ -56,7 +62,9 @@
     topic: "autosar",
     type: "theory",
     q: "What are the advantages and the drawbacks of AUTOSAR Classic?",
+    vi: "Ưu điểm và nhược điểm của AUTOSAR Classic là gì?",
     tags: ["advantages", "disadvantages", "pros cons", "overhead", "complexity", "overview", "ưu điểm", "nhược điểm"],
+    viTags: ["ưu điểm", "nhược điểm", "ưu nhược điểm", "độ phức tạp", "chi phí tài nguyên", "hạn chế autosar"],
     key: [
       "Pros: reuse, supplier exchange, standard APIs, tool ecosystem",
       "Pros: config over code, easier ISO 26262 / ASPICE evidence",
@@ -72,7 +80,9 @@
     topic: "autosar",
     type: "theory",
     q: "Describe the BSW functional stacks: communication, diagnostics, memory, mode management and I/O.",
+    vi: "Mô tả các stack chức năng của BSW: truyền thông, chẩn đoán, bộ nhớ, quản lý mode và I/O.",
     tags: ["BSW stacks", "functional clusters", "vertical view", "Com stack", "Mem stack", "Diag stack", "IO stack", "system services", "architecture", "overview", "kiến trúc BSW"],
+    viTags: ["kiến trúc bsw", "stack truyền thông", "stack chẩn đoán", "stack bộ nhớ", "quản lý chế độ", "vào ra", "cụm chức năng"],
     key: [
       "Layers are horizontal; stacks are vertical slices through them",
       "Com: Com/PduR/ComM/Nm → CanIf → Can driver",
@@ -91,7 +101,9 @@
     topic: "autosar",
     type: "theory",
     q: "What is the difference between the Services layer, the ECU Abstraction layer and the MCAL? Where does IoHwAb fit?",
+    vi: "Sự khác nhau giữa lớp Services, lớp ECU Abstraction và MCAL là gì? IoHwAb nằm ở đâu?",
     tags: ["service layer", "ECU abstraction", "MCAL", "IoHwAb", "layer responsibility", "architecture", "microcontroller abstraction", "kiến trúc phân lớp"],
+    viTags: ["kiến trúc phân lớp", "lớp dịch vụ", "lớp trừu tượng ecu", "lớp trừu tượng vi điều khiển", "trách nhiệm từng lớp", "trừu tượng phần cứng io"],
     key: [
       "MCAL: MCU-dependent, ECU-independent (registers)",
       "ECU Abstraction: MCU-independent, ECU/board-dependent",
@@ -107,7 +119,9 @@
     topic: "autosar",
     type: "theory",
     q: "What is a Complex Device Driver and when would you use one?",
+    vi: "Complex Device Driver là gì và khi nào nên dùng nó?",
     tags: ["CDD", "complex device driver", "complex driver", "non-standard hardware", "timing critical", "SENT", "architecture", "driver phức tạp"],
+    viTags: ["driver phức tạp", "trình điều khiển phức tạp", "phần cứng không chuẩn", "yêu cầu thời gian thực", "thời gian khắt khe", "khi nào dùng cdd"],
     key: [
       "Vertical escape path: RTE down to hardware",
       "For timing-critical or non-standard devices/protocols",
@@ -123,7 +137,9 @@
     topic: "autosar",
     type: "theory",
     q: "What is the difference between an AUTOSAR Interface, a Standardized AUTOSAR Interface and a Standardized Interface?",
+    vi: "AUTOSAR Interface, Standardized AUTOSAR Interface và Standardized Interface khác nhau như thế nào?",
     tags: ["AUTOSAR interface", "standardized AUTOSAR interface", "standardized interface", "port interface", "C API", "service ports", "architecture", "giao diện"],
+    viTags: ["giao diện", "giao diện chuẩn hóa", "các loại interface", "giao diện cổng", "api c", "cổng dịch vụ"],
     key: [
       "AUTOSAR Interface: port-based SWC interface via RTE, project-defined",
       "Standardized AUTOSAR Interface: port-based, content fixed by AUTOSAR",
@@ -139,7 +155,9 @@
     topic: "autosar",
     type: "practical",
     q: "Describe the architecture of the ECU software you worked on and where the modules you integrated sit.",
+    vi: "Mô tả kiến trúc phần mềm ECU bạn đã làm và vị trí của các module bạn đã tích hợp.",
     tags: ["ECU architecture", "draw architecture", "CUBAS", "RH850", "BSW integration", "modules integrated", "overview", "kiến trúc ECU", "dự án"],
+    viTags: ["kiến trúc ecu", "dự án đã làm", "vẽ sơ đồ kiến trúc", "tích hợp bsw", "kinh nghiệm dự án", "module đã tích hợp"],
     key: [
       "Target: RH850 D3/D4/D5, AUTOSAR Classic",
       "Integrated: BswM, Diag, Can, Com, EcuM, OS, MCAL, Mem",
@@ -155,7 +173,9 @@
     topic: "autosar",
     type: "theory",
     q: "Who are the roles in an AUTOSAR project, and what does the integrator do?",
+    vi: "Trong một dự án AUTOSAR có những vai trò nào, và integrator làm những gì?",
     tags: ["roles", "OEM", "Tier-1", "BSW vendor", "MCAL vendor", "integrator", "responsibilities", "workflow", "vai trò", "integration"],
+    viTags: ["vai trò", "người tích hợp", "nhà cung cấp bsw", "nhà sản xuất ô tô", "trách nhiệm", "quy trình làm việc"],
     key: [
       "OEM: system description, communication matrix, ECU extract",
       "Tier-1: application SWCs, ECU configuration, delivery",
@@ -171,7 +191,9 @@
     topic: "autosar",
     type: "theory",
     q: "Which AUTOSAR Classic releases do you know, and what changed between 3.x and 4.x?",
+    vi: "Bạn biết những phiên bản AUTOSAR Classic nào, và giữa 3.x và 4.x có gì thay đổi?",
     tags: ["AUTOSAR release", "version", "4.2.2", "4.3.1", "4.4", "R19-11", "R20-11", "3.x vs 4.x", "phiên bản"],
+    viTags: ["phiên bản", "các bản release", "khác biệt 3.x và 4.x", "thay đổi giữa các phiên bản", "lịch sử autosar"],
     key: [
       "3.x: older, still in some legacy ECUs",
       "4.x: post-build selectable/loadable, variant handling, multicore, CAN FD, SecOC",
@@ -187,7 +209,9 @@
     topic: "autosar",
     type: "practical",
     q: "What is the Det, and how do you use error reporting when debugging an integration?",
+    vi: "Det là gì, và bạn sử dụng việc báo lỗi như thế nào khi debug quá trình tích hợp?",
     tags: ["Det", "development error tracer", "Det_ReportError", "runtime error", "error handling", "Dem", "integration debugging", "TRACE32", "báo lỗi"],
+    viTags: ["báo lỗi", "lỗi phát triển", "theo dõi lỗi", "debug tích hợp", "xử lý lỗi", "gỡ lỗi"],
     key: [
       "Det: collects development errors (wrong params, not initialized)",
       "Enabled in development, usually disabled in production",
@@ -205,7 +229,9 @@
     topic: "autosar",
     type: "theory",
     q: "What SWC types exist in AUTOSAR Classic?",
+    vi: "Trong AUTOSAR Classic có những loại SWC nào?",
     tags: ["SWC types", "application SWC", "sensor actuator SWC", "service SWC", "composition", "CDD", "NvBlock SWC", "parameter SWC", "loại SWC"],
+    viTags: ["loại swc", "thành phần phần mềm", "swc ứng dụng", "swc cảm biến chấp hành", "swc dịch vụ", "phân loại swc"],
     key: [
       "Application SWC: pure logic",
       "Sensor/Actuator SWC: uses IoHwAb, signal conditioning",
@@ -221,7 +247,9 @@
     topic: "autosar",
     type: "theory",
     q: "Explain the port interface types: sender-receiver, client-server and mode switch.",
+    vi: "Giải thích các loại port interface: sender-receiver, client-server và mode switch.",
     tags: ["ports", "sender receiver", "client server", "mode switch", "S/R", "C/S", "port interface", "Rte_Write", "Rte_Call", "cổng giao tiếp"],
+    viTags: ["cổng giao tiếp", "gửi nhận", "máy khách máy chủ", "chuyển chế độ", "giao diện cổng", "kiểu port"],
     key: [
       "S/R: data elements, Rte_Write / Rte_Read, 1:n or n:1",
       "C/S: operations, Rte_Call, sync or async, n:1",
@@ -239,7 +267,9 @@
     topic: "autosar",
     type: "theory",
     q: "What are runnables and RTE events, and how are they mapped to OS tasks?",
+    vi: "Runnable và RTE event là gì, và chúng được ánh xạ vào OS task như thế nào?",
     tags: ["runnable", "RTE event", "TimingEvent", "DataReceivedEvent", "OperationInvokedEvent", "InitEvent", "task mapping", "runnable entity", "ánh xạ task"],
+    viTags: ["ánh xạ task", "sự kiện rte", "thực thể runnable", "sự kiện định kỳ", "map runnable vào task", "lập lịch runnable"],
     key: [
       "Runnable: C function inside an SWC, called by the RTE",
       "Events: Timing, DataReceived, OperationInvoked, Init, ModeSwitch",
@@ -255,7 +285,9 @@
     topic: "autosar",
     type: "theory",
     q: "What is the difference between explicit and implicit sender-receiver communication?",
+    vi: "Sự khác nhau giữa giao tiếp sender-receiver tường minh (explicit) và ngầm định (implicit) là gì?",
     tags: ["explicit", "implicit", "Rte_IRead", "Rte_IWrite", "data consistency", "RTE", "copy semantics", "giao tiếp ngầm định"],
+    viTags: ["giao tiếp ngầm định", "giao tiếp tường minh", "tính nhất quán dữ liệu", "sao chép dữ liệu", "đọc ghi rte"],
     key: [
       "Explicit: Rte_Read/Rte_Write, access happens immediately",
       "Implicit: Rte_IRead/Rte_IWrite, task-local copy",
@@ -273,7 +305,9 @@
     topic: "autosar",
     type: "theory",
     q: "Walk me through the AUTOSAR methodology from system description to generated code.",
+    vi: "Trình bày quy trình phương pháp luận AUTOSAR từ mô tả hệ thống đến code được sinh ra.",
     tags: ["methodology", "ARXML", "system description", "ECU extract", "ECU configuration", "code generation", "RTE generation", "quy trình", "phương pháp luận"],
+    viTags: ["quy trình", "phương pháp luận", "mô tả hệ thống", "sinh code", "cấu hình ecu", "trích xuất ecu", "sinh rte"],
     key: [
       "System description: SWCs, topology, comm matrix, mapping",
       "ECU extract: the part that belongs to one ECU",
@@ -289,7 +323,9 @@
     topic: "autosar",
     type: "theory",
     q: "What is the difference between an SWC description, a BSW module description and an ECU configuration?",
+    vi: "Mô tả SWC, mô tả module BSW và cấu hình ECU khác nhau như thế nào?",
     tags: ["SWC description", "BSWMD", "ECUC", "ECU configuration values", "ARXML", "param definition", "mô tả SWC", "cấu hình ECU"],
+    viTags: ["mô tả swc", "mô tả module bsw", "cấu hình ecu", "định nghĩa tham số", "giá trị cấu hình", "file mô tả"],
     key: [
       "SWC description: ports, interfaces, internal behavior, runnables",
       "BSWMD / param definition: which parameters a module has",
@@ -305,7 +341,9 @@
     topic: "autosar",
     type: "practical",
     q: "You receive a new application SWC with its ARXML and C code. How do you integrate it end to end?",
+    vi: "Bạn nhận được một SWC ứng dụng mới kèm ARXML và code C. Bạn tích hợp nó từ đầu đến cuối như thế nào?",
     tags: ["SWC integration", "ARXML import", "composition", "connectors", "task mapping", "RTE generation", "build", "tích hợp SWC", "integration flow"],
+    viTags: ["tích hợp swc", "import arxml", "kết nối port", "ánh xạ task", "sinh rte", "quy trình tích hợp", "build"],
     key: [
       "Check ARXML: schema, data types, interfaces vs existing ones",
       "Import, instantiate in composition, connect all ports",
@@ -321,7 +359,9 @@
     topic: "autosar",
     type: "theory",
     q: "Explain configuration classes: pre-compile, link-time and post-build.",
+    vi: "Giải thích các lớp cấu hình: pre-compile, link-time và post-build.",
     tags: ["configuration class", "pre-compile", "link-time", "post-build", "_Cfg.h", "_Lcfg.c", "_PBcfg.c", "config pointer", "lớp cấu hình"],
+    viTags: ["lớp cấu hình", "cấu hình lúc biên dịch", "cấu hình lúc link", "cấu hình sau build", "con trỏ cấu hình", "thời điểm cấu hình"],
     key: [
       "Pre-compile: #define in _Cfg.h, most efficient, rebuild",
       "Link-time: const tables in _Lcfg.c, relink only",
@@ -337,7 +377,9 @@
     topic: "autosar",
     type: "theory",
     q: "How are variants handled in AUTOSAR Classic?",
+    vi: "Trong AUTOSAR Classic, các biến thể (variant) được xử lý như thế nào?",
     tags: ["variants", "variant handling", "post-build selectable", "predefined variant", "variation point", "system constant", "biến thể", "variant coding"],
+    viTags: ["biến thể", "xử lý biến thể", "quản lý variant", "điểm biến thể", "hằng số hệ thống", "mã hóa biến thể"],
     key: [
       "Variation points in ARXML, bound at different times",
       "Pre-build: system constants, conditional compilation",
@@ -353,7 +395,9 @@
     topic: "autosar",
     type: "theory",
     q: "What is MemMap and compiler abstraction, and why do integrators care?",
+    vi: "MemMap và compiler abstraction là gì, và tại sao integrator phải quan tâm?",
     tags: ["MemMap", "memory mapping", "Compiler.h", "compiler abstraction", "pragma section", "START_SEC", "linker script", "memory sections", "vùng nhớ"],
+    viTags: ["vùng nhớ", "ánh xạ bộ nhớ", "trừu tượng trình biên dịch", "section bộ nhớ", "linker script", "phân vùng bộ nhớ"],
     key: [
       "Modules wrap code/data in START_SEC / STOP_SEC + include MemMap",
       "MemMap maps section names to compiler pragmas",
@@ -371,7 +415,9 @@
     topic: "autosar",
     type: "theory",
     q: "What is the BSW Scheduler (SchM) and what are exclusive areas?",
+    vi: "BSW Scheduler (SchM) là gì và exclusive area là gì?",
     tags: ["SchM", "BSW scheduler", "exclusive area", "SchM_Enter", "SchM_Exit", "critical section", "MainFunction", "vùng loại trừ", "data consistency"],
+    viTags: ["vùng loại trừ", "bộ lập lịch bsw", "vùng tới hạn", "critical section", "tính nhất quán dữ liệu", "khóa ngắt"],
     key: [
       "SchM: part of RTE for BSW modules",
       "Calls <Mod>_MainFunction cyclically via mapped OS tasks",
@@ -389,7 +435,9 @@
     topic: "autosar",
     type: "practical",
     q: "How do you schedule BSW main functions, and what goes wrong if you get it wrong?",
+    vi: "Bạn lập lịch các main function của BSW như thế nào, và điều gì xảy ra nếu lập lịch sai?",
     tags: ["MainFunction", "BSW scheduling", "task mapping", "period", "Com_MainFunctionRx", "NvM_MainFunction", "Fee_MainFunction", "timing", "lập lịch BSW"],
+    viTags: ["lập lịch bsw", "chu kỳ main function", "ánh xạ task", "định thời", "lỗi lập lịch", "chu kỳ gọi"],
     key: [
       "Period must match the configured module period",
       "Keep related chains together: Com Rx/Tx, NvM/Fee/Fls",
@@ -407,7 +455,9 @@
     topic: "autosar",
     type: "theory",
     q: "Describe the CAN communication stack and the path of a signal from SWC to bus.",
+    vi: "Mô tả CAN communication stack và đường đi của một signal từ SWC ra bus.",
     tags: ["Com stack", "Com", "PduR", "CanIf", "Can driver", "signal path", "Com_SendSignal", "I-PDU", "Tx path", "luồng tín hiệu"],
+    viTags: ["luồng tín hiệu", "stack truyền thông can", "đường đi tín hiệu", "gửi tín hiệu", "đường truyền tx", "truyền thông"],
     key: [
       "SWC Rte_Write -> Com_SendSignal (pack into I-PDU)",
       "Com transmission mode: periodic / direct / mixed",
@@ -423,7 +473,9 @@
     topic: "autosar",
     type: "practical",
     q: "A signal is visible on the CAN bus but the SWC does not receive it. How do you debug?",
+    vi: "Signal đã thấy trên bus CAN nhưng SWC không nhận được. Bạn debug như thế nào?",
     tags: ["debug", "CAN Rx", "signal not received", "CanIf_RxIndication", "Com_RxIndication", "I-PDU group", "HRH filter", "TRACE32", "CANoe", "gỡ lỗi"],
+    viTags: ["gỡ lỗi", "không nhận được tín hiệu", "mất tín hiệu can", "nhận can", "lọc bản tin", "debug can rx"],
     key: [
       "Go bottom-up, get evidence at each layer",
       "Bus: ID, DLC, cycle, std vs extended in CANoe",
@@ -439,7 +491,9 @@
     topic: "autosar",
     type: "theory",
     q: "What are the roles of ComM, CanSM and CanNm?",
+    vi: "Vai trò của ComM, CanSM và CanNm là gì?",
     tags: ["ComM", "CanSM", "CanNm", "network management", "bus-off", "communication mode", "FULL_COMMUNICATION", "sleep", "quản lý mạng"],
+    viTags: ["quản lý mạng", "quản lý truyền thông", "trạng thái bus can", "lỗi bus-off", "chế độ ngủ", "chế độ truyền thông"],
     key: [
       "ComM: users request FULL/NO com per channel",
       "CanSM: controller + transceiver modes, bus-off recovery",
@@ -455,7 +509,9 @@
     topic: "autosar",
     type: "theory",
     q: "What do PduR and CanTp do, and how does a diagnostic request reach Dcm?",
+    vi: "PduR và CanTp làm gì, và một request chẩn đoán đến được Dcm như thế nào?",
     tags: ["PduR", "CanTp", "transport protocol", "ISO 15765-2", "segmentation", "flow control", "STmin", "block size", "Dcm", "định tuyến PDU"],
+    viTags: ["định tuyến pdu", "giao thức truyền tải", "phân đoạn bản tin", "điều khiển luồng", "yêu cầu chẩn đoán", "tp can"],
     key: [
       "PduR: static routing table, upper <-> lower modules",
       "Also gateway routing between buses",
@@ -473,7 +529,9 @@
     topic: "autosar",
     type: "theory",
     q: "Explain the roles of Dcm and Dem in AUTOSAR diagnostics.",
+    vi: "Giải thích vai trò của Dcm và Dem trong chẩn đoán AUTOSAR.",
     tags: ["Dcm", "Dem", "DTC", "diagnostics", "UDS", "DSL", "DSD", "DSP", "event memory", "freeze frame", "chẩn đoán"],
+    viTags: ["chẩn đoán", "mã lỗi", "bộ nhớ sự kiện", "quản lý lỗi", "ảnh chụp dữ liệu lỗi", "giao tiếp chẩn đoán"],
     key: [
       "Dcm: UDS server, handles tester requests",
       "Dcm sub-layers: DSL (session/timing), DSD (dispatch), DSP (processing)",
@@ -489,7 +547,9 @@
     topic: "autosar",
     type: "theory",
     q: "How does Dem debouncing work, and what do the DTC status bits mean?",
+    vi: "Cơ chế debounce của Dem hoạt động thế nào, và các bit trạng thái DTC có ý nghĩa gì?",
     tags: ["Dem", "debouncing", "counter based", "time based", "DTC status byte", "pending", "confirmed", "operation cycle", "aging", "chống dội lỗi"],
+    viTags: ["chống dội lỗi", "lọc lỗi", "trạng thái mã lỗi", "bit trạng thái dtc", "chu kỳ vận hành", "lão hóa lỗi", "lỗi xác nhận"],
     key: [
       "Monitors report PREFAILED/PREPASSED or FAILED/PASSED",
       "Counter-based: step up/down, fail and pass thresholds",
@@ -505,7 +565,9 @@
     topic: "autosar",
     type: "theory",
     q: "How are UDS sessions and security access handled in Dcm?",
+    vi: "Session UDS và security access được xử lý trong Dcm như thế nào?",
     tags: ["UDS", "0x10", "0x27", "session", "security access", "seed key", "S3 timer", "NRC", "Dcm", "phiên chẩn đoán", "bảo mật"],
+    viTags: ["phiên chẩn đoán", "bảo mật", "truy cập bảo mật", "seed key", "mã phản hồi âm", "chuyển phiên"],
     key: [
       "0x10: default / extended / programming session",
       "Services and DIDs restricted by session and security level",
@@ -521,7 +583,9 @@
     topic: "autosar",
     type: "practical",
     q: "How would you integrate a new DID and a new DTC into an existing AUTOSAR ECU?",
+    vi: "Bạn tích hợp một DID mới và một DTC mới vào ECU AUTOSAR có sẵn như thế nào?",
     tags: ["DID", "DTC", "Dcm configuration", "Dem configuration", "0x22", "0x19", "event", "integration", "thêm DTC", "thêm DID"],
+    viTags: ["thêm dtc", "thêm did", "cấu hình chẩn đoán", "mã lỗi mới", "đọc dữ liệu chẩn đoán", "cấu hình dcm dem"],
     key: [
       "DID: Dcm DID + data element, read/write via C/S port or callback",
       "Set session/security per DID, length and data type",
@@ -539,7 +603,9 @@
     topic: "autosar",
     type: "theory",
     q: "Explain the AUTOSAR memory stack and NvM block types.",
+    vi: "Giải thích memory stack của AUTOSAR và các loại block NvM.",
     tags: ["NvM", "MemIf", "Fee", "Fls", "Ea", "Eep", "memory stack", "native", "redundant", "dataset", "block", "bộ nhớ không mất"],
+    viTags: ["bộ nhớ không bay hơi", "stack bộ nhớ", "loại block nvm", "giả lập eeprom", "flash", "lưu dữ liệu"],
     key: [
       "NvM: block-level service for SWCs (read/write/restore)",
       "MemIf: abstracts Fee (flash) vs Ea (EEPROM)",
@@ -555,7 +621,9 @@
     topic: "autosar",
     type: "practical",
     q: "After a power cycle, an SWC finds its NvM data reset to defaults. How do you investigate?",
+    vi: "Sau khi tắt bật nguồn, một SWC thấy dữ liệu NvM bị reset về mặc định. Bạn điều tra thế nào?",
     tags: ["NvM", "data loss", "NvM_WriteAll", "shutdown", "NvM_GetErrorStatus", "CRC", "Fee", "ReadAll", "mất dữ liệu", "debug"],
+    viTags: ["mất dữ liệu", "dữ liệu về mặc định", "tắt bật nguồn", "lỗi ghi nvm", "lỗi crc", "bộ nhớ không bay hơi", "gỡ lỗi"],
     key: [
       "Was it ever written? Block marked dirty / WriteBlock called?",
       "Shutdown: WriteAll started and finished before power off?",
@@ -573,7 +641,9 @@
     topic: "autosar",
     type: "theory",
     q: "Describe the EcuM startup and shutdown sequence.",
+    vi: "Mô tả trình tự khởi động và tắt nguồn của EcuM.",
     tags: ["EcuM", "startup", "shutdown", "StartOS", "DriverInitZero", "DriverInitOne", "BswM_Init", "NvM_ReadAll", "khởi động", "tắt nguồn"],
+    viTags: ["khởi động", "tắt nguồn", "trình tự khởi tạo", "quản lý trạng thái ecu", "khởi tạo driver", "startup sequence"],
     key: [
       "EcuM_Init: DriverInitZero (Det, Dem_PreInit), select PB config",
       "Mcu_Init + clock, DriverInitOne (Port, Dio, Gpt, Wdg, Adc...)",
@@ -589,7 +659,9 @@
     topic: "autosar",
     type: "theory",
     q: "How does BswM work? Explain mode requests, rules and action lists.",
+    vi: "BswM hoạt động như thế nào? Giải thích mode request, rule và action list.",
     tags: ["BswM", "mode request", "rule", "action list", "logical expression", "PduGroupSwitch", "immediate", "deferred", "quản lý mode", "BSW mode manager"],
+    viTags: ["quản lý mode", "yêu cầu chế độ", "luật điều kiện", "danh sách hành động", "biểu thức logic", "chuyển chế độ"],
     key: [
       "Inputs: mode request ports from EcuM, ComM, Dcm, NvM, SWCs",
       "Mode conditions combined into logical expressions",
@@ -605,7 +677,9 @@
     topic: "autosar",
     type: "practical",
     q: "The ECU does not go to sleep, or wakes up immediately. How do you debug it?",
+    vi: "ECU không vào chế độ ngủ, hoặc vừa ngủ đã thức dậy ngay. Bạn debug như thế nào?",
     tags: ["sleep", "wakeup", "ECU does not sleep", "ComM", "CanNm", "EcuM wakeup validation", "BswM", "RUN request", "không ngủ", "debug"],
+    viTags: ["không ngủ", "chế độ ngủ", "đánh thức", "thức dậy ngay", "xác thực wakeup", "gỡ lỗi"],
     key: [
       "Who still holds a request: ComM user, EcuM RUN, Dcm session?",
       "CanNm: another node keeps NM alive? Network released?",
@@ -623,7 +697,9 @@
     topic: "autosar",
     type: "theory",
     q: "Explain OSEK/AUTOSAR OS task states, basic vs extended tasks and conformance classes.",
+    vi: "Giải thích các trạng thái task trong OSEK/AUTOSAR OS, basic task và extended task, và các conformance class.",
     tags: ["OSEK", "AUTOSAR OS", "task states", "basic task", "extended task", "BCC1", "BCC2", "ECC1", "ECC2", "conformance class", "trạng thái task"],
+    viTags: ["trạng thái task", "task cơ bản", "task mở rộng", "lớp tuân thủ", "hệ điều hành thời gian thực", "osek"],
     key: [
       "States: SUSPENDED, READY, RUNNING, WAITING (extended only)",
       "Basic: run to completion, no WaitEvent",
@@ -639,7 +715,9 @@
     topic: "autosar",
     type: "theory",
     q: "What are OS resources and how does the priority ceiling protocol work?",
+    vi: "OS resource là gì và giao thức priority ceiling hoạt động như thế nào?",
     tags: ["resource", "GetResource", "ReleaseResource", "priority ceiling", "PCP", "priority inversion", "deadlock", "RES_SCHEDULER", "tài nguyên", "đảo ưu tiên"],
+    viTags: ["tài nguyên", "tài nguyên dùng chung", "đảo ưu tiên", "trần ưu tiên", "khóa chết", "loại trừ lẫn nhau"],
     key: [
       "GetResource/ReleaseResource protect shared data",
       "Ceiling = highest priority of any user of the resource",
@@ -655,7 +733,9 @@
     topic: "autosar",
     type: "theory",
     q: "Explain ISR categories, alarms and schedule tables in AUTOSAR OS.",
+    vi: "Giải thích các loại ISR, alarm và schedule table trong AUTOSAR OS.",
     tags: ["ISR category 1", "ISR category 2", "alarm", "counter", "schedule table", "expiry point", "SetRelAlarm", "interrupt", "ngắt", "bảng lịch"],
+    viTags: ["ngắt", "bảng lịch", "loại isr", "bộ đếm", "báo thức", "kích hoạt định kỳ"],
     key: [
       "Cat1: bypasses OS, fastest, almost no OS API",
       "Cat2: OS wrapper, may call ActivateTask/SetEvent",
@@ -671,7 +751,9 @@
     topic: "autosar",
     type: "theory",
     q: "What are OS-Applications, scalability classes and memory protection in AUTOSAR OS?",
+    vi: "OS-Application, scalability class và memory protection trong AUTOSAR OS là gì?",
     tags: ["OS-Application", "scalability class", "SC1", "SC3", "memory protection", "MPU", "timing protection", "ProtectionHook", "trusted", "bảo vệ bộ nhớ"],
+    viTags: ["bảo vệ bộ nhớ", "lớp mở rộng", "bảo vệ thời gian", "ứng dụng os", "phân vùng", "an toàn chức năng"],
     key: [
       "SC1: OSEK-like + schedule tables, stack monitoring",
       "SC2: timing protection; SC3: memory protection; SC4: both",
@@ -687,7 +769,9 @@
     topic: "autosar",
     type: "practical",
     q: "The ECU resets randomly after integrating a new feature. You suspect a stack overflow. How do you confirm and fix it?",
+    vi: "ECU bị reset ngẫu nhiên sau khi tích hợp một tính năng mới. Bạn nghi ngờ tràn stack. Làm sao để xác nhận và sửa?",
     tags: ["stack overflow", "random reset", "E_OS_STACKFAULT", "ProtectionHook", "stack fill pattern", "TRACE32", "reset reason", "stack size", "tràn stack", "reset ngẫu nhiên"],
+    viTags: ["tràn stack", "reset ngẫu nhiên", "nguyên nhân reset", "kích thước stack", "mẫu điền stack", "gỡ lỗi"],
     key: [
       "Read reset cause register first; watchdog vs exception",
       "Enable OS stack monitoring -> ProtectionHook / E_OS_STACKFAULT",
@@ -705,7 +789,9 @@
     topic: "autosar",
     type: "practical",
     q: "What are the key MCAL modules, and what typical configuration bugs do you see?",
+    vi: "Các module MCAL chính là gì, và bạn thường gặp những lỗi cấu hình nào?",
     tags: ["MCAL", "Port", "Dio", "Adc", "Gpt", "Pwm", "Icu", "Wdg", "Mcu", "Spi", "Fls", "configuration bugs", "lỗi cấu hình"],
+    viTags: ["lỗi cấu hình", "module mcal", "driver vi điều khiển", "cấu hình chân", "trình điều khiển cấp thấp", "cấu hình mcal"],
     key: [
       "Port: pin mux/direction wrong -> Dio write has no effect",
       "Mcu: clock/PLL wrong -> all timings scaled",
@@ -721,7 +807,9 @@
     topic: "autosar",
     type: "practical",
     q: "Tell me about your MCAL validation work. How did you test drivers on target and on VECU?",
+    vi: "Kể về công việc kiểm thử MCAL của bạn. Bạn đã test driver trên target và trên VECU như thế nào?",
     tags: ["MCAL validation", "unit test", "component test", "VECU", "target hardware", "DIO", "ADC", "watchdog", "Cantata", "Pytest", "kiểm thử MCAL"],
+    viTags: ["kiểm thử mcal", "kiểm thử đơn vị", "kiểm thử thành phần", "phần cứng thật", "ecu ảo", "kiểm thử driver"],
     key: [
       "Groups: digital I/O, analog, timer, communication, watchdog",
       "Requirement analysis -> test design -> execution -> evidence (ASPICE)",
@@ -739,7 +827,9 @@
     topic: "autosar",
     type: "practical",
     q: "What are the most common AUTOSAR integration errors, and how do you find them?",
+    vi: "Những lỗi tích hợp AUTOSAR phổ biến nhất là gì, và bạn tìm ra chúng như thế nào?",
     tags: ["integration errors", "RTE generation error", "unconnected port", "data type mismatch", "init order", "section overflow", "linker error", "DET", "lỗi tích hợp"],
+    viTags: ["lỗi tích hợp", "lỗi sinh rte", "port chưa kết nối", "sai kiểu dữ liệu", "thứ tự khởi tạo", "lỗi linker", "tràn section"],
     key: [
       "RTE gen: unconnected ports, incompatible interfaces/types",
       "Link: undefined Rte_/MainFunction, missing files, version mismatch",
@@ -755,7 +845,9 @@
     topic: "autosar",
     type: "practical",
     q: "RTE generation fails with a data type mismatch between two connected ports. How do you resolve it?",
+    vi: "Sinh RTE bị lỗi do không khớp kiểu dữ liệu giữa hai port được nối với nhau. Bạn giải quyết thế nào?",
     tags: ["RTE generation", "data type mismatch", "implementation data type", "application data type", "data type mapping", "compatibility", "compu method", "kiểu dữ liệu"],
+    viTags: ["kiểu dữ liệu", "không khớp kiểu", "lỗi sinh rte", "ánh xạ kiểu dữ liệu", "tương thích", "kiểu dữ liệu ứng dụng"],
     key: [
       "Read which element and which two types clash",
       "Application type vs implementation type vs mapping set",
@@ -771,7 +863,9 @@
     topic: "autosar",
     type: "theory",
     q: "How does AUTOSAR support portable, reusable and modular software?",
+    vi: "AUTOSAR hỗ trợ phần mềm khả chuyển, tái sử dụng và mô-đun hóa như thế nào?",
     tags: ["portability", "reusability", "modularity", "standardized interfaces", "hardware independence", "Platform_Types", "configuration", "tái sử dụng", "khả chuyển"],
+    viTags: ["tái sử dụng", "khả chuyển", "mô-đun hóa", "độc lập phần cứng", "giao diện chuẩn hóa", "chuyển đổi nền tảng"],
     key: [
       "Standard module APIs (SWS) across vendors",
       "SWCs HW-independent, only ports via RTE",
@@ -787,7 +881,9 @@
     topic: "autosar",
     type: "practical",
     q: "How do you optimise code for a specific target and compiler in an AUTOSAR project?",
+    vi: "Bạn tối ưu code cho một target và compiler cụ thể trong dự án AUTOSAR như thế nào?",
     tags: ["optimization", "code optimization", "RTE optimization", "inlining", "fast RAM", "compiler options", "map file", "pre-compile", "tối ưu", "compiler"],
+    viTags: ["tối ưu", "tối ưu code", "tùy chọn biên dịch", "tối ưu rte", "file map", "hiệu năng", "ram nhanh"],
     key: [
       "Measure first: map file, trace, cycle counter",
       "Pre-compile config + DET off in release = dead code removed",
@@ -805,7 +901,9 @@
     topic: "autosar",
     type: "theory",
     q: "What are the main differences between AUTOSAR Classic and AUTOSAR Adaptive?",
+    vi: "Những khác biệt chính giữa AUTOSAR Classic và AUTOSAR Adaptive là gì?",
     tags: ["Classic vs Adaptive", "AUTOSAR Adaptive", "ARA", "POSIX", "SOME/IP", "service-oriented", "execution management", "C++", "so sánh"],
+    viTags: ["so sánh", "khác biệt classic adaptive", "hướng dịch vụ", "kiến trúc adaptive", "quản lý thực thi", "nền tảng adaptive"],
     key: [
       "Classic: static config, OSEK OS, C, signal-based",
       "Adaptive: POSIX OS, C++ ara:: APIs, service-oriented (SOME/IP)",
@@ -821,7 +919,9 @@
     topic: "autosar",
     type: "practical",
     q: "You did system testing on AUTOSAR Adaptive. What was different compared to your Classic integration work?",
+    vi: "Bạn đã làm system test trên AUTOSAR Adaptive. Điều gì khác so với công việc tích hợp Classic của bạn?",
     tags: ["AUTOSAR Adaptive", "ARA", "system test", "QNX", "Embedded Linux", "R-Car", "Raspberry Pi", "Classic vs Adaptive", "kiểm thử hệ thống"],
+    viTags: ["kiểm thử hệ thống", "kinh nghiệm adaptive", "so sánh classic adaptive", "linux nhúng", "khác biệt khi test", "dự án đã làm"],
     key: [
       "Platforms: Raspberry Pi 4, R-Car, QNX, Embedded Linux",
       "Debug level: processes, services, networking, logs",
@@ -840,7 +940,9 @@
     type: "practical",
     bridge: true,
     q: "Have you worked with EB tresos Studio? How would you get productive with it?",
+    vi: "Bạn đã làm việc với EB tresos Studio chưa? Bạn sẽ làm quen để làm việc hiệu quả với nó như thế nào?",
     tags: ["EB tresos", "tresos Studio", "Elektrobit", "RTA-CAR", "ISOLAR", "configuration tool", "bridge", "công cụ cấu hình", "BSW configuration"],
+    viTags: ["công cụ cấu hình", "cấu hình bsw", "làm quen công cụ mới", "chuyển đổi công cụ", "tool autosar", "học tresos"],
     key: [
       "Honest: no EB tresos project; used ETAS RTA-CAR",
       "Same workflow: import ARXML, configure, validate, generate",
@@ -857,7 +959,9 @@
     type: "practical",
     bridge: true,
     q: "How would you integrate an SWC authored in AUTOSAR Builder into an EB tresos-based BSW configuration?",
+    vi: "Bạn tích hợp một SWC được tạo bằng AUTOSAR Builder vào cấu hình BSW dựa trên EB tresos như thế nào?",
     tags: ["AUTOSAR Builder", "EB tresos", "SWC ARXML", "import", "RTE generation", "ECU extract", "bridge", "tích hợp", "ARXML flow"],
+    viTags: ["tích hợp", "import swc", "luồng arxml", "sinh rte", "trích xuất ecu", "kết hợp công cụ"],
     key: [
       "AUTOSAR Builder: SWC types, ports, runnables, compositions",
       "Export SWC ARXML / ECU extract",
@@ -874,7 +978,9 @@
     type: "practical",
     bridge: true,
     q: "How would you run EB tresos configuration and generation in a CI pipeline?",
+    vi: "Bạn chạy cấu hình và generate EB tresos trong CI pipeline như thế nào?",
     tags: ["EB tresos", "command line", "tresos_cmd", "CI", "pipeline", "headless generation", "verify", "config as code", "bridge", "tích hợp liên tục"],
+    viTags: ["tích hợp liên tục", "dòng lệnh", "sinh code tự động", "chạy không giao diện", "tự động hóa", "cấu hình dạng code"],
     key: [
       "Config (XDM/ARXML) in Git, reviewed like code",
       "Headless: import -> verify -> generate via command line",
@@ -894,7 +1000,9 @@
     topic: "autosar",
     type: "behavioral",
     q: "Tell me about an integration failure that involved several BSW teams. How did you drive it to resolution?",
+    vi: "Kể về một lỗi tích hợp liên quan đến nhiều team BSW. Bạn đã thúc đẩy giải quyết nó như thế nào?",
     tags: ["cross-team", "integration failure", "BSW teams", "coordination", "root cause", "STAR", "CUBAS", "phối hợp", "giải quyết lỗi"],
+    viTags: ["phối hợp", "giải quyết lỗi", "làm việc liên nhóm", "nguyên nhân gốc", "lỗi tích hợp", "kinh nghiệm xử lý sự cố"],
     key: [
       "Situation: CUBAS integration, RH850 D3/D4/D5",
       "Reproduce reliably, isolate the layer with evidence",

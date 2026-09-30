@@ -7,7 +7,7 @@ const path = require("path");
 const vm = require("vm");
 
 const DIR = path.join(__dirname, "..", "assets", "js", "qbank");
-const TOPICS = ["intro", "project", "autosar", "embedded", "protocols", "debug", "testing", "process", "cicd", "linux"];
+const TOPICS = ["intro", "hm", "project", "autosar", "embedded", "protocols", "debug", "testing", "process", "cicd", "linux"];
 const TYPES = ["theory", "practical", "behavioral"];
 const LANGS = ["c", "cpp", "python", "yaml", "bash", "text"];
 
@@ -44,8 +44,10 @@ for (const file of files) {
     arr("tags", 2, 15); arr("key", 2, 6);
     if (it.followups !== undefined) arr("followups", 1, 4);
     if (it.bridge !== undefined && typeof it.bridge !== "boolean") err(`"bridge" must be boolean`);
+    if (it.vi !== undefined) str("vi", 10);
+    if (it.viTags !== undefined) arr("viTags", 1, 12);
     if (it.code !== undefined) { str("code", 5); if (!LANGS.includes(it.lang)) err(`"lang" must be one of ${LANGS.join(",")} when code is set`); }
-    const allowed = ["id", "topic", "type", "bridge", "q", "tags", "key", "answer", "code", "lang", "followups"];
+    const allowed = ["id", "topic", "type", "bridge", "q", "vi", "tags", "viTags", "key", "answer", "code", "lang", "followups"];
     Object.keys(it).forEach(k => { if (!allowed.includes(k)) err(`unknown field "${k}"`); });
     if (ids.has(it.id)) err(`duplicate id (also in ${ids.get(it.id)})`); else ids.set(it.id, path.basename(file));
     if (/<(?!\/?(strong|em|code|b|i|br)\b)[a-z]/i.test(it.answer || "")) err(`answer uses HTML tags other than strong/em/code/b/i/br`);

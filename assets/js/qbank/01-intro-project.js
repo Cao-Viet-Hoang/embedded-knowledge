@@ -8,7 +8,9 @@
     topic: "intro",
     type: "behavioral",
     q: "Tell me about yourself.",
+    vi: "Hãy giới thiệu về bản thân bạn.",
     tags: ["pitch", "self-introduction", "tell me about yourself", "90 seconds", "giới thiệu bản thân", "CUBAS", "SENT", "integration"],
+    viTags: ["tự giới thiệu", "giới thiệu ngắn gọn", "kinh nghiệm làm việc", "tóm tắt bản thân", "mở đầu phỏng vấn", "pitch bản thân"],
     key: [
       "Hook: ~4 years Bosch, integration + automation",
       "Classic: MCAL validation, CUBAS BSW integrator, RH850, TRACE32, ASPICE",
@@ -26,7 +28,9 @@
     topic: "intro",
     type: "behavioral",
     q: "You moved from AUTOSAR Classic to Adaptive to an AI platform in under four years. Isn't that a lot of jumping around?",
+    vi: "Chưa đến bốn năm mà bạn đã chuyển từ AUTOSAR Classic sang Adaptive rồi sang nền tảng AI. Như vậy có phải là nhảy việc quá nhiều không?",
     tags: ["career path", "job hopping", "Classic to Adaptive", "career logic", "chuyển hướng", "nhảy việc", "Bosch"],
+    viTags: ["thay đổi công việc", "định hướng nghề nghiệp", "lộ trình sự nghiệp", "chuyển từ classic sang adaptive", "hay đổi việc", "lý do chuyển mảng"],
     key: [
       "All inside Bosch — internal moves, not job hopping",
       "Thread: turn repetitive engineering work into automation",
@@ -43,7 +47,9 @@
     topic: "intro",
     type: "behavioral",
     q: "Why Luxoft?",
+    vi: "Tại sao bạn chọn Luxoft?",
     tags: ["why Luxoft", "motivation", "company", "OEM", "Tier-1", "vì sao chọn Luxoft", "động lực"],
+    viTags: ["tại sao chọn công ty", "lý do ứng tuyển", "động lực ứng tuyển", "luxoft", "hiểu biết về công ty"],
     key: [
       "Role combines both halves: AUTOSAR integration + CI",
       "Integrator for many OEMs/Tier-1s → broad toolchains",
@@ -59,7 +65,9 @@
     topic: "intro",
     type: "behavioral",
     q: "Why this role? What in the job description matches you?",
+    vi: "Tại sao bạn chọn vị trí này? Điểm nào trong mô tả công việc phù hợp với bạn?",
     tags: ["why this role", "JD match", "fit", "integration engineer", "CI", "phù hợp JD", "vị trí"],
+    viTags: ["tại sao chọn vị trí này", "mô tả công việc", "phù hợp với vị trí", "yêu cầu công việc", "kỹ sư tích hợp", "đáp ứng jd"],
     key: [
       "SWC/ARXML integration ↔ CUBAS BSW integrator on RH850",
       "ASPICE, traceability ↔ owned req-to-test mapping, evidence",
@@ -76,7 +84,9 @@
     topic: "intro",
     type: "behavioral",
     q: "You're currently an AI Platform Engineer. Why go back to embedded integration?",
+    vi: "Hiện tại bạn đang là AI Platform Engineer. Tại sao lại muốn quay về làm tích hợp embedded?",
     tags: ["AI platform", "career change", "why back to embedded", "platform engineering", "quay lại embedded", "AI", "DevOps"],
+    viTags: ["chuyển nghề", "quay về nhúng", "nền tảng ai", "lý do đổi hướng", "kỹ sư nền tảng", "trở lại tích hợp phần mềm"],
     key: [
       "Not a step back — bringing platform skills home",
       "Platform work = infra/ops: containers, IaC, access, cost",
@@ -93,7 +103,9 @@
     topic: "intro",
     type: "behavioral",
     q: "Why are you leaving Bosch?",
+    vi: "Tại sao bạn muốn rời Bosch?",
     tags: ["why leave", "leaving Bosch", "motivation", "change", "vì sao nghỉ", "rời Bosch"],
+    viTags: ["lý do nghỉ việc", "rời công ty cũ", "nghỉ việc ở bosch", "tìm môi trường mới", "lý do thay đổi"],
     key: [
       "Grateful: strong AUTOSAR base + chance to lead automation",
       "Want a role combining integration + CI at project level",
@@ -109,7 +121,9 @@
     topic: "intro",
     type: "behavioral",
     q: "What are your main strengths?",
+    vi: "Điểm mạnh chính của bạn là gì?",
     tags: ["strengths", "điểm mạnh", "root cause", "automation", "coordination", "self-assessment"],
+    viTags: ["thế mạnh", "ưu điểm", "tìm nguyên nhân gốc", "tự động hóa", "phối hợp nhóm", "tự đánh giá"],
     key: [
       "Root cause across HW/SW/protocol boundaries (TRACE32, UDE, SENT)",
       "Turn manual workflows into automation (1–2 months → 2–3 days)",
@@ -126,7 +140,9 @@
     type: "behavioral",
     bridge: true,
     q: "What is your biggest weakness compared to this job description?",
+    vi: "So với mô tả công việc này, điểm yếu lớn nhất của bạn là gì?",
     tags: ["weakness", "gap", "điểm yếu", "EB tresos", "Jenkins", "GitLab", "honest", "bridge"],
+    viTags: ["nhược điểm", "thiếu sót so với jd", "kỹ năng còn thiếu", "khoảng trống kỹ năng", "chưa dùng eb tresos", "cách khắc phục điểm yếu"],
     key: [
       "Real gap, not core: EB tresos / AUTOSAR Builder, Jenkins/GitLab",
       "Equivalent done: RTA-CAR config, Azure Pipelines YAML",
@@ -142,7 +158,9 @@
     topic: "intro",
     type: "behavioral",
     q: "Tell me about your leadership experience.",
+    vi: "Hãy kể về kinh nghiệm lãnh đạo của bạn.",
     tags: ["leadership", "lead", "team lead", "SENT automation", "Agile", "dẫn dắt", "quản lý nhóm", "integration point"],
+    viTags: ["kinh nghiệm lãnh đạo", "trưởng nhóm", "lead team", "quản lý dự án", "dẫn dắt đội tự động hóa", "vai trò lead"],
     key: [
       "SENT automation lead: plan, break down, track, deliver",
       "Agile: backlog, sprints, unblock teammates",
@@ -159,7 +177,9 @@
     topic: "intro",
     type: "behavioral",
     q: "Tell me about a conflict with another team and how you resolved it.",
+    vi: "Hãy kể về một lần xung đột với team khác và cách bạn giải quyết.",
     tags: ["conflict", "disagreement", "stakeholder", "cross-team", "xung đột", "bất đồng", "BSW teams", "STAR"],
+    viTags: ["giải quyết xung đột", "mâu thuẫn giữa các team", "bất đồng quan điểm", "làm việc liên nhóm", "xử lý tranh chấp", "phối hợp với team bsw"],
     key: [
       "S: integration issue, two BSW teams disagree on the owner",
       "Move from opinions to evidence: trace, logs, spec",
@@ -176,7 +196,9 @@
     topic: "intro",
     type: "behavioral",
     q: "How do you handle pressure and tight deadlines? Give an example.",
+    vi: "Bạn xử lý áp lực và deadline gấp như thế nào? Cho một ví dụ.",
     tags: ["pressure", "deadline", "stress management", "prioritization", "áp lực", "hạn chót", "delivery"],
+    viTags: ["làm việc dưới áp lực", "deadline gấp", "quản lý căng thẳng", "ưu tiên công việc", "chạy deadline", "sắp xếp thứ tự ưu tiên"],
     key: [
       "S: [fill: real deadline situation]",
       "Triage: what blocks delivery vs what can wait",
@@ -193,7 +215,9 @@
     topic: "intro",
     type: "behavioral",
     q: "Tell me about a mistake or failure and what you learned.",
+    vi: "Hãy kể về một sai lầm hoặc thất bại và bạn đã học được gì.",
     tags: ["failure", "mistake", "lesson learned", "thất bại", "sai lầm", "bài học", "STAR"],
+    viTags: ["mắc lỗi", "thất bại trong công việc", "bài học kinh nghiệm", "rút kinh nghiệm", "sai lầm lớn nhất", "học từ thất bại"],
     key: [
       "Pick a real technical mistake, own it, no blame",
       "S/T: [fill: real mistake and context]",
@@ -210,7 +234,9 @@
     topic: "intro",
     type: "practical",
     q: "How do you learn a new tool or domain quickly? Give an example.",
+    vi: "Bạn học một công cụ hoặc lĩnh vực mới nhanh bằng cách nào? Cho một ví dụ.",
     tags: ["learning", "ramp up", "new tool", "fast learner", "học nhanh", "công cụ mới", "Adaptive", "Terraform"],
+    viTags: ["khả năng học hỏi", "học công cụ mới", "làm quen nhanh", "tiếp cận lĩnh vực mới", "tự học", "thích nghi nhanh"],
     key: [
       "Bridge from what I know (concept mapping)",
       "Learn by delivering something real, early",
@@ -227,7 +253,9 @@
     topic: "intro",
     type: "behavioral",
     q: "Tell me about your awards and internal tools.",
+    vi: "Hãy kể về các giải thưởng và công cụ nội bộ bạn đã làm.",
     tags: ["awards", "recognition", "Best Performance", "Pullogic", "Lazy Doc", "Collect Review Finding", "giải thưởng", "innovation"],
+    viTags: ["giải thưởng nội bộ", "thành tích", "công cụ nội bộ", "sáng kiến", "được ghi nhận", "tool tự phát triển"],
     key: [
       "Best/Outstanding Performance every year, department level",
       "One company-level recognition [fill: what for]",
@@ -244,7 +272,9 @@
     topic: "intro",
     type: "practical",
     q: "What would you expect to achieve in your first three to six months?",
+    vi: "Bạn kỳ vọng đạt được gì trong ba đến sáu tháng đầu tiên?",
     tags: ["first 90 days", "onboarding", "expectations", "3-6 months", "kỳ vọng", "6 tháng đầu", "plan"],
+    viTags: ["kế hoạch 90 ngày", "3 tháng đầu", "hội nhập công việc", "mục tiêu ban đầu", "kỳ vọng khi mới vào", "làm quen môi trường mới"],
     key: [
       "Month 1: learn project, stack, pipeline, baseline flow",
       "Measure before changing: stage times, failure causes",
@@ -261,7 +291,9 @@
     topic: "intro",
     type: "practical",
     q: "Do you have any questions for us?",
+    vi: "Bạn có câu hỏi nào dành cho chúng tôi không?",
     tags: ["reverse questions", "questions for interviewer", "câu hỏi ngược", "hỏi lại", "end of interview"],
+    viTags: ["hỏi nhà tuyển dụng", "câu hỏi cuối buổi", "hỏi ngược người phỏng vấn", "kết thúc phỏng vấn", "hỏi về công ty"],
     key: [
       "Pipeline: commit → release, biggest bottleneck?",
       "Benches: in the gating pipeline or nightly?",
@@ -279,7 +311,9 @@
     topic: "intro",
     type: "theory",
     q: "In your understanding, what does a software integration engineer do in an AUTOSAR Classic project?",
+    vi: "Theo bạn hiểu, một kỹ sư tích hợp phần mềm làm gì trong dự án AUTOSAR Classic?",
     tags: ["integration engineer", "role", "AUTOSAR Classic", "baseline", "SWC", "ARXML", "vai trò tích hợp", "CI"],
+    viTags: ["kỹ sư tích hợp phần mềm", "công việc tích hợp", "nhiệm vụ integrator", "tích hợp autosar classic", "quản lý baseline", "trách nhiệm tích hợp"],
     key: [
       "Collect deliveries: SWCs, ARXML, BSW, MCAL, config",
       "Configure, validate, generate, build per baseline",
@@ -298,7 +332,9 @@
     topic: "project",
     type: "behavioral",
     q: "Tell me about your MCAL validation work.",
+    vi: "Hãy kể về công việc validation MCAL của bạn.",
     tags: ["MCAL", "unit test", "component test", "validation", "VECU", "target", "kiểm thử MCAL", "DIO", "ADC", "watchdog"],
+    viTags: ["kiểm thử driver", "xác nhận mcal", "kiểm thử đơn vị", "kiểm thử thành phần", "test trên vecu", "test trên phần cứng"],
     key: [
       "Unit/component validation: DIO, ADC, timers, communication, watchdog",
       "Both target hardware and VECU",
@@ -315,7 +351,9 @@
     topic: "project",
     type: "practical",
     q: "How did you design test cases for an MCAL driver, for example the ADC driver?",
+    vi: "Bạn thiết kế test case cho một MCAL driver, ví dụ ADC driver, như thế nào?",
     tags: ["test design", "ADC", "MCAL", "boundary value", "DET", "requirement-based", "thiết kế test case", "equivalence class"],
+    viTags: ["thiết kế kiểm thử", "giá trị biên", "phân vùng tương đương", "kiểm thử driver adc", "test dựa trên yêu cầu", "viết test case"],
     key: [
       "Start from requirements: AUTOSAR SWS + project reqs",
       "Per API: valid, boundary, invalid params (DET), uninit",
@@ -332,7 +370,9 @@
     topic: "project",
     type: "theory",
     q: "What is a VECU, and how did you decide what to run on VECU versus on target hardware?",
+    vi: "VECU là gì, và bạn quyết định chạy gì trên VECU và chạy gì trên phần cứng target như thế nào?",
     tags: ["VECU", "virtual ECU", "target", "simulation", "SIL", "ECU ảo", "phần cứng thật", "test strategy"],
+    viTags: ["mô phỏng ecu", "mô phỏng", "chạy trên board thật", "chiến lược kiểm thử", "vecu và target", "kiểm thử sil"],
     key: [
       "VECU: ECU software on a PC/virtual platform, no board",
       "Fast, parallel, no hardware bottleneck, easy fault injection",
@@ -349,7 +389,9 @@
     topic: "project",
     type: "practical",
     q: "How did you do dependency isolation, mocking and fault injection? What was each tool — Cantata, Pytest, ECU-Test — used for?",
+    vi: "Bạn đã cô lập phụ thuộc, mock và fault injection như thế nào? Mỗi công cụ Cantata, Pytest, ECU-Test được dùng để làm gì?",
     tags: ["Cantata", "Pytest", "ECU-Test", "mocking", "stubbing", "fault injection", "isolation", "giả lập", "unit test"],
+    viTags: ["cô lập phụ thuộc", "giả lập hàm", "tiêm lỗi", "stub", "công cụ kiểm thử", "mock trong unit test"],
     key: [
       "Cantata: C unit test, stubs/isolation, coverage",
       "Pytest: test logic, automation around execution",
@@ -368,7 +410,9 @@
     topic: "project",
     type: "practical",
     q: "How do you test a watchdog driver without resetting the board all the time?",
+    vi: "Làm sao để kiểm thử watchdog driver mà không phải reset board liên tục?",
     tags: ["watchdog", "WDG", "reset", "reset reason", "MCAL", "timeout", "kiểm thử watchdog"],
+    viTags: ["test watchdog không reset", "reset board", "nguyên nhân reset", "hết thời gian chờ", "driver wdg", "test watchdog timeout"],
     key: [
       "Split: API/config tests vs intentional expiry tests",
       "API tests: mode, timeout, trigger — keep servicing it",
@@ -385,7 +429,9 @@
     topic: "project",
     type: "practical",
     q: "What was CUBAS, and what was your integration workflow there?",
+    vi: "CUBAS là gì, và quy trình tích hợp của bạn ở đó như thế nào?",
     tags: ["CUBAS", "BSW integration", "RH850", "workflow", "baseline", "tích hợp BSW", "integration flow", "D3 D4 D5"],
+    viTags: ["quy trình tích hợp", "dự án cubas", "tích hợp phần mềm nền", "luồng tích hợp", "baseline tích hợp", "tích hợp trên rh850"],
     key: [
       "BSW integrator in the CUBAS integration team, RH850 D3/D4/D5",
       "Modules: BswM, Diag, Can, Com, EcuM, OS, MCAL, Mem",
@@ -403,7 +449,9 @@
     topic: "project",
     type: "theory",
     q: "How do EcuM, BswM, OS, COM and the memory stack interact at startup, and why does an integrator care?",
+    vi: "EcuM, BswM, OS, COM và memory stack tương tác với nhau thế nào lúc khởi động, và tại sao integrator cần quan tâm?",
     tags: ["EcuM", "BswM", "OS", "startup", "init sequence", "NvM", "khởi động", "thứ tự init", "mode management"],
+    viTags: ["trình tự khởi động", "thứ tự khởi tạo", "quản lý chế độ", "bộ nhớ không bay hơi", "startup ecu", "boot sequence"],
     key: [
       "EcuM: startup phases, init MCAL/drivers, then StartOS",
       "OS starts → SchM/RTE, BswM takes over mode handling",
@@ -420,7 +468,9 @@
     topic: "project",
     type: "behavioral",
     q: "Tell me about an integration failure you investigated and how you resolved it.",
+    vi: "Hãy kể về một lỗi tích hợp mà bạn đã điều tra và cách bạn giải quyết nó.",
     tags: ["integration failure", "defect", "root cause", "STAR", "lỗi tích hợp", "CUBAS", "debug", "dependency"],
+    viTags: ["debug lỗi tích hợp", "phân tích nguyên nhân gốc", "sự cố tích hợp", "xử lý lỗi", "lỗi phụ thuộc", "điều tra lỗi"],
     key: [
       "S: new delivery of [fill: module] → [fill: symptom] on [fill: D3/D4/D5]",
       "Reproduce reliably, compare with last good baseline",
@@ -437,7 +487,9 @@
     topic: "project",
     type: "practical",
     q: "How did you use Lauterbach TRACE32 in your integration work?",
+    vi: "Bạn đã dùng Lauterbach TRACE32 như thế nào trong công việc tích hợp?",
     tags: ["TRACE32", "Lauterbach", "debugger", "breakpoint", "register", "memory", "trace", "gỡ lỗi", "RH850"],
+    viTags: ["debug bằng trace32", "trình gỡ lỗi", "điểm dừng", "xem thanh ghi", "đọc bộ nhớ", "debugger phần cứng"],
     key: [
       "Register + memory inspection: peripheral config, stack, variables",
       "Breakpoints: program + data (watch who writes a variable)",
@@ -456,7 +508,9 @@
     topic: "project",
     type: "behavioral",
     q: "How did you coordinate with multiple BSW teams as the integration point?",
+    vi: "Với vai trò là đầu mối tích hợp, bạn phối hợp với nhiều team BSW như thế nào?",
     tags: ["coordination", "stakeholder", "BSW teams", "integration point", "communication", "phối hợp", "điều phối", "interface"],
+    viTags: ["phối hợp nhiều team", "đầu mối tích hợp", "giao tiếp liên nhóm", "điều phối công việc", "làm việc với team bsw", "quản lý giao diện"],
     key: [
       "Between project stakeholders and BSW component teams",
       "Align interfaces and delivery versions per baseline",
@@ -473,7 +527,9 @@
     topic: "project",
     type: "practical",
     q: "You integrated on RH850 D3, D4 and D5. How did the variants affect integration?",
+    vi: "Bạn đã tích hợp trên RH850 D3, D4 và D5. Các biến thể này ảnh hưởng đến việc tích hợp như thế nào?",
     tags: ["RH850", "variants", "D3", "D4", "D5", "derivative", "biến thể", "configuration", "Renesas"],
+    viTags: ["biến thể vi điều khiển", "nhiều biến thể", "khác biệt cấu hình", "chip renesas", "tích hợp đa biến thể", "derivative rh850"],
     key: [
       "Same BSW stack, different derivatives",
       "Differences: [fill: memory size, peripherals, pin/clock config]",
@@ -491,7 +547,9 @@
     type: "practical",
     bridge: true,
     q: "We use EB tresos and AUTOSAR Builder. Have you used them?",
+    vi: "Chúng tôi dùng EB tresos và AUTOSAR Builder. Bạn đã dùng chúng chưa?",
     tags: ["EB tresos", "AUTOSAR Builder", "RTA-CAR", "configuration tool", "ARXML", "bridge", "công cụ cấu hình"],
+    viTags: ["công cụ cấu hình autosar", "cấu hình bsw", "kinh nghiệm eb tresos", "chuyển đổi công cụ", "công cụ cấu hình tương đương", "file arxml"],
     key: [
       "Honest: not used in a project",
       "Used ETAS RTA-CAR [fill: for what]",
@@ -508,7 +566,9 @@
     topic: "project",
     type: "theory",
     q: "Explain SENT in about a minute.",
+    vi: "Hãy giải thích SENT trong khoảng một phút.",
     tags: ["SENT", "SAE J2716", "nibble", "tick", "sensor protocol", "fast channel", "slow channel", "CRC", "giao thức cảm biến"],
+    viTags: ["giao thức sent", "truyền dữ liệu cảm biến", "kênh nhanh kênh chậm", "khung sent", "giải thích sent", "mã kiểm tra crc"],
     key: [
       "SAE J2716: one-way, point-to-point, sensor → ECU",
       "Data = time between falling edges, counted in ticks",
@@ -528,7 +588,9 @@
     topic: "project",
     type: "behavioral",
     q: "Tell me about the SENT timing defect you diagnosed on ST and Infineon targets.",
+    vi: "Hãy kể về lỗi timing SENT mà bạn đã chẩn đoán trên target ST và Infineon.",
     tags: ["SENT", "timing defect", "UDE", "ST", "Infineon", "STAR", "hardest bug", "lỗi timing", "debug"],
+    viTags: ["lỗi thời gian", "chẩn đoán lỗi sent", "bug khó nhất", "debug timing", "sai lệch thời gian", "vi điều khiển infineon"],
     key: [
       "S: SENT timing/signal defect on ST and Infineon targets",
       "Symptom: [fill: e.g. wrong tick, CRC errors, lost frames]",
@@ -546,7 +608,9 @@
     topic: "project",
     type: "practical",
     q: "How do you decide whether a defect is a hardware problem or a software problem?",
+    vi: "Làm sao bạn xác định một lỗi là do phần cứng hay do phần mềm?",
     tags: ["root cause", "hardware vs software", "isolation", "UDE", "reference manual", "phân tích nguyên nhân", "8D", "method"],
+    viTags: ["lỗi phần cứng hay phần mềm", "khoanh vùng lỗi", "nguyên nhân gốc", "phương pháp phân tích lỗi", "đọc tài liệu tham chiếu", "phân tích 8d"],
     key: [
       "Reproduce reliably first",
       "Swap one variable: same SW other HW, other SW same HW",
@@ -564,7 +628,9 @@
     topic: "project",
     type: "behavioral",
     q: "Walk me through the SENT automation initiative you led.",
+    vi: "Hãy trình bày chi tiết sáng kiến tự động hóa SENT mà bạn đã dẫn dắt.",
     tags: ["SENT", "automation", "lead", "1-2 months", "2-3 days", "Azure Pipelines", "Conan", "tự động hóa", "STAR"],
+    viTags: ["tự động hóa kiểm thử", "dẫn dắt sáng kiến", "rút ngắn thời gian test", "tự động hóa sent", "cải tiến quy trình", "test automation"],
     key: [
       "S: manual SENT validation, ~1–2 months per cycle",
       "T: automation lead — plan, break down, deliver (Agile)",
@@ -581,7 +647,9 @@
     topic: "project",
     type: "practical",
     q: "You say 1–2 months down to 2–3 days. What exactly took that long before, and how did you measure it?",
+    vi: "Bạn nói giảm từ 1–2 tháng xuống còn 2–3 ngày. Trước đây chính xác cái gì tốn nhiều thời gian như vậy, và bạn đo lường nó thế nào?",
     tags: ["baseline", "metrics", "measurement", "bottleneck", "1-2 months", "2-3 days", "đo lường", "số liệu", "SENT"],
+    viTags: ["đo lường hiệu quả", "số liệu cải tiến", "điểm nghẽn", "thời gian kiểm thử", "chứng minh kết quả", "so sánh trước và sau"],
     key: [
       "Before: [fill: number of test cases × configurations/targets]",
       "Time sinks: manual setup, execution, evaluation, reporting",
@@ -598,7 +666,9 @@
     topic: "project",
     type: "practical",
     q: "What was the architecture of the SENT automation framework?",
+    vi: "Kiến trúc của framework tự động hóa SENT là gì?",
     tags: ["architecture", "framework", "layers", "test automation", "Python", "kiến trúc", "SENT", "data-driven"],
+    viTags: ["kiến trúc framework", "thiết kế framework test", "các tầng kiến trúc", "kiểm thử hướng dữ liệu", "framework python", "tự động hóa kiểm thử"],
     key: [
       "Layers: test definition → execution/control → evaluation → reporting",
       "Wrapped by Azure Pipelines; dependencies pinned with Conan",
@@ -615,7 +685,9 @@
     topic: "project",
     type: "behavioral",
     q: "How big was the automation team, and how did you plan and track the work?",
+    vi: "Team tự động hóa có quy mô bao nhiêu người, và bạn lập kế hoạch và theo dõi công việc như thế nào?",
     tags: ["team", "planning", "task breakdown", "Agile", "Scrum", "Jira", "tracking", "lập kế hoạch", "quy mô team"],
+    viTags: ["quy mô nhóm", "lập kế hoạch công việc", "chia nhỏ task", "theo dõi tiến độ", "quản lý công việc", "làm việc agile"],
     key: [
       "Team: [fill: size, roles]",
       "My role: [fill: technical lead / coordinator, not line manager?]",
@@ -632,7 +704,9 @@
     topic: "project",
     type: "behavioral",
     q: "What were the main challenges in the automation initiative, and how did you get people to adopt it?",
+    vi: "Những thách thức chính trong sáng kiến tự động hóa là gì, và bạn làm thế nào để mọi người chấp nhận áp dụng nó?",
     tags: ["challenges", "adoption", "change management", "trust", "thách thức", "áp dụng", "automation", "SENT"],
+    viTags: ["khó khăn khi tự động hóa", "thuyết phục đồng nghiệp", "quản lý thay đổi", "tạo niềm tin", "triển khai công cụ mới", "chấp nhận sử dụng"],
     key: [
       "Challenge: [fill: real technical challenge]",
       "Trust: automated verdicts must match known results",
@@ -649,7 +723,9 @@
     topic: "project",
     type: "practical",
     q: "How do you make sure an automated test verdict is actually correct?",
+    vi: "Làm sao bạn đảm bảo kết quả của test tự động thực sự chính xác?",
     tags: ["test validity", "false pass", "false fail", "cross-check", "fault injection", "độ tin cậy", "verdict", "automation"],
+    viTags: ["tính đúng của kết quả test", "pass giả", "fail giả", "kiểm chứng chéo", "độ tin cậy kiểm thử", "xác minh kết quả"],
     key: [
       "Cross-check against manual/known results at start",
       "Inject known-bad inputs: test must fail",
@@ -666,7 +742,9 @@
     topic: "project",
     type: "theory",
     q: "What is AUTOSAR Adaptive, and how is system testing on ARA different from Classic?",
+    vi: "AUTOSAR Adaptive là gì, và system test trên ARA khác gì so với Classic?",
     tags: ["AUTOSAR Adaptive", "ARA", "ara::com", "SOME/IP", "POSIX", "Linux", "QNX", "service-oriented", "khác biệt Classic"],
+    viTags: ["adaptive platform", "so sánh adaptive và classic", "kiến trúc hướng dịch vụ", "kiểm thử hệ thống", "nền tảng ara", "linux nhúng"],
     key: [
       "Adaptive: POSIX OS (Linux/QNX), C++, service-oriented",
       "ara::com, execution management, state management, dynamic deployment",
@@ -683,7 +761,9 @@
     topic: "project",
     type: "practical",
     q: "How did you isolate a system-level failure on the ARA platform?",
+    vi: "Bạn đã khoanh vùng một lỗi ở mức hệ thống trên nền tảng ARA như thế nào?",
     tags: ["system test", "Linux", "QNX", "log analysis", "remote debugging", "networking", "khoanh vùng lỗi", "R-Car", "Raspberry Pi"],
+    viTags: ["lỗi mức hệ thống", "phân tích log", "debug từ xa", "khoanh vùng sự cố", "lỗi mạng", "kiểm thử hệ thống"],
     key: [
       "Symptom → is the process/service running?",
       "Logs: application + system logs, timestamps",
@@ -703,7 +783,9 @@
     topic: "project",
     type: "behavioral",
     q: "You built reusable frameworks that the ARA system team adopted. What were they?",
+    vi: "Bạn đã xây dựng các framework tái sử dụng được mà team hệ thống ARA áp dụng. Đó là những framework gì?",
     tags: ["reusable framework", "adoption", "ARA", "documentation hosting", "test framework", "tái sử dụng", "framework"],
+    viTags: ["framework dùng lại", "công cụ dùng chung", "chia sẻ framework", "lưu trữ tài liệu", "framework kiểm thử", "đóng góp cho team"],
     key: [
       "Three areas: testing, development workflows, documentation hosting",
       "Goal: stop each engineer rebuilding the same scaffolding",
@@ -720,7 +802,9 @@
     topic: "project",
     type: "practical",
     q: "How did you integrate build, package and test with Azure Pipelines and Conan? How does that map to our Jenkins/GitLab and Artifactory setup?",
+    vi: "Bạn tích hợp build, đóng gói và test với Azure Pipelines và Conan như thế nào? Điều đó tương ứng thế nào với hệ thống Jenkins/GitLab và Artifactory của chúng tôi?",
     tags: ["Azure Pipelines", "Conan", "CI/CD", "YAML", "Jenkins", "GitLab", "Artifactory", "package management", "đường ống CI"],
+    viTags: ["tích hợp liên tục", "pipeline ci/cd", "đóng gói phần mềm", "quản lý gói", "build tự động", "chuyển sang jenkins"],
     key: [
       "Pipeline as YAML: trigger → build → package → test → publish",
       "Conan: pin C/C++ deps + binaries per configuration",
@@ -739,7 +823,9 @@
     topic: "project",
     type: "practical",
     q: "You owned requirement traceability and test evidence. How did you make sure you were review-ready under ASPICE?",
+    vi: "Bạn phụ trách truy vết yêu cầu và bằng chứng kiểm thử. Làm sao bạn đảm bảo luôn sẵn sàng cho review theo ASPICE?",
     tags: ["traceability", "ASPICE", "requirement-to-test", "evidence", "review readiness", "truy vết", "bằng chứng", "SWE.4", "SWE.5"],
+    viTags: ["truy vết yêu cầu", "bằng chứng kiểm thử", "sẵn sàng đánh giá", "tuân thủ aspice", "liên kết yêu cầu và test", "audit aspice"],
     key: [
       "Bidirectional: requirement ↔ test case ↔ result",
       "Every requirement covered, every test has a reason",
@@ -756,7 +842,9 @@
     topic: "project",
     type: "practical",
     q: "What documentation did you create with Enterprise Architect and IBM Rhapsody?",
+    vi: "Bạn đã tạo những tài liệu gì bằng Enterprise Architect và IBM Rhapsody?",
     tags: ["Enterprise Architect", "IBM Rhapsody", "UML", "design documentation", "sequence diagram", "tài liệu thiết kế", "SysML"],
+    viTags: ["viết tài liệu thiết kế", "sơ đồ uml", "sơ đồ tuần tự", "mô hình hóa", "vẽ sơ đồ kiến trúc", "rhapsody"],
     key: [
       "Technical and design documentation, created and maintained",
       "UML: component, sequence, state diagrams (typical)",
@@ -773,7 +861,9 @@
     topic: "project",
     type: "practical",
     q: "What does your current platform look like from an infrastructure and operations point of view, and what's relevant for CI?",
+    vi: "Nền tảng hiện tại của bạn trông như thế nào từ góc độ hạ tầng và vận hành, và phần nào liên quan đến CI?",
     tags: ["AI platform", "infrastructure", "Docker", "Kubernetes", "Terraform", "Azure", "GCP", "access control", "cost governance", "hạ tầng"],
+    viTags: ["hạ tầng nền tảng", "vận hành hệ thống", "container docker", "điện toán đám mây", "quản lý chi phí", "phân quyền truy cập"],
     key: [
       "Containers: Docker; orchestration: Kubernetes",
       "Infrastructure as code: Terraform, on Azure and GCP",

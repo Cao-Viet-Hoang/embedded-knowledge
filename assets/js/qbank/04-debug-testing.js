@@ -8,7 +8,9 @@
     topic: "debug",
     type: "theory",
     q: "How does a hardware debugger like TRACE32 actually talk to the MCU?",
+    vi: "Debugger phần cứng như TRACE32 thực sự giao tiếp với MCU như thế nào?",
     tags: ["JTAG", "Nexus", "LPD", "debug port", "on-chip debug", "TRACE32", "Lauterbach", "PowerDebug", "trace", "gỡ lỗi phần cứng"],
+    viTags: ["debugger phần cứng", "giao tiếp debug", "cổng debug", "gỡ lỗi on-chip", "kết nối jtag với vi điều khiển", "trình gỡ lỗi lauterbach"],
     key: [
       "Host software → probe → debug port → on-chip debug unit",
       "JTAG: TCK/TMS/TDI/TDO; RH850 also LPD",
@@ -25,7 +27,9 @@
     topic: "debug",
     type: "practical",
     q: "Walk me through your TRACE32 workflow when you start debugging a target.",
+    vi: "Hãy mô tả quy trình làm việc với TRACE32 của bạn khi bắt đầu debug một target.",
     tags: ["TRACE32", "Lauterbach", "PRACTICE", ".cmm", "SYStem.Up", "flash", "ELF", "Remote API", "RH850", "quy trình debug"],
+    viTags: ["quy trình gỡ lỗi", "các bước debug", "script cmm", "nạp firmware", "kết nối target", "khởi động phiên debug"],
     key: [
       "SYStem.CPU + SYStem.Up: attach and halt",
       "Flash + Data.LOAD.Elf (code + symbols), /NoCODE for symbols only",
@@ -56,7 +60,9 @@
     topic: "debug",
     type: "theory",
     q: "What's the difference between software breakpoints, hardware breakpoints and watchpoints?",
+    vi: "Sự khác nhau giữa software breakpoint, hardware breakpoint và watchpoint là gì?",
     tags: ["breakpoint", "hardware breakpoint", "on-chip breakpoint", "software breakpoint", "watchpoint", "data breakpoint", "TRACE32", "điểm dừng"],
+    viTags: ["điểm ngắt", "điểm dừng phần mềm", "điểm dừng phần cứng", "điểm theo dõi dữ liệu", "breakpoint dữ liệu", "so sánh breakpoint"],
     key: [
       "SW BP: patches a break instruction, unlimited, needs writable memory",
       "HW / on-chip BP: PC comparators, limited, required for flash code",
@@ -73,7 +79,9 @@
     topic: "debug",
     type: "practical",
     q: "A global variable gets corrupted at random. How do you find out who writes to it?",
+    vi: "Một biến toàn cục bị ghi đè ngẫu nhiên. Làm sao để tìm ra đoạn code nào đang ghi vào nó?",
     tags: ["memory corruption", "watchpoint", "data breakpoint", "map file", "buffer overflow", "DMA", "race condition", "TRACE32", "hỏng bộ nhớ"],
+    viTags: ["biến bị ghi đè", "lỗi hỏng dữ liệu", "biến toàn cục bị thay đổi", "tràn bộ đệm", "tranh chấp dữ liệu", "tìm nơi ghi biến", "lỗi ghi đè ngẫu nhiên"],
     key: [
       "Look at the bad value: pattern gives hints",
       "Map file: check the neighbour for overruns",
@@ -91,7 +99,9 @@
     topic: "debug",
     type: "practical",
     q: "The ECU ends up in an exception or trap handler on RH850. How do you find the root cause with TRACE32?",
+    vi: "ECU rơi vào exception hoặc trap handler trên RH850. Làm sao tìm nguyên nhân gốc bằng TRACE32?",
     tags: ["RH850", "exception", "trap", "HardFault", "FEPC", "EIPC", "FEIC", "MPU", "ProtectionHook", "TRACE32", "ngoại lệ", "lỗi ngắt"],
+    viTags: ["lỗi ngoại lệ", "lỗi trap", "ecu bị treo", "nguyên nhân gốc", "vi phạm bảo vệ bộ nhớ", "phân tích exception", "trình xử lý ngoại lệ"],
     key: [
       "Break at the handler / ProtectionHook before context is lost",
       "FE level: FEPC, FEPSW, FEIC; EI level: EIPC, EIPSW, EIIC",
@@ -109,7 +119,9 @@
     topic: "debug",
     type: "practical",
     q: "How do you detect and debug a stack overflow on an embedded target?",
+    vi: "Làm thế nào để phát hiện và debug stack overflow trên target nhúng?",
     tags: ["stack overflow", "stack painting", "high-water mark", "MPU", "watchpoint", "AUTOSAR OS", "stack monitoring", "tràn stack"],
+    viTags: ["lỗi tràn stack", "tràn ngăn xếp", "giám sát stack", "tô màu stack", "mức sử dụng stack cao nhất", "phát hiện tràn stack"],
     key: [
       "Check OS stack monitoring / stack fault reports",
       "Stack painting (0xAA) → measure high-water mark",
@@ -127,7 +139,9 @@
     topic: "debug",
     type: "theory",
     q: "Why do breakpoints often hide timing problems, and how do you debug timing issues instead?",
+    vi: "Tại sao breakpoint thường che giấu các vấn đề timing, và thay vào đó bạn debug lỗi timing như thế nào?",
     tags: ["timing", "race condition", "Heisenbug", "trace", "run-mode", "GPIO toggle", "oscilloscope", "logic analyzer", "jitter", "vấn đề thời gian"],
+    viTags: ["lỗi thời gian thực", "lỗi timing", "tranh chấp dữ liệu", "lỗi biến mất khi debug", "đo bằng máy hiện sóng", "bật tắt gpio", "độ trễ dao động"],
     key: [
       "Halting stops the core, not the bus, timers, other ECUs",
       "Trace: timestamped program/data flow, OS-aware task view",
@@ -144,7 +158,9 @@
     topic: "debug",
     type: "behavioral",
     q: "Tell me about the SENT timing defect you debugged with UDE.",
+    vi: "Hãy kể về lỗi timing của SENT mà bạn đã debug bằng UDE.",
     tags: ["SENT", "SAE J2716", "UDE", "PLS", "Infineon", "ST", "timing defect", "input capture", "protocol debugging", "lỗi timing"],
+    viTags: ["lỗi timing sent", "giao thức sent", "gỡ lỗi giao thức", "bắt xung đầu vào", "kinh nghiệm gỡ lỗi", "lỗi thời gian cảm biến"],
     key: [
       "Reproduce and capture at pulse level",
       "Check against J2716: 56-tick sync, nibble 12–27 ticks",
@@ -161,7 +177,9 @@
     topic: "debug",
     type: "behavioral",
     q: "Walk me through how you debugged an integration failure in the BSW stack.",
+    vi: "Hãy mô tả cách bạn đã debug một lỗi tích hợp trong BSW stack.",
     tags: ["integration", "BSW", "RH850", "EcuM", "BswM", "CanIf", "PduR", "Com", "Det", "TRACE32", "tích hợp", "gỡ lỗi"],
+    viTags: ["lỗi tích hợp", "gỡ lỗi bsw", "tích hợp autosar", "khởi động ecu", "lỗi tầng cơ sở", "khoanh vùng lỗi tích hợp"],
     key: [
       "Reproduce; diff against last good baseline",
       "Follow the chain layer by layer: EcuM → BswM → Com stack",
@@ -178,7 +196,9 @@
     topic: "debug",
     type: "theory",
     q: "What is your systematic approach to troubleshooting a defect?",
+    vi: "Cách tiếp cận có hệ thống của bạn khi xử lý một lỗi là gì?",
     tags: ["troubleshooting", "root cause analysis", "RCA", "methodology", "bisect", "reproduce", "isolate", "hypothesis", "phân tích nguyên nhân"],
+    viTags: ["khoanh vùng lỗi", "phân tích nguyên nhân gốc", "tái hiện lỗi", "phương pháp gỡ lỗi", "đặt giả thuyết", "xử lý sự cố", "chia đôi tìm lỗi"],
     key: [
       "Reproduce reliably: version, config, HW, steps",
       "Collect facts: logs, traces, Det, what changed",
@@ -195,7 +215,9 @@
     topic: "debug",
     type: "practical",
     q: "How do you debug failures on an Embedded Linux or QNX target?",
+    vi: "Bạn debug lỗi trên target Embedded Linux hoặc QNX như thế nào?",
     tags: ["Linux", "QNX", "gdb", "gdbserver", "remote debugging", "journalctl", "slog2info", "core dump", "R-Car", "Raspberry Pi", "gỡ lỗi từ xa"],
+    viTags: ["debug từ xa", "debug linux nhúng", "debug qnx", "phân tích core dump", "xem log hệ thống", "gỡ lỗi gdb từ xa"],
     key: [
       "Logs and service state first (journalctl / slog2info)",
       "Process running? Ports, network path between nodes",
@@ -221,7 +243,9 @@
     topic: "debug",
     type: "practical",
     q: "How do you use CANoe when testing or debugging an ECU?",
+    vi: "Bạn sử dụng CANoe như thế nào khi kiểm thử hoặc debug một ECU?",
     tags: ["CANoe", "Vector", "trace window", "Interactive Generator", "IG", "rest-bus simulation", "BLF", "test module", "logging", "mô phỏng bus"],
+    viTags: ["giả lập các ecu còn lại", "mô phỏng rest-bus", "cửa sổ trace", "ghi log can", "kiểm thử ecu", "gửi message can"],
     key: [
       "Trace window: frames, timestamps, DBC/ARXML decoding, filters",
       "Logging to BLF for replay / offline analysis",
@@ -238,7 +262,9 @@
     topic: "debug",
     type: "practical",
     q: "How do you troubleshoot CAN problems like missing ACK, bus-off, or wrong bit timing?",
+    vi: "Bạn xử lý các lỗi CAN như thiếu ACK, bus-off hoặc sai bit timing như thế nào?",
     tags: ["CAN", "ACK error", "bus-off", "error passive", "TEC", "REC", "bit timing", "sample point", "termination", "CanSM", "lỗi CAN"],
+    viTags: ["xử lý sự cố bus can", "lỗi thiếu ack", "trạng thái bus-off", "sai bit timing", "điện trở đầu cuối", "điểm lấy mẫu", "bộ đếm lỗi can"],
     key: [
       "No ACK: lone node, bitrate mismatch, transceiver standby, wiring",
       "Error passive TEC/REC ≥ 128; bus-off TEC > 255",
@@ -256,7 +282,9 @@
     type: "theory",
     bridge: true,
     q: "Have you used iSystem (winIDEA) debuggers?",
+    vi: "Bạn đã từng dùng debugger của iSystem (winIDEA) chưa?",
     tags: ["iSystem", "winIDEA", "TASKING", "BlueBox", "isystem.connect", "testIDEA", "TRACE32", "UDE", "debugger"],
+    viTags: ["trình gỡ lỗi isystem", "công cụ debug", "debugger winidea", "kinh nghiệm công cụ debug", "so sánh debugger"],
     key: [
       "Honest: not hands-on; used TRACE32 and UDE",
       "iSystem now TASKING: BlueBox HW + winIDEA IDE",
@@ -274,7 +302,9 @@
     type: "theory",
     bridge: true,
     q: "What's the difference between CANalyzer and CANoe?",
+    vi: "Sự khác nhau giữa CANalyzer và CANoe là gì?",
     tags: ["CANalyzer", "CANoe", "Vector", "bus analysis", "simulation", "rest-bus", "test module", "phân tích bus"],
+    viTags: ["khác nhau giữa canalyzer và canoe", "so sánh canalyzer canoe", "công cụ vector", "mô phỏng mạng", "phân tích mạng can"],
     key: [
       "CANalyzer: observe, log, filter, decode, simple send",
       "CANoe: + node/rest-bus simulation, test modules with verdicts",
@@ -291,7 +321,9 @@
     type: "theory",
     bridge: true,
     q: "Have you worked with CANape? What is it used for?",
+    vi: "Bạn đã làm việc với CANape chưa? Nó được dùng để làm gì?",
     tags: ["CANape", "XCP", "A2L", "measurement", "calibration", "DAQ", "ASAM", "Vector", "hiệu chuẩn"],
+    viTags: ["hiệu chỉnh tham số ecu", "đo lường ecu", "công cụ calib", "đo và hiệu chỉnh tham số", "thu thập dữ liệu daq", "file a2l"],
     key: [
       "Honest: haven't used CANape",
       "Measurement and calibration over XCP",
@@ -310,7 +342,9 @@
     type: "practical",
     bridge: true,
     q: "Do you know CAPL? Write a simple example.",
+    vi: "Bạn có biết CAPL không? Hãy viết một ví dụ đơn giản.",
     tags: ["CAPL", "CANoe", "on message", "on timer", "output", "setTimer", "event-driven", "test module", "Vector", "lập trình CAPL"],
+    viTags: ["viết script capl", "ví dụ capl", "script canoe", "lập trình hướng sự kiện", "hẹn giờ capl", "gửi message bằng capl"],
     key: [
       "Honest: scripting mainly Python; I know the event model",
       "C-like, no main: on start / on message / on timer / on key",
@@ -354,7 +388,9 @@
     topic: "testing",
     type: "theory",
     q: "Explain the test levels and how they map to the V-model.",
+    vi: "Hãy giải thích các mức kiểm thử và cách chúng tương ứng với V-model.",
     tags: ["V-model", "test levels", "unit test", "integration test", "system test", "ASPICE", "SWE.4", "SWE.5", "SWE.6", "mức kiểm thử"],
+    viTags: ["các level test", "cấp độ kiểm thử", "mô hình chữ v", "kiểm thử đơn vị", "kiểm thử tích hợp", "kiểm thử hệ thống"],
     key: [
       "Each right-side level verifies the matching left-side level",
       "Unit ↔ detailed design (SWE.4), dependencies stubbed",
@@ -371,7 +407,9 @@
     topic: "testing",
     type: "theory",
     q: "What's the difference between white-box, grey-box and black-box testing? Give embedded examples.",
+    vi: "Sự khác nhau giữa kiểm thử hộp trắng, hộp xám và hộp đen là gì? Cho ví dụ trong hệ thống nhúng.",
     tags: ["white-box", "grey-box", "black-box", "structural testing", "coverage", "requirement-based", "kiểm thử hộp trắng", "hộp đen"],
+    viTags: ["test hộp trắng", "kiểm thử hộp đen", "hộp xám", "kiểm thử cấu trúc", "kiểm thử dựa trên yêu cầu", "phương pháp kiểm thử"],
     key: [
       "White: based on code structure, measured by coverage",
       "Grey: know architecture/interfaces, observe internals",
@@ -388,7 +426,9 @@
     topic: "testing",
     type: "practical",
     q: "How do you design test cases from a requirement?",
+    vi: "Bạn thiết kế test case từ một yêu cầu như thế nào?",
     tags: ["requirement-based testing", "test design", "test case", "traceability", "negative test", "decision table", "state transition", "thiết kế test"],
+    viTags: ["thiết kế test case", "kiểm thử dựa trên yêu cầu", "viết test case", "bảng quyết định", "chuyển trạng thái", "test âm tính", "truy vết yêu cầu"],
     key: [
       "Check testability first; clarify ambiguities early",
       "Identify inputs, outputs, preconditions, timing",
@@ -406,7 +446,9 @@
     topic: "testing",
     type: "practical",
     q: "Explain equivalence partitioning and boundary value analysis with an example.",
+    vi: "Hãy giải thích phân vùng tương đương và phân tích giá trị biên kèm một ví dụ.",
     tags: ["equivalence partitioning", "EP", "boundary value analysis", "BVA", "SENT", "pytest", "parametrize", "phân vùng tương đương", "giá trị biên"],
+    viTags: ["phân lớp tương đương", "test giá trị biên", "phân tích giá trị biên", "lớp tương đương", "kỹ thuật thiết kế test", "kiểm thử biên"],
     key: [
       "EP: one representative per class treated the same",
       "BVA: test at and around each edge (off-by-one)",
@@ -436,7 +478,9 @@
     topic: "testing",
     type: "practical",
     q: "What is fault injection and how have you used it?",
+    vi: "Fault injection là gì và bạn đã áp dụng nó như thế nào?",
     tags: ["fault injection", "negative testing", "error handling", "robustness", "stub", "E_NOT_OK", "Det", "CRC error", "SENT", "chèn lỗi"],
+    viTags: ["tiêm lỗi", "bơm lỗi", "kiểm thử âm tính", "xử lý lỗi", "kiểm thử độ bền vững", "giả lập lỗi"],
     key: [
       "Deliberately create the errors the SW must handle",
       "Unit: stub returns error / timeout; invalid params",
@@ -454,7 +498,9 @@
     topic: "testing",
     type: "theory",
     q: "What's the difference between a mock, a stub and a fake? How do you isolate MCAL/BSW dependencies?",
+    vi: "Sự khác nhau giữa mock, stub và fake là gì? Bạn cô lập các phụ thuộc MCAL/BSW như thế nào?",
     tags: ["mock", "stub", "fake", "test double", "dependency isolation", "MCAL", "BSW", "unit test", "C", "cô lập phụ thuộc"],
+    viTags: ["cách ly phụ thuộc", "đối tượng giả lập", "giả lập hàm", "hàm giả", "kiểm thử đơn vị c", "phân biệt mock stub fake"],
     key: [
       "Stub: canned return values → control inputs (state)",
       "Mock: also verifies calls, count, args, order (behaviour)",
@@ -490,7 +536,9 @@
     topic: "testing",
     type: "theory",
     q: "Explain statement, branch and MC/DC coverage.",
+    vi: "Hãy giải thích độ phủ câu lệnh, độ phủ nhánh và MC/DC.",
     tags: ["coverage", "statement coverage", "branch coverage", "decision coverage", "MC/DC", "structural coverage", "độ phủ", "độ phủ nhánh"],
+    viTags: ["độ phủ code", "độ phủ câu lệnh", "phủ nhánh", "độ phủ quyết định", "độ phủ điều kiện", "độ phủ cấu trúc"],
     key: [
       "Statement: every statement executed",
       "Branch/decision: every decision true and false",
@@ -507,7 +555,9 @@
     topic: "testing",
     type: "practical",
     q: "Why is MC/DC expected for ASIL D, and how do you actually reach it?",
+    vi: "Tại sao MC/DC được yêu cầu cho ASIL D, và thực tế làm thế nào để đạt được?",
     tags: ["MC/DC", "ASIL D", "ISO 26262", "ISO 26262-6", "coverage gap", "dead code", "justification", "functional safety", "an toàn chức năng"],
+    viTags: ["đạt độ phủ mc/dc", "độ phủ mc/dc", "yêu cầu asil d", "thiếu độ phủ", "code chết", "giải trình độ phủ"],
     key: [
       "ISO 26262-6: MC/DC highly recommended at ASIL D (unit level)",
       "Proves each condition matters → hidden logic errors",
@@ -525,7 +575,9 @@
     topic: "testing",
     type: "practical",
     q: "How did you use Cantata for unit and component testing?",
+    vi: "Bạn đã sử dụng Cantata cho kiểm thử đơn vị và kiểm thử thành phần như thế nào?",
     tags: ["Cantata", "QA Systems", "unit test", "component test", "stub", "wrapper", "expected call sequence", "coverage", "MC/DC", "MCAL"],
+    viTags: ["kiểm thử đơn vị", "kiểm thử thành phần", "công cụ unit test", "chuỗi lời gọi mong đợi", "đo độ phủ", "kinh nghiệm cantata"],
     key: [
       "Generated C test script skeleton per unit",
       "Set inputs/globals, call, check macros",
@@ -544,7 +596,9 @@
     type: "theory",
     bridge: true,
     q: "Have you used VectorCAST? How would you get started with it?",
+    vi: "Bạn đã dùng VectorCAST chưa? Bạn sẽ bắt đầu với nó như thế nào?",
     tags: ["VectorCAST", "Cantata", "unit test", "test harness", "environment", "stub", "coverage", "clicast", "Vector", "kiểm thử đơn vị"],
+    viTags: ["unit test tự động", "công cụ unit test", "môi trường test", "bắt đầu với vectorcast", "khung kiểm thử", "đo độ phủ"],
     key: [
       "Honest: not used; I used Cantata, same model",
       "Environment: UUT files, stub policy, compiler",
@@ -562,7 +616,9 @@
     topic: "testing",
     type: "practical",
     q: "Which Pytest features do you use for embedded test automation?",
+    vi: "Bạn sử dụng những tính năng nào của Pytest cho tự động hoá kiểm thử nhúng?",
     tags: ["pytest", "Python", "fixture", "conftest", "parametrize", "markers", "junitxml", "plugins", "test automation", "tự động hoá test"],
+    viTags: ["test tự động bằng pytest", "tự động hoá kiểm thử", "test bằng python", "fixture pytest", "tham số hoá test", "báo cáo kết quả test"],
     key: [
       "Fixtures with scope: connect/flash once, clean state per test",
       "conftest.py: shared fixtures + CLI options",
@@ -600,7 +656,9 @@
     topic: "testing",
     type: "practical",
     q: "How do you keep the same test suite running on both VECU and real target hardware?",
+    vi: "Làm thế nào để cùng một bộ test chạy được trên cả VECU và phần cứng target thật?",
     tags: ["VECU", "target hardware", "hardware abstraction", "test framework", "pytest", "markers", "SIL", "shift-left", "trừu tượng phần cứng"],
+    viTags: ["lớp trừu tượng phần cứng", "ecu ảo", "tái sử dụng test", "chạy test trên phần cứng thật", "khung kiểm thử", "kiểm thử sớm"],
     key: [
       "Tests talk to an interface, not to a tool",
       "Adapter per environment: VECU vs target (debugger, bus)",
@@ -618,7 +676,9 @@
     topic: "testing",
     type: "practical",
     q: "How does ECU-Test work? Explain packages and configurations.",
+    vi: "ECU-Test hoạt động như thế nào? Hãy giải thích package và configuration.",
     tags: ["ECU-Test", "ecu.test", "tracetronic", "package", "test bench configuration", "test configuration", "mapping", "test automation", "report"],
+    viTags: ["tự động hoá kiểm thử", "cấu hình test bench", "cấu hình kiểm thử", "gói test", "ánh xạ tín hiệu", "báo cáo kiểm thử"],
     key: [
       "Automation layer driving tools/HW via tool adapters",
       "Package = test case: steps, parameters, expectations",
@@ -636,7 +696,9 @@
     topic: "testing",
     type: "theory",
     q: "What can testing on a VECU catch, and what can it not catch compared to the real target?",
+    vi: "Kiểm thử trên VECU phát hiện được gì và không phát hiện được gì so với target thật?",
     tags: ["VECU", "virtual ECU", "SIL", "target hardware", "shift-left", "timing", "compiler differences", "vECU", "kiểm thử trên target"],
+    viTags: ["ecu ảo", "test trên phần cứng thật", "giới hạn ecu ảo", "khác biệt trình biên dịch", "kiểm thử sớm", "vấn đề thời gian"],
     key: [
       "VECU: logic, config, state machines, APIs, error handling",
       "Fast, parallel, CI-friendly, deterministic with virtual time",
@@ -654,7 +716,9 @@
     topic: "testing",
     type: "theory",
     q: "Explain MIL, SIL, PIL and HIL. What's your experience with them?",
+    vi: "Hãy giải thích MIL, SIL, PIL và HIL. Bạn có kinh nghiệm gì với chúng?",
     tags: ["MIL", "SIL", "PIL", "HIL", "X-in-the-loop", "XIL", "VECU", "bench", "real-time simulator", "mô phỏng"],
+    viTags: ["kiểm thử trong vòng lặp", "mô hình trong vòng lặp", "phần mềm trong vòng lặp", "phần cứng trong vòng lặp", "bộ mô phỏng thời gian thực", "bàn test"],
     key: [
       "MIL: model; SIL: production code on host (VECU)",
       "PIL: target-compiled code on real CPU or ISS",
@@ -672,7 +736,9 @@
     topic: "testing",
     type: "practical",
     q: "How do you deal with flaky tests?",
+    vi: "Bạn xử lý flaky test như thế nào?",
     tags: ["flaky test", "intermittent", "non-deterministic", "race condition", "CI", "quarantine", "retry", "test stability", "test chập chờn"],
+    viTags: ["test lúc pass lúc fail", "test không ổn định", "lỗi không tái hiện", "kết quả test không nhất quán", "cách ly test", "chạy lại test"],
     key: [
       "Dangerous: people start ignoring red results",
       "Classify: test bug / environment / real intermittent defect",
@@ -689,7 +755,9 @@
     topic: "testing",
     type: "practical",
     q: "What regression test strategy would you set up for an ECU project in CI?",
+    vi: "Bạn sẽ xây dựng chiến lược kiểm thử regression nào cho một dự án ECU trong CI?",
     tags: ["regression testing", "CI", "smoke test", "nightly", "test selection", "impact analysis", "Azure Pipelines", "test pyramid", "kiểm thử hồi quy"],
+    viTags: ["test hồi quy", "chiến lược kiểm thử", "tích hợp liên tục", "test hàng đêm", "phân tích ảnh hưởng", "chọn lọc test", "kim tự tháp kiểm thử"],
     key: [
       "Per change: build, unit tests, quick VECU smoke",
       "Nightly: full suite on VECU + target benches",
@@ -707,7 +775,9 @@
     topic: "testing",
     type: "practical",
     q: "How do you ensure test evidence and traceability for ASPICE?",
+    vi: "Làm thế nào để đảm bảo bằng chứng kiểm thử và khả năng truy vết cho ASPICE?",
     tags: ["ASPICE", "traceability", "bidirectional traceability", "test evidence", "requirement-to-test", "consistency", "review", "audit", "truy vết", "bằng chứng test"],
+    viTags: ["bằng chứng kiểm thử", "truy vết yêu cầu", "truy vết hai chiều", "đánh giá aspice", "yêu cầu tới test", "tính nhất quán"],
     key: [
       "Bidirectional: requirement ↔ test spec ↔ result",
       "Result tied to SW version, config, environment, tool versions",
@@ -725,7 +795,9 @@
     topic: "testing",
     type: "behavioral",
     q: "How do you decide that testing is sufficient?",
+    vi: "Làm sao bạn quyết định rằng việc kiểm thử đã đủ?",
     tags: ["exit criteria", "test completion", "risk-based testing", "coverage target", "test plan", "release readiness", "tiêu chí dừng test"],
+    viTags: ["khi nào dừng kiểm thử", "tiêu chí hoàn thành kiểm thử", "kiểm thử dựa trên rủi ro", "mục tiêu độ phủ", "kế hoạch kiểm thử", "sẵn sàng phát hành"],
     key: [
       "Exit criteria defined up front in the test plan",
       "All requirements covered; failures resolved or accepted",
@@ -743,7 +815,9 @@
     topic: "testing",
     type: "practical",
     q: "A unit test passes on the host but fails on the target. What could be the reason?",
+    vi: "Một unit test chạy qua trên host nhưng lại lỗi trên target. Nguyên nhân có thể là gì?",
     tags: ["host vs target", "cross-compiler", "endianness", "alignment", "type size", "volatile", "undefined behavior", "stack", "Platform_Types", "khác biệt target"],
+    viTags: ["test pass trên host fail trên target", "khác biệt host và target", "thứ tự byte", "căn chỉnh bộ nhớ", "kích thước kiểu dữ liệu", "hành vi không xác định", "trình biên dịch chéo"],
     key: [
       "Type sizes: int/long width differ",
       "Endianness, struct padding and alignment",
@@ -761,7 +835,9 @@
     topic: "testing",
     type: "behavioral",
     q: "Tell me about a test automation initiative you led.",
+    vi: "Hãy kể về một sáng kiến tự động hoá kiểm thử mà bạn đã dẫn dắt.",
     tags: ["SENT", "test automation", "automation lead", "Agile", "framework", "validation cycle", "Pytest", "AUTOSAR Adaptive", "tự động hoá kiểm thử"],
+    viTags: ["tự động hoá test", "dẫn dắt tự động hoá", "xây dựng framework test", "rút ngắn chu kỳ kiểm định", "kinh nghiệm dẫn dắt", "sáng kiến cải tiến"],
     key: [
       "SENT stack automation initiative, I led it",
       "Manual cycle ~1–2 months → ~2–3 days",
@@ -779,7 +855,9 @@
     topic: "testing",
     type: "practical",
     q: "How would you test a module with a state machine and timeouts, without flaky timing?",
+    vi: "Bạn sẽ kiểm thử một module có state machine và timeout như thế nào mà không bị flaky về timing?",
     tags: ["state transition testing", "state machine", "timeout", "deterministic test", "fake clock", "virtual time", "MainFunction", "boundary", "máy trạng thái"],
+    viTags: ["kiểm thử state machine", "kiểm thử chuyển trạng thái", "kiểm thử timeout", "đồng hồ giả lập", "thời gian ảo", "test tất định", "test chập chờn"],
     key: [
       "Build state/event table: valid + invalid transitions",
       "Test every valid transition and guard",
