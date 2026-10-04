@@ -29,10 +29,10 @@
             <span class="chip">Vòng 3 · Điểm khác biệt</span>
           </div>
           <h1>Automation / CI-CD / Cloud</h1>
-          <p class="lead">Điểm khác biệt của bạn, gắn với SENT automation. Nắm: Azure Pipelines, Conan, Docker, Kubernetes, Terraform, và các dịch vụ Azure/GCP bạn vận hành — kèm <strong>cơ chế thật</strong> (agent, layer cache, state, ConfigMap).</p>
+          <p class="lead">Điểm khác biệt của bạn, gắn với dự án AUTOSAR Adaptive (Azure Pipelines + Conan) và vai trò platform. Nắm: Azure Pipelines, Conan, Docker, Kubernetes, Terraform, và các dịch vụ Azure/GCP bạn vận hành — kèm <strong>cơ chế thật</strong> (agent, layer cache, state, ConfigMap).</p>
           <div class="page-head__meta">
             <span><b>Độ ưu tiên:</b> 🟠 Core</span>
-            <span><b>Gắn với:</b> SENT automation (bài D)</span>
+            <span><b>Gắn với:</b> dự án AUTOSAR Adaptive (ARA) + AI platform</span>
           </div>
         </div>
 
@@ -50,7 +50,7 @@
           <dt>CD</dt><dd>Continuous Delivery (sẵn sàng deploy, có cổng duyệt) / Deployment (tự động ra production).</dd>
           <dt>Pipeline</dt><dd>Chuỗi bước tự động: build → test → package → publish/deploy.</dd>
         </div>
-        <div class="callout callout--interview"><div class="callout__icon">🗣️</div><div class="callout__body"><p class="mb-0"><strong>Kể được:</strong> “Tôi tích hợp build/package/test bằng Azure Pipelines + Conan cho SENT automation — biến chu kỳ test thủ công thành pipeline chạy tự động, tái lập được, chạy song song trên nhiều agent.”</p></div></div>
+        <div class="callout callout--interview"><div class="callout__icon">🗣️</div><div class="callout__body"><p class="mb-0"><strong>Kể được:</strong> “Ở dự án AUTOSAR Adaptive, tôi tích hợp build/package/test bằng Azure Pipelines + Conan, giúp các bước kỹ thuật lặp lại được và chạy như CI job.” (SENT automation là dự án riêng, không dùng pipeline này.)</p></div></div>
 
         <!-- 2. Azure Pipelines -->
         <h2>2. Azure Pipelines</h2>
@@ -98,14 +98,14 @@ stages:
 
         <!-- 3. Conan -->
         <h2>3. Conan — package manager C/C++</h2>
-        <p>Quản lý <strong>thư viện &amp; dependency C/C++</strong> theo version &amp; cấu hình build (OS/arch/compiler), build <strong>tái lập</strong>. Conan quản lý <em>binary</em> cho từng configuration; thiếu binary thì build từ source on-demand. Đây là chìa khoá để pipeline SENT không “flaky”.</p>
+        <p>Quản lý <strong>thư viện &amp; dependency C/C++</strong> theo version &amp; cấu hình build (OS/arch/compiler), build <strong>tái lập</strong>. Conan quản lý <em>binary</em> cho từng configuration; thiếu binary thì build từ source on-demand. Đây là chìa khoá để pipeline build C/C++ không “flaky”.</p>
         <div class="kv">
           <dt>Recipe (conanfile)</dt><dd>Mô tả package: dependency, cách build, options.</dd>
           <dt>Profile</dt><dd>Chứa settings/options/env/build_requires — cố định OS, arch, build_type, compiler (vd cross-compile cho target). Đổi target chỉ bằng đổi <code>--profile</code>.</dd>
           <dt>Lockfile</dt><dd>Khoá chính xác version dependency (<code>conan.lock</code>) → reproducible build.</dd>
           <dt>Remote</dt><dd>Kho package (vd JFrog Artifactory) để chia sẻ binary đã build.</dd>
         </div>
-        <div class="callout callout--tip"><div class="callout__icon">💡</div><div class="callout__body"><p class="mb-0"><strong>Vì sao quan trọng cho bài D:</strong> SENT nhạy môi trường/toolchain. Conan cố định dependency + profile → “chạy trên CI giống hệt máy local”, loại bỏ lỗi “máy tôi thì chạy”.</p></div></div>
+        <div class="callout callout--tip"><div class="callout__icon">💡</div><div class="callout__body"><p class="mb-0"><strong>Vì sao quan trọng:</strong> build C/C++ nhạy môi trường/toolchain. Conan cố định dependency + profile → “chạy trên CI giống hệt máy local”, loại bỏ lỗi “máy tôi thì chạy”.</p></div></div>
 
         <!-- 4. Docker -->
         <h2>4. Docker — container hoá</h2>

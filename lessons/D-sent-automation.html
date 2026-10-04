@@ -32,7 +32,7 @@
           <p class="lead">Thành tựu “đắt” nhất của bạn: rút một chu kỳ kiểm thử SENT từ <strong>~1–2 tháng thủ công xuống 2–3 ngày</strong>. Hãy chuẩn bị như một bài thuyết trình ngắn — luyện kể 3 phiên bản: <em>1 phút / 3 phút / sâu kỹ thuật</em>. Bài này cũng nạp đủ <strong>SENT ở mức kỹ thuật</strong> để bạn không đuối khi bị đào.</p>
           <div class="page-head__meta">
             <span><b>Độ ưu tiên:</b> 🔴 Cao nhất</span>
-            <span><b>Vai trò:</b> Automation Lead</span>
+            <span><b>Vai trò:</b> Lead team automation nhỏ (song song dự án ARA)</span>
             <span><b>Kết quả:</b> 1–2 tháng → 2–3 ngày</span>
           </div>
         </div>
@@ -41,6 +41,7 @@
           <div class="callout__icon">📌</div>
           <div class="callout__body">
             <p class="mb-0"><strong>Nguồn nội dung:</strong> phần <em>case study</em> (vai trò, con số, công cụ) lấy đúng theo CV của bạn. Phần <em>kỹ thuật SENT</em> đối chiếu chuẩn <strong>SAE J2716</strong> và tài liệu nhà sản xuất (xem mục “Nguồn tham khảo” cuối bài) — không suy diễn.</p>
+            <p class="mb-0" style="margin-top:6px"><strong>Lưu ý quan trọng:</strong> SENT automation là <em>dự án riêng</em>, chạy song song với dự án AUTOSAR Adaptive (ARA). <strong>Azure Pipelines + Conan</strong> và các framework được ARA system team dùng là việc của dự án ARA, <strong>không</strong> thuộc câu chuyện SENT. Chỗ <strong>[..]</strong> là công cụ thật của framework SENT, tự điền.</p>
           </div>
         </div>
 
@@ -48,7 +49,7 @@
           <div class="callout__icon">🎤</div>
           <div class="callout__body">
             <div class="callout__title">Vì sao câu chuyện này quan trọng nhất</div>
-            <p class="mb-0">Nó chứng minh đồng thời: <strong>năng lực kỹ thuật</strong> (SENT, framework, CI/CD), <strong>leadership</strong> (lead team agile), và <strong>tư duy tác động</strong> (con số rõ ràng). Đây là câu trả lời “đa năng” cho rất nhiều câu hỏi behavioral lẫn technical.</p>
+            <p class="mb-0">Nó chứng minh đồng thời: <strong>năng lực kỹ thuật</strong> (SENT, framework automation), <strong>leadership</strong> (lead team nhỏ, song song dự án ARA), và <strong>tư duy tác động</strong> (con số rõ ràng). Đây là câu trả lời “đa năng” cho rất nhiều câu hỏi behavioral lẫn technical.</p>
           </div>
         </div>
 
@@ -142,7 +143,7 @@
               <tr><td>Cấu hình test &amp; kích thích tín hiệu SENT bằng tay trên thiết bị</td><td>Mỗi ca test tốn nhiều giờ thiết lập</td></tr>
               <tr><td>Đọc/đánh giá kết quả timing thủ công qua công cụ debug</td><td>Dễ sai, khó tái lập, phụ thuộc người</td></tr>
               <tr><td>Bao phủ nhiều biến: tick time, nibble, CRC, lỗi, nhiều target</td><td>Tổ hợp test rất lớn → kéo dài hàng tuần</td></tr>
-              <tr><td>Không có CI: chạy lại từ đầu mỗi khi có thay đổi</td><td>Regression đắt đỏ, làm lại nhiều lần</td></tr>
+              <tr><td>Không chạy tự động: chạy lại từ đầu mỗi khi có thay đổi</td><td>Regression đắt đỏ, làm lại nhiều lần</td></tr>
               <tr><td>Kết quả &amp; bằng chứng rải rác, tổng hợp report bằng tay</td><td>Tốn thời gian review &amp; truy vết ASPICE</td></tr>
             </tbody>
           </table>
@@ -156,15 +157,15 @@
 
         <!-- 3. Giải pháp / kiến trúc -->
         <h2>3. Giải pháp — kiến trúc framework automation</h2>
-        <p>Ý tưởng: biến mỗi bước thủ công thành một thành phần tái sử dụng, ghép lại thành pipeline chạy tự động trong CI/CD.</p>
+        <p>Ý tưởng: biến mỗi bước thủ công thành một thành phần tái sử dụng, ghép lại thành một luồng chạy tự động.</p>
 
         <div class="figure">
           <svg viewBox="0 0 720 332" role="img" aria-label="Kiến trúc framework automation SENT" xmlns="http://www.w3.org/2000/svg">
             <defs><marker id="arF" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
             <rect x="60" y="12" width="600" height="52" rx="9" fill="var(--brand-600)"/>
-            <text x="360" y="34" text-anchor="middle" class="dgm-inv" font-size="12.5" font-weight="800">CI/CD — Azure Pipelines</text>
-            <text x="360" y="52" text-anchor="middle" class="dgm-inv-sub" font-size="10.5">trigger → build → test → report → publish</text>
-            <text x="360" y="82" text-anchor="middle" class="dgm-sub" font-size="10.5">Conan: cố định dependency &amp; toolchain (chạy CI giống local)</text>
+            <text x="360" y="34" text-anchor="middle" class="dgm-inv" font-size="12.5" font-weight="800">Chạy tự động toàn bộ vòng lặp</text>
+            <text x="360" y="52" text-anchor="middle" class="dgm-inv-sub" font-size="10.5">trigger → setup → test → evaluate → report</text>
+            <text x="360" y="82" text-anchor="middle" class="dgm-sub" font-size="10.5">Framework riêng cho SENT · tool thật: [..]</text>
             <line x1="360" y1="88" x2="360" y2="100" class="dgm-arrow" stroke-width="1.5" marker-end="url(#arF)"/>
             <rect x="40" y="104" width="640" height="124" rx="9" fill="var(--surface-2)" class="dgm-layer"/>
             <text x="360" y="126" text-anchor="middle" class="dgm-label" font-size="12.5" font-weight="800">SENT Automation Framework (data-driven)</text>
@@ -179,7 +180,7 @@
             <text x="360" y="278" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">Targets</text>
             <text x="360" y="296" text-anchor="middle" class="dgm-inv-sub" font-size="10.5">ST · Infineon · VECU · Renesas R-Car …</text>
           </svg>
-          <div class="figure__cap"><b>Toàn bộ vòng lặp được tự động hoá.</b> Cấu hình (data) → kích thích → tự đánh giá → report truy vết, chạy trong CI/CD với môi trường cố định bởi Conan, trên nhiều target.</div>
+          <div class="figure__cap"><b>Toàn bộ vòng lặp được tự động hoá.</b> Cấu hình (data) → kích thích → tự đánh giá → report truy vết, chạy tự động trên nhiều target.</div>
         </div>
 
         <div class="grid grid-2">
@@ -188,7 +189,7 @@
             <ul class="mb-0 small">
               <li><strong>Data-driven:</strong> test case tách khỏi code → thêm ca test = thêm dữ liệu, không sửa logic.</li>
               <li><strong>Tái sử dụng:</strong> framework dùng chung cho test/dev/doc, không “xài một lần”.</li>
-              <li><strong>Reproducible:</strong> Conan cố định toolchain/dependency để chạy đâu cũng giống nhau.</li>
+              <li><strong>Reproducible:</strong> cùng cấu hình và môi trường thì cho cùng kết quả, chạy lại được bất cứ lúc nào.</li>
               <li><strong>Tự đánh giá:</strong> evaluator so timing với ngưỡng, tự PASS/FAIL, không cần mắt người.</li>
             </ul>
           </div>
@@ -208,8 +209,8 @@
         <ul class="steps">
           <li><h4>Planning &amp; phân rã</h4><p class="mb-0">Tôi chia bài toán lớn thành các module độc lập (config / stimulus / evaluator / report) để team làm song song và đo được tiến độ.</p></li>
           <li><h4>Lead team theo agile</h4><p class="mb-0">Tôi lập backlog, chia task, theo dõi sprint, gỡ vướng kỹ thuật, và đảm bảo các phần ghép được với nhau.</p></li>
-          <li><h4>Kiến trúc &amp; chuẩn kỹ thuật</h4><p class="mb-0">Tôi quyết định cách tách lớp data-driven, chuẩn interface giữa các module, và tích hợp CI/CD (Azure Pipelines + Conan).</p></li>
-          <li><h4>Enablement</h4><p class="mb-0">Tôi viết tài liệu, training để ARA system team tự dùng framework — đảm bảo nó sống sau khi tôi chuyển vai trò.</p></li>
+          <li><h4>Kiến trúc &amp; chuẩn kỹ thuật</h4><p class="mb-0">Tôi quyết định cách tách lớp data-driven, chuẩn interface giữa các module, và cách framework tự chạy cả vòng lặp [cơ chế thật: ..].</p></li>
+          <li><h4>Enablement</h4><p class="mb-0">Tôi viết tài liệu, training để team [..] tự dùng framework — đảm bảo nó sống sau khi tôi chuyển vai trò.</p></li>
         </ul>
 
         <!-- 5. Thử thách -->
@@ -224,7 +225,7 @@
           <div class="accordion__item">
             <button class="accordion__head">Pipeline “flaky” / môi trường không đồng nhất <span class="chev">›</span></button>
             <div class="accordion__panel"><div class="accordion__panel-inner">
-              <p class="mb-0">Chuẩn hoá dependency &amp; toolchain bằng <strong>Conan</strong>; thêm log rõ ràng và tách phần phụ thuộc hardware. Độ tin cậy tăng → team mới thật sự tin và adopt.</p>
+              <p class="mb-0">Chuẩn hoá dependency &amp; toolchain; thêm log rõ ràng và tách phần phụ thuộc hardware. Độ tin cậy tăng → team mới thật sự tin và adopt.</p>
             </div></div>
           </div>
           <div class="accordion__item">
@@ -245,14 +246,14 @@
             <text x="20" y="100" class="dgm-label" font-size="12" font-weight="700">Sau (automation)</text>
             <rect x="200" y="86" width="46" height="28" rx="6" fill="var(--ok)"/>
             <text x="258" y="105" class="dgm-label" font-size="12" font-weight="700">2–3 ngày</text>
-            <text x="450" y="138" text-anchor="middle" class="dgm-sub" font-size="11">Cùng phạm vi test · cùng độ phủ — chỉ khác cách chạy (data-driven + CI/CD + tự đánh giá)</text>
+            <text x="450" y="138" text-anchor="middle" class="dgm-sub" font-size="11">Cùng phạm vi test · cùng độ phủ — chỉ khác cách chạy (data-driven + chạy tự động + tự đánh giá)</text>
           </svg>
           <div class="figure__cap"><b>Tác động trực quan.</b> Cùng phạm vi kiểm thử, thời gian một chu kỳ rút từ ~1–2 tháng xuống 2–3 ngày.</div>
         </div>
         <div class="grid grid-3">
           <div class="card center"><div style="font-size:26px;font-weight:800;font-family:var(--font-head);color:var(--ok)">1–2 tháng<br>→ 2–3 ngày</div><p class="small text-mute mb-0">thời gian một chu kỳ test</p></div>
-          <div class="card center"><div style="font-size:26px;font-weight:800;font-family:var(--font-head);color:var(--brand-600)">Adopted</div><p class="small text-mute mb-0">ARA system team dùng làm chuẩn</p></div>
-          <div class="card center"><div style="font-size:26px;font-weight:800;font-family:var(--font-head);color:var(--core)">Award</div><p class="small text-mute mb-0">giải innovation/automation nội bộ</p></div>
+          <div class="card center"><div style="font-size:26px;font-weight:800;font-family:var(--font-head);color:var(--brand-600)">[..]</div><p class="small text-mute mb-0">kết quả thêm (ai dùng, bao nhiêu release)</p></div>
+          <div class="card center"><div style="font-size:26px;font-weight:800;font-family:var(--font-head);color:var(--core)">Song song</div><p class="small text-mute mb-0">lead team này cùng lúc với system test ở dự án ARA</p></div>
         </div>
         <div class="callout callout--key">
           <div class="callout__icon">📈</div>
@@ -267,7 +268,7 @@
         <div class="qa">
           <div class="qa__q">Phiên bản 1 phút (elevator) <span class="qa__lv qa__lv--experience">Kể</span><span class="qa__toggle">▾</span></div>
           <div class="qa__a"><div class="qa__a-inner">
-            <p class="mb-0">“Quy trình validation SENT của team làm thủ công, mỗi chu kỳ tốn 1–2 tháng và dễ sai. Tôi lead một sáng kiến automation: thiết kế framework data-driven cho cả vòng lặp — cấu hình test, kích thích tín hiệu, tự đánh giá timing/CRC, và tự sinh report truy vết ASPICE — rồi đưa vào CI/CD bằng Azure Pipelines và Conan. Kết quả: chu kỳ test còn 2–3 ngày, team adopt làm chuẩn, và tôi nhận giải innovation nội bộ.”</p>
+            <p class="mb-0">“Quy trình validation SENT của team làm thủ công, mỗi chu kỳ tốn 1–2 tháng và dễ sai. Tôi lead một sáng kiến automation: thiết kế framework data-driven cho cả vòng lặp — cấu hình test, kích thích tín hiệu, tự đánh giá timing/CRC, và tự sinh report truy vết ASPICE — chạy tự động toàn bộ. Tôi làm việc này song song với system test ở dự án ARA. Kết quả: chu kỳ test còn 2–3 ngày.”</p>
           </div></div>
         </div>
 
@@ -275,9 +276,9 @@
           <div class="qa__q">Phiên bản 3 phút (STAR đầy đủ) <span class="qa__lv qa__lv--experience">Kể</span><span class="qa__toggle">▾</span></div>
           <div class="qa__a"><div class="qa__a-inner">
             <p><strong>S:</strong> Quy trình SENT thủ công, 1–2 tháng/chu kỳ; setup, kích thích, đánh giá, tổng hợp đều bằng tay và không lặp lại được.</p>
-            <p><strong>T:</strong> Tôi nhận vai trò automation lead: đưa team agile tới một framework chạy được, giảm mạnh thời gian và tăng độ tin cậy.</p>
-            <p><strong>A:</strong> Phân rã thành 4 module (config/stimulus/evaluator/report); chọn kiến trúc data-driven để mở rộng ca test mà không sửa code; tích hợp CI/CD (Azure Pipelines) và cố định môi trường bằng Conan; xử lý lỗi timing khó trên ST/Infineon bằng UDE; viết tài liệu + training để team tự dùng.</p>
-            <p class="mb-0"><strong>R:</strong> 1–2 tháng → 2–3 ngày; ARA system team adopt; giải innovation; bài học: tấn công cả vòng lặp, ưu tiên độ tin cậy, và enablement là một phần của automation.</p>
+            <p><strong>T:</strong> Song song với system test ở dự án ARA, tôi lead một team automation nhỏ: đưa team tới một framework chạy được, giảm mạnh thời gian và tăng độ tin cậy.</p>
+            <p><strong>A:</strong> Phân rã thành 4 module (config/stimulus/evaluator/report); chọn kiến trúc data-driven để mở rộng ca test mà không sửa code; xử lý lỗi timing khó trên ST/Infineon bằng UDE; viết tài liệu + training để team tự dùng.</p>
+            <p class="mb-0"><strong>R:</strong> 1–2 tháng → 2–3 ngày; [kết quả thêm: ..]; bài học: tấn công cả vòng lặp, ưu tiên độ tin cậy, và enablement là một phần của automation.</p>
           </div></div>
         </div>
 
@@ -287,7 +288,7 @@
             <ul class="mb-0">
               <li><strong>Vì sao data-driven?</strong> Tách ca test (dữ liệu: tick/nibble/CRC/lỗi/target) khỏi logic → thêm test = thêm dòng dữ liệu, dễ review, dễ map requirement.</li>
               <li><strong>Đánh giá timing thế nào?</strong> Evaluator so các tham số timing (tick time sau calibration 56 ticks, độ dài nibble 12–27 tick, CRC-4) với ngưỡng kỳ vọng → tự PASS/FAIL kèm bằng chứng.</li>
-              <li><strong>Vì sao Conan?</strong> SENT nhạy môi trường/toolchain; Conan cố định version để CI chạy giống local, loại bỏ “chạy máy tôi thì được”.</li>
+              <li><strong>Chạy lặp lại thế nào?</strong> [cơ chế thật: script/tool nào kích hoạt, chạy trên máy/bench nào]. Không nói Azure Pipelines/Conan: đó là dự án ARA.</li>
               <li><strong>Fault injection?</strong> Chủ động sinh khung lỗi (CRC sai, nibble ngoài dải 12–27 tick, calibration lệch, timing jitter) để kiểm tra error-handling, không chỉ happy path.</li>
               <li><strong>Truy vết ASPICE?</strong> Report tự map requirement ↔ test ↔ kết quả để sẵn sàng review (xem bài <a href="C-testing.html">C</a>).</li>
             </ul>
@@ -331,7 +332,7 @@
         </div>
         <div class="qa"><div class="qa__q">Bạn rút 1–2 tháng xuống 2–3 ngày — nhờ đâu, không phải “chạy nhanh hơn”? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
           <div class="qa__a"><div class="qa__a-inner">
-            <p>Nhờ <strong>tự động hoá cả vòng lặp</strong> chứ không tối ưu một bước: (1) <em>data-driven</em> để nhân ca test bằng dữ liệu; (2) <em>signal stimulus</em> tự sinh tín hiệu thay cho thiết lập tay; (3) <em>evaluator</em> tự so timing/CRC, bỏ khâu đọc bằng mắt; (4) <em>CI/CD + Conan</em> để chạy lặp lại, song song, môi trường nhất quán; (5) <em>report tự truy vết</em> để khỏi tổng hợp tay. Cộng lại mới ra mức giảm lớn.</p>
+            <p>Nhờ <strong>tự động hoá cả vòng lặp</strong> chứ không tối ưu một bước: (1) <em>data-driven</em> để nhân ca test bằng dữ liệu; (2) <em>signal stimulus</em> tự sinh tín hiệu thay cho thiết lập tay; (3) <em>evaluator</em> tự so timing/CRC, bỏ khâu đọc bằng mắt; (4) <em>chạy tự động</em> để lặp lại mà không cần người ngồi ở bench; (5) <em>report tự truy vết</em> để khỏi tổng hợp tay. Cộng lại mới ra mức giảm lớn.</p>
             <div class="qa__followups"><div class="qa__followups-label">Interviewer đào tiếp</div><ul>
               <li>Đâu là bước tiết kiệm nhiều nhất? (loại bỏ đánh giá thủ công + regression tự động)</li>
               <li>Làm sao tin kết quả tự đánh giá đúng? (đối chứng với kết quả manual giai đoạn đầu + fault injection)</li>
@@ -355,7 +356,7 @@
           <div class="callout__body">
             <div class="callout__title">Bẫy cần tránh khi kể</div>
             <ul class="mb-0">
-              <li>Nói “giảm còn 2–3 ngày” mà không giải thích <em>nhờ đâu</em> (data-driven + CI + tự đánh giá).</li>
+              <li>Nói “giảm còn 2–3 ngày” mà không giải thích <em>nhờ đâu</em> (data-driven + chạy tự động + tự đánh giá).</li>
               <li>Quên nhấn vai trò cá nhân → nghe như cả team làm, không rõ bạn.</li>
               <li>Không thủ sẵn phần SENT cơ bản → bị đào timing/CRC là đuối.</li>
             </ul>
@@ -375,7 +376,7 @@
           <div class="cheatsheet__group"><h4>Vì sao cũ chậm</h4><ul>
             <li>Setup + stimulus thủ công</li>
             <li>Đánh giá timing bằng mắt</li>
-            <li>Tổ hợp test lớn, không CI</li>
+            <li>Tổ hợp test lớn, không chạy tự động</li>
             <li>Report &amp; trace tổng hợp tay</li>
           </ul></div>
           <div class="cheatsheet__group"><h4>Giải pháp (4 module)</h4><ul>
@@ -383,11 +384,11 @@
             <li>Signal Stimulus (tự sinh)</li>
             <li>Result Evaluator (tự PASS/FAIL)</li>
             <li>Report + Traceability (ASPICE)</li>
-            <li>CI/CD: Azure Pipelines + Conan</li>
+            <li>Chạy tự động cả vòng lặp [tool thật: ..]</li>
           </ul></div>
           <div class="cheatsheet__group"><h4>Kết quả &amp; bài học</h4><ul>
             <li><strong>1–2 tháng → 2–3 ngày</strong></li>
-            <li>ARA team adopt + giải innovation</li>
+            <li>Làm song song với dự án ARA</li>
             <li>Tấn công cả vòng lặp</li>
             <li>Độ tin cậy &gt; tốc độ · enablement</li>
           </ul></div>

@@ -14,12 +14,12 @@
     key: [
       "Hook: ~4 years Bosch, integration + automation",
       "Classic: MCAL validation, CUBAS BSW integrator, RH850, TRACE32, ASPICE",
-      "Adaptive: automation lead, SENT 1–2 months → 2–3 days",
-      "Azure Pipelines + Conan",
+      "Parallel: ARA system test (+ Azure Pipelines + Conan) and lead of a small SENT automation team",
+      "SENT: 1–2 months → 2–3 days (own framework)",
       "Now: platform ops — Docker, K8s, Terraform, access, cost",
       "Close: understand the stack + keep the pipeline green"
     ],
-    answer: "I'm an embedded software engineer with nearly four years at Bosch Global Software Technologies, and most of my work is in the same area as this role: <strong>integration and automation</strong>. I started in AUTOSAR Classic, designing MCAL unit and component validation on target hardware and VECU. Then I worked as a <strong>BSW integrator in the CUBAS team on RH850 D3, D4 and D5</strong>. There I integrated and validated BswM, Diag, CAN, COM, EcuM, OS, MCAL and the memory stack, debugged integration failures with Lauterbach TRACE32, and was responsible for requirement traceability and test evidence under ASPICE.<br>Then I moved to the AUTOSAR Adaptive system team as system test engineer and automation lead. I led a <strong>SENT validation automation initiative that cut the full cycle from about one to two months down to two to three days</strong>, and I integrated build, package and test into Azure Pipelines with Conan.<br>For the last year and a half I've been running an internal engineering platform: Docker, Kubernetes, Terraform, access control and cost governance.<br>So I bring an understanding of the AUTOSAR stack being integrated, and I know how to build the pipeline that keeps it green, fast and audit-ready.",
+    answer: "I'm an embedded software engineer with nearly four years at Bosch Global Software Technologies, and most of my work is in the same area as this role: <strong>integration and automation</strong>. I started in AUTOSAR Classic, designing MCAL unit and component validation on target hardware and VECU. Then I worked as a <strong>BSW integrator in the CUBAS team on RH850 D3, D4 and D5</strong>. There I integrated and validated BswM, Diag, CAN, COM, EcuM, OS, MCAL and the memory stack, debugged integration failures with Lauterbach TRACE32, and was responsible for requirement traceability and test evidence under ASPICE.<br>Then I worked on two projects in parallel. On the AUTOSAR Adaptive project I was a system test engineer, and I integrated build, package and test into Azure Pipelines with Conan. On a separate project, I led a small automation team for <strong>SENT validation, which cut the full cycle from about one to two months down to two to three days</strong>.<br>For the last year and a half I've been running an internal engineering platform: Docker, Kubernetes, Terraform, access control and cost governance.<br>So I bring an understanding of the AUTOSAR stack being integrated, and I know how to build the pipeline that keeps it green, fast and audit-ready.",
     followups: ["What exactly is CUBAS and what did you integrate?", "What made up those 2–3 days?", "Why are you leaving the AI platform role?"]
   },
 
@@ -35,10 +35,10 @@
       "All inside Bosch — internal moves, not job hopping",
       "Thread: turn repetitive engineering work into automation",
       "Classic: hands-on target work, felt the manual pain",
-      "Adaptive: automation lead, framework + CI",
+      "Parallel: ARA system test + Azure Pipelines/Conan; lead of a small SENT automation team",
       "Platform: infra/ops skills — the CI half of this JD"
     ],
-    answer: "It was all inside Bosch, and each move built on the one before. What connects them is <strong>turning repetitive engineering work into reusable automation</strong>. In AUTOSAR Classic I did the hands-on part: MCAL validation, BSW integration on RH850, debugging on the target with TRACE32 and UDE. That's where I saw how much time went into manual setup, execution and evidence collection. In the Adaptive team I got the chance to do something about it: I led the SENT automation initiative and brought build, package and test into Azure Pipelines with Conan. The platform role then gave me the infrastructure side: containers, Kubernetes, Terraform, access control and cost governance. So I didn't change profession. I went from doing the integration work, to automating it, to running the infrastructure it runs on. This role combines exactly those layers, which is why I'm applying.",
+    answer: "It was all inside Bosch, and each move built on the one before. What connects them is <strong>turning repetitive engineering work into reusable automation</strong>. In AUTOSAR Classic I did the hands-on part: MCAL validation, BSW integration on RH850, debugging on the target with TRACE32 and UDE. That's where I saw how much time went into manual setup, execution and evidence collection. Then I got the chance to do something about it, on two projects in parallel: on the AUTOSAR Adaptive project I brought build, package and test into Azure Pipelines with Conan, and on a separate project I led a small team that automated SENT validation. The platform role then gave me the infrastructure side: containers, Kubernetes, Terraform, access control and cost governance. So I didn't change profession. I went from doing the integration work, to automating it, to running the infrastructure it runs on. This role combines exactly those layers, which is why I'm applying.",
     followups: ["Which of the three roles did you enjoy most, and why?", "What did you learn in the platform role that applies to CI?"]
   },
 
@@ -72,10 +72,10 @@
       "SWC/ARXML integration ↔ CUBAS BSW integrator on RH850",
       "ASPICE, traceability ↔ owned req-to-test mapping, evidence",
       "Debugging ↔ TRACE32, UDE, SENT timing defects",
-      "CI, Python/Pytest, Docker ↔ SENT automation, Azure + Conan",
+      "CI, Python/Pytest, Docker ↔ Azure Pipelines + Conan (ARA), SENT automation (separate)",
       "Gap: EB tools, Jenkins/GitLab — same concepts"
     ],
-    answer: "When I read the JD I compared it with my experience line by line. <strong>Integrating software components and configuration in AUTOSAR projects</strong>: that's what I did as a CUBAS BSW integrator on RH850. <strong>A disciplined integration process per ASPICE</strong>: I owned requirement-to-test mapping, test evidence and review readiness. <strong>Troubleshooting and debugging</strong> with Lauterbach: I used TRACE32 for register, memory, breakpoint and trace analysis, and UDE for SENT timing defects on ST and Infineon. On the CI side, Python, Pytest, YAML, Bash and Docker are my daily tools, and I built the SENT automation and the Azure Pipelines plus Conan integration. To be honest, my gap is the specific tools: I haven't used EB tresos or Jenkins in a project, but I've done the same work with RTA-CAR and Azure Pipelines. So it's a tool change, not a concept change.",
+    answer: "When I read the JD I compared it with my experience line by line. <strong>Integrating software components and configuration in AUTOSAR projects</strong>: that's what I did as a CUBAS BSW integrator on RH850. <strong>A disciplined integration process per ASPICE</strong>: I owned requirement-to-test mapping, test evidence and review readiness. <strong>Troubleshooting and debugging</strong> with Lauterbach: I used TRACE32 for register, memory, breakpoint and trace analysis, and UDE for SENT timing defects on ST and Infineon. On the CI side, Python, Pytest, YAML, Bash and Docker are my daily tools. I led the SENT automation team, and separately, on the Adaptive project, I built the Azure Pipelines plus Conan integration. To be honest, my gap is the specific tools: I haven't used EB tresos or Jenkins in a project, but I've done the same work with RTA-CAR and Azure Pipelines. So it's a tool change, not a concept change.",
     followups: ["Which JD item do you feel weakest on?", "How would you ramp up on EB tresos?"]
   },
 
@@ -168,7 +168,7 @@
       "CUBAS: integration point, stakeholders ↔ BSW teams",
       "Platform: training users, driving adoption"
     ],
-    answer: "My main leadership experience is the <strong>SENT stack automation initiative</strong> in the Adaptive team. I owned it end to end: planning, breaking the work into deliverable pieces, designing the workflow, tracking progress in an Agile setup, and delivering. The team was [fill: team size and roles], and my role was [fill: technical lead vs. formal line manager]. Day to day that meant keeping the backlog realistic, unblocking people on technical issues, and making sure the pieces fitted together. The result was the cycle going from about one to two months to two to three days. The second kind of leadership is without formal authority: in CUBAS I was the <strong>integration point between project stakeholders and several BSW component teams</strong>, aligning interfaces and pushing issues until they were solved. And in my current role I help teams adopt internal tools through hands-on training. I'm aiming to grow further into integration lead responsibilities.",
+    answer: "My main leadership experience is leading a small <strong>SENT stack automation team</strong>, in parallel with my system test work on the AUTOSAR Adaptive project. I owned it end to end: planning, breaking the work into deliverable pieces, designing the workflow, tracking progress in an Agile setup, and delivering. The team was [fill: team size and roles], and my role was [fill: technical lead vs. formal line manager]. Day to day that meant keeping the backlog realistic, unblocking people on technical issues, and making sure the pieces fitted together. The result was the cycle going from about one to two months to two to three days. The second kind of leadership is without formal authority: in CUBAS I was the <strong>integration point between project stakeholders and several BSW component teams</strong>, aligning interfaces and pushing issues until they were solved. And in my current role I help teams adopt internal tools through hands-on training. I'm aiming to grow further into integration lead responsibilities.",
     followups: ["How did you handle a team member who was falling behind?", "How did you report progress to stakeholders?"]
   },
 
@@ -629,16 +629,16 @@
     type: "behavioral",
     q: "Walk me through the SENT automation initiative you led.",
     vi: "Hãy trình bày chi tiết sáng kiến tự động hóa SENT mà bạn đã dẫn dắt.",
-    tags: ["SENT", "automation", "lead", "1-2 months", "2-3 days", "Azure Pipelines", "Conan", "tự động hóa", "STAR"],
+    tags: ["SENT", "automation", "lead", "1-2 months", "2-3 days", "tự động hóa", "STAR"],
     viTags: ["tự động hóa kiểm thử", "dẫn dắt sáng kiến", "rút ngắn thời gian test", "tự động hóa sent", "cải tiến quy trình", "test automation"],
     key: [
       "S: manual SENT validation, ~1–2 months per cycle",
-      "T: automation lead — plan, break down, deliver (Agile)",
+      "T: lead a small SENT automation team, in parallel with ARA system test",
       "A: automate the whole loop, not one step",
-      "A: Azure Pipelines + Conan for repeatable runs",
+      "A: dedicated SENT framework: [fill: real tools] (not Azure/Conan — that was ARA)",
       "R: 2–3 days per cycle, [fill: adoption/evidence]"
     ],
-    answer: "<strong>Situation</strong>: the SENT stack validation was largely manual, and a complete cycle took about one to two months. It was slow, hard to repeat, and dependent on who executed it. <strong>Task</strong>: I led the automation initiative end to end: planning, task breakdown, workflow design, implementation, execution and delivery, in an Agile team. <strong>Action</strong>: I looked at the whole loop instead of one step: setting up each test, stimulating and measuring, judging results, and collecting evidence. I introduced an automation-first workflow so those steps run without manual effort, and integrated build, package and test into <strong>Azure Pipelines with Conan</strong> so runs are repeatable on any agent. I broke the work into pieces the team could build in parallel and tracked it sprint by sprint. <strong>Result</strong>: the complete validation cycle went from about one to two months to <strong>two to three days</strong>. [fill: additional real outcome, e.g. how many releases it was used for].",
+    answer: "<strong>Situation</strong>: the SENT stack validation was largely manual, and a complete cycle took about one to two months. It was slow, hard to repeat, and dependent on who executed it. <strong>Task</strong>: in parallel with my system test work on the AUTOSAR Adaptive project, I led a small automation team for SENT, end to end: planning, task breakdown, workflow design, implementation, execution and delivery, in an Agile team. <strong>Action</strong>: I looked at the whole loop instead of one step: setting up each test, stimulating and measuring, judging results, and collecting evidence. I introduced an automation-first workflow so those steps run without manual effort, built as a dedicated framework for SENT [fill: real tools and how runs were triggered]. I broke the work into pieces the team could build in parallel and tracked it sprint by sprint. <strong>Result</strong>: the complete validation cycle went from about one to two months to <strong>two to three days</strong>. [fill: additional real outcome, e.g. how many releases it was used for].",
     followups: ["What exactly took 1–2 months before?", "What was the architecture?", "How big was the team?"]
   },
 
@@ -671,12 +671,12 @@
     viTags: ["kiến trúc framework", "thiết kế framework test", "các tầng kiến trúc", "kiểm thử hướng dữ liệu", "framework python", "tự động hóa kiểm thử"],
     key: [
       "Layers: test definition → execution/control → evaluation → reporting",
-      "Wrapped by Azure Pipelines; dependencies pinned with Conan",
+      "Run mechanism: [fill: how runs were triggered] (not Azure/Conan — that was ARA)",
       "Real components and languages: [fill: tools/languages per layer]",
       "What I wrote myself: [fill: your personal contribution]",
       "Traceability: results linked to requirements"
     ],
-    answer: "I think of it in layers. First, <strong>test definition</strong>: what to test and with which parameters. Then <strong>execution and control</strong>: running the test and driving the target and equipment. Then <strong>evaluation</strong>: turning raw measurements into a pass or fail verdict against expected values, so nobody has to judge timing by eye. Finally <strong>reporting</strong>: logs, results and evidence linked back to requirements. Around that, <strong>Azure Pipelines</strong> triggers and manages runs, and <strong>Conan</strong> pins dependencies so every agent uses the same versions. In our implementation, the concrete pieces were [fill: actual components, languages and tools per layer], and the parts I built myself were [fill: your personal contribution]. The key design decision was [fill: e.g. separating test data from test logic so adding a case doesn't require code changes], because that's what made it reusable.",
+    answer: "I think of it in layers. First, <strong>test definition</strong>: what to test and with which parameters. Then <strong>execution and control</strong>: running the test and driving the target and equipment. Then <strong>evaluation</strong>: turning raw measurements into a pass or fail verdict against expected values, so nobody has to judge timing by eye. Finally <strong>reporting</strong>: logs, results and evidence linked back to requirements. Around that, [fill: how runs were triggered and scheduled, e.g. a script or runner on the bench PC]. In our implementation, the concrete pieces were [fill: actual components, languages and tools per layer], and the parts I built myself were [fill: your personal contribution]. The key design decision was [fill: e.g. separating test data from test logic so adding a case doesn't require code changes], because that's what made it reusable.",
     followups: ["How did you connect the pipeline to the hardware bench?", "How would you extend it to another protocol?"]
   },
 
@@ -712,9 +712,9 @@
       "Trust: automated verdicts must match known results",
       "Adoption: show small real results first, then expand",
       "Documentation + reusable framework → team can self-serve",
-      "Frameworks adopted by the ARA system team"
+      "Separate example (ARA project): frameworks adopted by the ARA system team"
     ],
-    answer: "Technically, the main challenge was [fill: real challenge, e.g. environment stability, hardware-dependent timing, bench access]. We handled it by [fill: how]. The bigger challenge was <strong>adoption</strong>. People who have run tests manually for a long time trust their own eyes more than a script, which is fair. So I focused on two things. First, <strong>trust</strong>: automated results had to agree with known results before anyone depended on them. Second, <strong>showing value early</strong>: getting a small set of tests running end to end and showing the time saved, then expanding step by step. I also made sure it was usable without me, with documentation and reusable components; the frameworks I built for testing, development workflows and documentation hosting were adopted by the ARA system team. [fill: how you onboarded or trained colleagues].",
+    answer: "Technically, the main challenge was [fill: real challenge, e.g. environment stability, hardware-dependent timing, bench access]. We handled it by [fill: how]. The bigger challenge was <strong>adoption</strong>. People who have run tests manually for a long time trust their own eyes more than a script, which is fair. So I focused on two things. First, <strong>trust</strong>: automated results had to agree with known results before anyone depended on them. Second, <strong>showing value early</strong>: getting a small set of tests running end to end and showing the time saved, then expanding step by step. I also made sure it was usable without me, with documentation and reusable components. A separate example from the Adaptive project: the frameworks I built there for testing, development workflows and documentation hosting were adopted by the ARA system team. [fill: how you onboarded or trained colleagues].",
     followups: ["Did anyone resist? How did you handle it?", "Who maintains it now?"]
   },
 

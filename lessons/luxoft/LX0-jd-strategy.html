@@ -175,7 +175,7 @@
           <div class="callout__body">
             <p>"I'm an embedded software engineer with nearly <strong>four years at Bosch</strong>, and most of that work sits exactly where this role sits: <strong>integration and automation</strong>.</p>
             <p>I started in <strong>AUTOSAR Classic</strong>, validating MCAL drivers and then working as a <strong>BSW integrator in the CUBAS team</strong> on RH850. I integrated BswM, Diag, CAN, COM, EcuM, OS and memory modules, debugged integration failures with TRACE32, and owned requirement traceability and test evidence under ASPICE.</p>
-            <p>Then I worked on two projects in parallel: <strong>system testing</strong> on the AUTOSAR Adaptive project, and <strong>leading a small automation team</strong> for SENT validation, which cut the full cycle from <strong>one to two months down to two to three days</strong>. I also wired build, package and test into <strong>Azure Pipelines with Conan</strong>.</p>
+            <p>Then I worked on two projects in parallel. On the AUTOSAR Adaptive project I did <strong>system testing</strong> and wired build, package and test into <strong>Azure Pipelines with Conan</strong>. On a separate project, I was <strong>leading a small automation team</strong> for SENT validation, which cut the full cycle from <strong>one to two months down to two to three days</strong>.</p>
             <p>Most recently I've been running an internal <strong>platform</strong>: Docker, Kubernetes, Terraform, access control, cost and usage monitoring.</p>
             <p class="mb-0">So what I bring to this TCU project is someone who understands the AUTOSAR stack being integrated <em>and</em> knows how to build a CI system that keeps it green, fast and audit-ready."</p>
           </div>
@@ -200,7 +200,7 @@
           <li><h4>Debug &amp; bus: các mục ✅ của <a href="LX8-vector-tools-debug.html">LX8</a> (+ <a href="../E-protocols.html">E</a>)</h4><p class="mb-0">TRACE32 (register, memory, breakpoint, trace), CANoe, CAN/CAN FD, LIN cơ bản.</p></li>
           <li><h4>ASPICE &amp; traceability: mục 1–2 của <a href="LX7-aspice-8d-cm.html">LX7</a></h4><p class="mb-0">Requirement-to-test, bằng chứng test, baseline, review readiness.</p></li>
           <li><h4>Linux/QNX &amp; Git hằng ngày: mục 1–2 của <a href="LX9-linux-git-flashing.html">LX9</a></h4><p class="mb-0">Quy trình khoanh vùng lỗi trên target (systemd, journalctl, dmesg, mạng), QNX vs Linux, merge/rebase/cherry-pick.</p></li>
-          <li><h4>CI bạn đã làm: các mục ✅ của <a href="LX2-ci-infra-ops.html">LX2</a></h4><p class="mb-0">Azure Pipelines + Conan, Docker, bench trong CI, cách "đo trước rồi tối ưu". Luyện câu "CI chậm và hay đỏ, bạn làm gì?" bằng kinh nghiệm SENT.</p></li>
+          <li><h4>CI bạn đã làm: các mục ✅ của <a href="LX2-ci-infra-ops.html">LX2</a></h4><p class="mb-0">Azure Pipelines + Conan (dự án ARA), Docker, bench trong CI, cách "đo trước rồi tối ưu". Luyện câu "CI chậm và hay đỏ, bạn làm gì?" bằng tư duy của SENT automation (đo trước, tự động hóa chỗ tốn thời gian nhất).</p></li>
         </ul>
         <h3>Giai đoạn 2 — 🎯 Tối thiểu cho những gì JD gần như chắc hỏi (vài giờ)</h3>
         <ul class="steps">
@@ -253,7 +253,7 @@
           <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
         </div>
         <div class="qa"><div class="qa__q">Tell me about yourself (bản cho vị trí CI/Integration). <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
-          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Dùng pitch ở mục 5. Cấu trúc: <strong>1 câu định vị</strong> (integration + automation) → <strong>Classic</strong> (CUBAS integrator, RH850, TRACE32, ASPICE) → <strong>Automation lead</strong> (SENT 1–2 tháng → 2–3 ngày, Azure Pipelines + Conan) → <strong>Platform</strong> (Docker/K8s/Terraform) → <strong>1 câu nối vào TCU project</strong>. Không đi sâu RAG/LLM trừ khi được hỏi.</p>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Dùng pitch ở mục 5. Cấu trúc: <strong>1 câu định vị</strong> (integration + automation) → <strong>Classic</strong> (CUBAS integrator, RH850, TRACE32, ASPICE) → <strong>Hai dự án song song</strong> (system test ARA + Azure Pipelines/Conan; lead team automation SENT 1–2 tháng → 2–3 ngày) → <strong>Platform</strong> (Docker/K8s/Terraform) → <strong>1 câu nối vào TCU project</strong>. Không đi sâu RAG/LLM trừ khi được hỏi.</p>
             <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>CUBAS là gì, team bạn integrate những gì?</li><li>2–3 ngày đó gồm những bước nào?</li></ul></div>
           </div></div>
         </div>

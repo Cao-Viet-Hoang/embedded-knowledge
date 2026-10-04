@@ -183,7 +183,7 @@
         <!-- ================= 5 SENT AUTOMATION ================= -->
         <h2>✅ 5. SENT automation lead + ARA system test — 2 dự án song song (2024–2025)</h2>
         <dl class="kv">
-          <dt>CV ghi</dt><dd>"Led the engineering and delivery of a SENT stack automation initiative, covering planning, task breakdown, workflow execution, progress tracking, and team delivery in an Agile environment." Giảm chu kỳ validation thủ công từ "approximately 1–2 months to 2–3 days". "Integrated build, package, and test workflows with Azure Pipelines and Conan." Validate ARA trên Raspberry Pi 4, R-Car, QNX, Embedded Linux. Framework được ARA system team dùng lại.<br><strong>Lưu ý:</strong> đây là <em>hai dự án song song</em>: bạn là system test engineer trong dự án ARA, đồng thời lead một team automation nhỏ cho SENT. Không nói "lead team Adaptive".</dd>
+          <dt>CV ghi</dt><dd>"Led the engineering and delivery of a SENT stack automation initiative, covering planning, task breakdown, workflow execution, progress tracking, and team delivery in an Agile environment." Giảm chu kỳ validation thủ công từ "approximately 1–2 months to 2–3 days". "Integrated build, package, and test workflows with Azure Pipelines and Conan." Validate ARA trên Raspberry Pi 4, R-Car, QNX, Embedded Linux. Framework được ARA system team dùng lại.<br><strong>Lưu ý:</strong> đây là <em>hai dự án song song</em>: bạn là system test engineer trong dự án ARA, đồng thời lead một team automation nhỏ cho SENT. Không nói "lead team Adaptive". Công cụ cũng tách riêng: Azure Pipelines + Conan thuộc dự án ARA; SENT có framework automation riêng.</dd>
           <dt>Kiến thức nền</dt><dd><a href="../D-sent-automation.html">D</a> (toàn bộ), <a href="LX2-ci-infra-ops.html">LX2</a> (các mục ✅), <a href="LX9-linux-git-flashing.html">LX9</a> §1 (Linux/QNX).</dd>
           <dt>Vì sao quan trọng</dt><dd>Đây là bằng chứng mạnh nhất cho phần <em>CI operations</em> và <em>team leader</em> trong JD.</dd>
         </dl>
@@ -198,13 +198,13 @@
           <div class="accordion__item">
             <button class="accordion__head">Q2. "What was the architecture of the automation framework?" <span class="chev">›</span></button>
             <div class="accordion__panel"><div class="accordion__panel-inner">
-              <p class="mb-0"><strong>Khung:</strong> nói theo lớp: định nghĩa test case → lớp điều khiển (chạy test, điều khiển target/thiết bị) → thu thập kết quả và log → báo cáo; bọc bởi pipeline (Azure Pipelines) và quản lý dependency/package (Conan) để chạy lặp lại được. <strong>Điền:</strong> ngôn ngữ/tool thật của từng lớp [..], và phần bạn tự viết [..]. Sơ đồ tham khảo ở <a href="../D-sent-automation.html">D</a> §3.</p>
+              <p class="mb-0"><strong>Khung:</strong> nói theo lớp: định nghĩa test case → lớp điều khiển (chạy test, điều khiển target/thiết bị) → thu thập kết quả và log → báo cáo; chạy bằng [cơ chế chạy thật của framework SENT: ..]. Không nói framework SENT chạy trên Azure Pipelines/Conan: đó là dự án ARA. <strong>Điền:</strong> ngôn ngữ/tool thật của từng lớp [..], và phần bạn tự viết [..]. Sơ đồ tham khảo ở <a href="../D-sent-automation.html">D</a> §3.</p>
             </div></div>
           </div>
           <div class="accordion__item">
             <button class="accordion__head">Q3. "Why Conan? What did Azure Pipelines do in your setup?" <span class="chev">›</span></button>
             <div class="accordion__panel"><div class="accordion__panel-inner">
-              <p class="mb-0"><strong>Khung:</strong> Conan là package manager cho C/C++: đóng gói và khoá version dependency (và binary theo cấu hình build) để mọi máy/agent dùng đúng một bộ, tránh "chạy trên máy tôi được". Azure Pipelines định nghĩa pipeline bằng YAML: trigger, build, đóng gói, chạy test, xuất báo cáo/artifact. <strong>Điền:</strong> pipeline của bạn có những stage nào [..], chạy khi nào [mỗi commit/nightly/thủ công], agent chạy ở đâu [..], nối với bench thế nào [..].</p>
+              <p class="mb-0"><strong>Lưu ý:</strong> câu này thuộc dự án ARA, không phải SENT. Nếu bị hỏi trong lúc kể SENT, nói rõ: "That was on the Adaptive project; the SENT automation had its own framework." <strong>Khung:</strong> Conan là package manager cho C/C++: đóng gói và khoá version dependency (và binary theo cấu hình build) để mọi máy/agent dùng đúng một bộ, tránh "chạy trên máy tôi được". Azure Pipelines định nghĩa pipeline bằng YAML: trigger, build, đóng gói, chạy test, xuất báo cáo/artifact. <strong>Điền:</strong> pipeline của bạn có những stage nào [..], chạy khi nào [mỗi commit/nightly/thủ công], agent chạy ở đâu [..], nối với bench thế nào [..].</p>
             </div></div>
           </div>
           <div class="accordion__item">
@@ -222,7 +222,7 @@
           <div class="accordion__item">
             <button class="accordion__head">Q6. "What went wrong in the automation project?" <span class="chev">›</span></button>
             <div class="accordion__panel"><div class="accordion__panel-inner">
-              <p class="mb-0"><strong>Khung (câu chuyện "thất bại" trong <a href="../A-career-star.html">A</a>):</strong> giai đoạn đầu tối ưu tốc độ mà coi nhẹ độ ổn định môi trường nên pipeline flaky; sau đó chuẩn hoá môi trường bằng Conan, thêm retry và log rõ ràng, tách test phụ thuộc phần cứng; team mới thật sự dùng. Chỉ kể nếu đúng với trải nghiệm thật, hoặc thay bằng bài học thật của bạn [..].</p>
+              <p class="mb-0"><strong>Khung (câu chuyện "thất bại" trong <a href="../A-career-star.html">A</a>):</strong> giai đoạn đầu tối ưu tốc độ mà coi nhẹ độ ổn định môi trường nên pipeline flaky; sau đó chuẩn hoá môi trường, thêm retry và log rõ ràng, tách test phụ thuộc phần cứng; team mới thật sự dùng. Chỉ kể nếu đúng với trải nghiệm thật, hoặc thay bằng bài học thật của bạn [..].</p>
             </div></div>
           </div>
         </div>
@@ -262,7 +262,7 @@
             <tr><td>SENT debug</td><td>Triệu chứng, target, nguyên nhân, cách sửa, thời gian điều tra</td><td>[..]</td></tr>
             <tr><td rowspan="3">SENT automation</td><td>Cái gì tốn 1–2 tháng; cái gì còn lại trong 2–3 ngày</td><td>[..]</td></tr>
             <tr><td>Quy mô team; vai trò chính xác của bạn</td><td>[..]</td></tr>
-            <tr><td>Các stage pipeline Azure; Conan quản lý gì</td><td>[..]</td></tr>
+            <tr><td>ARA: các stage pipeline Azure; Conan quản lý gì</td><td>[..]</td></tr>
             <tr><td>ARA</td><td>Một lỗi hệ thống đã khoanh vùng trên Linux/QNX</td><td>[..]</td></tr>
             <tr><td>AI Platform</td><td>Quy mô người dùng; một sự cố vận hành; cách deploy</td><td>[..]</td></tr>
           </tbody>
@@ -286,7 +286,7 @@
           <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
         </div>
         <div class="qa"><div class="qa__q">"Tell me about your last embedded project" trong 2 phút. <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
-          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Chọn CUBAS vì gần JD nhất. Bối cảnh: tích hợp stack AUTOSAR Classic BSW trên RH850 D3/D4/D5 trong team CUBAS. Vai trò: BSW integrator, ghép và validate BswM, Diag, Can, Com, EcuM, OS, MCAL, Mem; làm đầu mối giữa project và các BSW team. Kỹ thuật: [luồng tích hợp, tool]. Vấn đề khó: [một lỗi thật, điều tra bằng TRACE32]. Kết quả: [..]. Nối: sau đó tôi dẫn dắt SENT automation và đưa build/test vào Azure Pipelines, nên tôi hiểu cả phía tích hợp lẫn phía CI.</p>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Chọn CUBAS vì gần JD nhất. Bối cảnh: tích hợp stack AUTOSAR Classic BSW trên RH850 D3/D4/D5 trong team CUBAS. Vai trò: BSW integrator, ghép và validate BswM, Diag, Can, Com, EcuM, OS, MCAL, Mem; làm đầu mối giữa project và các BSW team. Kỹ thuật: [luồng tích hợp, tool]. Vấn đề khó: [một lỗi thật, điều tra bằng TRACE32]. Kết quả: [..]. Nối: sau đó tôi lead team automation SENT, và ở dự án ARA song song tôi đưa build/test vào Azure Pipelines, nên tôi hiểu cả phía tích hợp lẫn phía CI.</p>
             <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Bạn phụ trách module nào trực tiếp?</li><li>Một baseline tích hợp mất bao lâu từ lúc nhận bản giao?</li></ul></div>
           </div></div>
         </div>
@@ -294,7 +294,7 @@
           <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Trả lời bằng chi tiết đã điền ở mục 5 Q1 và mục 7: chu kỳ trước gồm những bước tay nào, mỗi bước tốn bao lâu, sau automation còn bước nào và tốn bao lâu, số liệu lấy từ đâu. Nếu con số là ước lượng của team thì nói rõ là ước lượng theo chu kỳ thực tế trước/sau.</p></div></div>
         </div>
         <div class="qa"><div class="qa__q">"What was your personal contribution, not the team's?" <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
-          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Chuẩn bị cho mỗi dự án 2–3 câu bắt đầu bằng "I": CUBAS: "I integrated and validated…, I investigated… with TRACE32, I coordinated fixes with…". SENT automation: "I planned and broke down the work, I designed…, I integrated the workflow with Azure Pipelines and Conan, I tracked delivery…". Phần do người khác làm thì nói rõ "a teammate built…".</p></div></div>
+          <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Chuẩn bị cho mỗi dự án 2–3 câu bắt đầu bằng "I": CUBAS: "I integrated and validated…, I investigated… with TRACE32, I coordinated fixes with…". SENT automation: "I planned and broke down the work, I designed…, I built the framework with…, I tracked delivery…". ARA: "I validated…, I integrated build, package and test with Azure Pipelines and Conan…". Phần do người khác làm thì nói rõ "a teammate built…".</p></div></div>
         </div>
         <div class="qa"><div class="qa__q">"What would you do differently if you ran the CUBAS integration again?" <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
           <div class="qa__a"><div class="qa__a-inner"><p class="mb-0">Câu mở để nối sang JD: đưa build + flash + smoke test lên CI chạy mỗi ngày, gating trước khi merge thay vì phát hiện lỗi ở cuối chu kỳ tích hợp; tự động bisect khi baseline đỏ; dashboard trạng thái baseline cho các team component. Đây đúng là việc của CI/integration lead ở Luxoft.</p></div></div>
@@ -310,7 +310,7 @@
             <li>RH850 D3/D4/D5</li><li>BswM Diag Can Com EcuM OS MCAL Mem</li><li>TRACE32 · RTA-CAR · ASPICE</li><li>hub giữa project và BSW team</li>
           </ul></div>
           <div class="cheatsheet__group"><h4>SENT automation (ưu tiên 1)</h4><ul>
-            <li>1–2 tháng → 2–3 ngày</li><li>lead: plan · breakdown · track · deliver</li><li>Azure Pipelines + Conan</li><li>ARA: RPi4 · R-Car · QNX · Linux</li>
+            <li>1–2 tháng → 2–3 ngày</li><li>lead: plan · breakdown · track · deliver</li><li>framework riêng: [..]</li><li>ARA (dự án song song): RPi4 · R-Car · QNX · Linux · Azure Pipelines + Conan</li>
           </ul></div>
           <div class="cheatsheet__group"><h4>Còn lại</h4><ul>
             <li>MCAL: Pytest · Cantata · ECU-Test · target + VECU</li><li>SENT debug: UDE · ST/Infineon</li><li>AI: Terraform · Docker · K8s · Entra ID</li><li>Pullogic · Collect Review Finding</li>

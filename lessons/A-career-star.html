@@ -232,8 +232,8 @@
             <dl class="kv">
               <dt>S</dt><dd>Quy trình validation SENT làm thủ công, tốn ~1–2 tháng mỗi chu kỳ, dễ sai, khó lặp lại.</dd>
               <dt>T</dt><dd>Tôi nhận vai trò lead: lập kế hoạch, chia task, và đưa team agile tới sản phẩm automation chạy được.</dd>
-              <dt>A</dt><dd>Phân rã bài toán; thiết kế <strong>framework automation</strong> tái sử dụng cho test/dev/doc; tích hợp <strong>Azure Pipelines + Conan</strong> cho CI/CD; điều phối team theo agile, theo dõi tiến độ, gỡ vướng kỹ thuật.</dd>
-              <dt>R</dt><dd>Chu kỳ test từ <strong>1–2 tháng → 2–3 ngày</strong>; framework được ARA system team adopt; nhận giải thưởng innovation nội bộ. <em>Bài học:</em> automation thắng không nhờ code giỏi mà nhờ <strong>chia nhỏ đúng</strong> và đưa cả team theo.</dd>
+              <dt>A</dt><dd>Phân rã bài toán; thiết kế <strong>framework automation</strong> riêng cho SENT [tool thật: ..]; điều phối team theo agile, theo dõi tiến độ, gỡ vướng kỹ thuật.</dd>
+              <dt>R</dt><dd>Chu kỳ test từ <strong>1–2 tháng → 2–3 ngày</strong>. (Azure Pipelines + Conan và framework được ARA system team dùng là kết quả của dự án ARA song song, không gộp vào đây.) <em>Bài học:</em> automation thắng không nhờ code giỏi mà nhờ <strong>chia nhỏ đúng</strong> và đưa cả team theo.</dd>
             </dl>
             <p class="small mb-0"><strong>Dùng lại cho:</strong> leadership, “thành tựu tự hào nhất”, “cải tiến quy trình”, “làm việc nhóm”.</p>
           </div></div>
@@ -291,7 +291,7 @@
             <dl class="kv">
               <dt>S</dt><dd>Giai đoạn đầu automation, tôi tối ưu tốc độ chạy test nhưng coi nhẹ độ ổn định môi trường.</dd>
               <dt>T</dt><dd>Cần pipeline chạy nhanh <em>và</em> ổn định để team tin dùng.</dd>
-              <dt>A</dt><dd>Sau vài lần pipeline “flaky”, tôi dừng lại chuẩn hoá môi trường (Conan để cố định dependency), thêm cơ chế retry/log rõ ràng, tách test phụ thuộc hardware.</dd>
+              <dt>A</dt><dd>Sau vài lần pipeline “flaky”, tôi dừng lại chuẩn hoá môi trường (cố định dependency), thêm cơ chế retry/log rõ ràng, tách test phụ thuộc hardware.</dd>
               <dt>R</dt><dd>Pipeline ổn định, team mới thật sự adopt. <em>Bài học:</em> với automation, <strong>độ tin cậy quan trọng hơn tốc độ</strong> — tool không ổn định thì không ai dùng.</dd>
             </dl>
           </div></div>
@@ -364,7 +364,7 @@
               <div class="flashcard__hint">bấm để lật</div>
             </div>
             <div class="flashcard__face flashcard__face--back">
-              <p class="mb-0">SENT validation: từ ~1–2 tháng thủ công xuống 2–3 ngày nhờ framework automation + CI/CD, được team adopt.</p>
+              <p class="mb-0">SENT validation: từ ~1–2 tháng thủ công xuống 2–3 ngày nhờ framework automation riêng chạy tự động cả vòng lặp.</p>
             </div>
           </div></div>
         </div>

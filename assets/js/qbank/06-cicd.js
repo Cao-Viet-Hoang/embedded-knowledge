@@ -41,16 +41,16 @@
     type: "behavioral",
     q: "Tell me about your hands-on experience with CI/CD.",
     vi: "Kể về kinh nghiệm thực tế của bạn với CI/CD.",
-    tags: ["experience", "Azure Pipelines", "Conan", "SENT", "ARA", "kinh nghiệm", "CI/CD"],
+    tags: ["experience", "Azure Pipelines", "Conan", "ARA", "kinh nghiệm", "CI/CD"],
     viTags: ["kinh nghiệm thực tế", "kinh nghiệm ci/cd", "dự án đã làm", "giới thiệu bản thân", "phỏng vấn devops"],
     key: [
       "ARA team: build, package, test integrated with Azure Pipelines + Conan",
-      "SENT automation: 1-2 months to 2-3 days",
+      "Separate project: led SENT automation team, 1-2 months to 2-3 days (own framework)",
       "Reusable frameworks adopted by ARA system team",
       "Now: Terraform, Docker, K8s on Azure/GCP",
       "Honest: no Jenkins/GitLab in project, concepts map directly"
     ],
-    answer: "My main CI/CD experience is from my AUTOSAR Adaptive role at Bosch. There I integrated build, package and test workflows with <strong>Azure Pipelines</strong> and <strong>Conan</strong>, so that engineering work became repeatable and could run as CI jobs instead of manual steps. That was part of the SENT automation initiative I led. It brought the full validation cycle down from about one to two months to two to three days. The ARA system team started using the frameworks we built for testing and development workflows. In that setup I was responsible for [fill: your concrete pipeline scope, e.g. which stages you wrote, how many pipelines, which targets].<br><br>In my current role I deploy and operate applications on Azure and Google Cloud using <strong>Terraform</strong>, <strong>Docker</strong> and <strong>Kubernetes</strong>, so I also see the infrastructure side. To be honest: I have not used Jenkins or GitLab CI in a project. But the concepts are the same: agents, stages, artifacts, triggers and quality gates. So I would learn them quickly.",
+    answer: "My main CI/CD experience is from my AUTOSAR Adaptive role at Bosch. There I integrated build, package and test workflows with <strong>Azure Pipelines</strong> and <strong>Conan</strong>, so that engineering work became repeatable and could run as CI jobs instead of manual steps. The ARA system team also adopted the frameworks I built for testing and development workflows. Separately, in parallel, I led a small team that automated SENT validation, bringing the full cycle down from about one to two months to two to three days; that had its own framework, not this pipeline. In that setup I was responsible for [fill: your concrete pipeline scope, e.g. which stages you wrote, how many pipelines, which targets].<br><br>In my current role I deploy and operate applications on Azure and Google Cloud using <strong>Terraform</strong>, <strong>Docker</strong> and <strong>Kubernetes</strong>, so I also see the infrastructure side. To be honest: I have not used Jenkins or GitLab CI in a project. But the concepts are the same: agents, stages, artifacts, triggers and quality gates. So I would learn them quickly.",
     followups: ["What was the hardest pipeline problem you solved?", "How did Conan help in that pipeline?"]
   },
   {
@@ -163,7 +163,7 @@
       "Same script locally and in CI",
       "Record build info: commit, image, lockfile, profile"
     ],
-    answer: "Reproducible means the same commit gives the same binary on any machine, today or in two years. For automotive that matters, because you may need to rebuild an old release for a fix or an audit.<br><br>I handle it on three levels. First the <strong>toolchain</strong>: compiler, CMake, Python and generators are frozen in a versioned Docker image. The pipeline references it by a fixed tag, or better by digest, never <code>latest</code>. Second the <strong>dependencies</strong>: a Conan lockfile committed to the repo pins every package version and revision, and profiles pin the configuration. Third the <strong>process</strong>: developers run the same build script locally as CI does, so there is no hidden CI-only step.<br><br>Finally, record what you used: commit, image digest, lockfile and profile go into the artifact metadata. [fill: how environment pinning helped in the SENT automation work, only if it really did]",
+    answer: "Reproducible means the same commit gives the same binary on any machine, today or in two years. For automotive that matters, because you may need to rebuild an old release for a fix or an audit.<br><br>I handle it on three levels. First the <strong>toolchain</strong>: compiler, CMake, Python and generators are frozen in a versioned Docker image. The pipeline references it by a fixed tag, or better by digest, never <code>latest</code>. Second the <strong>dependencies</strong>: a Conan lockfile committed to the repo pins every package version and revision, and profiles pin the configuration. Third the <strong>process</strong>: developers run the same build script locally as CI does, so there is no hidden CI-only step.<br><br>Finally, record what you used: commit, image digest, lockfile and profile go into the artifact metadata. [fill: how environment pinning helped on the ARA project, only if it really did]",
     followups: ["What can still make two builds differ byte-for-byte?", "How do you update a pinned toolchain safely?"]
   },
   {
