@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LX11 · Vòng Hiring Manager — Interview Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/css/style.css?v=8" />
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../../assets/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../../assets/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="../../assets/favicon.ico" />
+</head>
+<body data-page="LX11" data-root="../../">
+  <div id="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="reading-progress"><div class="reading-progress__bar"></div></div>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-head__eyebrow">
+            <span class="page-head__code">LX11</span>
+            <span class="badge badge--must">Must-tell</span>
+            <span class="chip">Luxoft — Vòng Hiring Manager</span>
+          </div>
+          <h1>Vòng Hiring Manager — bộ câu hỏi ôn tập &amp; khung trả lời</h1>
+          <p class="lead">Bạn đã qua vòng technical. Vòng này do <strong>Hiring Manager / project lead</strong> phỏng vấn và chấm <strong>độ phù hợp với team, động lực, mức độ gắn bó và các điều kiện</strong> (notice period, lương, hybrid). Bài gom hơn 50 câu (54) thường gặp, chia theo nhóm. Mỗi câu có <em>ý chính</em>, câu mẫu tiếng Anh và câu hỏi đào tiếp. Mọi chi tiết cá nhân lấy từ CV; chỗ cần thông tin thật mà CV không có để dạng <strong>[..]</strong> cho bạn tự điền.</p>
+          <div class="page-head__meta">
+            <span><b>Độ ưu tiên:</b> 🔴 Ôn trước buổi HM</span>
+            <span><b>Đã chốt:</b> lương mong muốn <strong>45M gross</strong>, giữ đúng con số đã nói với HR</span>
+            <span><b>Bài liên quan:</b> <a href="LX0-jd-strategy.html">LX0</a> (pitch, câu rủi ro), <a href="LX10-project-deep-dive.html">LX10</a> (số liệu dự án)</span>
+          </div>
+        </div>
+
+        <div class="callout callout--key">
+          <div class="callout__icon">🧭</div>
+          <div class="callout__body">
+            <div class="callout__title">Cách dùng</div>
+            <p class="mb-0">✅ = câu chắc chắn bị hỏi, phải trả lời trôi. 🎯 = khả năng cao. ➕ = có thể gặp. Đọc câu hỏi, <strong>tự nói thành tiếng</strong> (cả tiếng Việt và tiếng Anh, vì team có kỹ sư ở Singapore và châu Âu), rồi mới mở khung đáp án. Mỗi câu có khung <strong>🇬🇧 English answer</strong> là câu trả lời hoàn chỉnh bằng tiếng Anh, nói trong khoảng 45–90 giây; chỗ <strong>[..]</strong> thay bằng chi tiết thật. Mỗi câu trả lời nên dài <strong>45–90 giây</strong>; HM muốn nghe ý, không cần chi tiết kỹ thuật như vòng trước.</p>
+          </div>
+        </div>
+
+        <!-- ================= 1 ================= -->
+        <h2>✅ 1. Vòng này chấm gì</h2>
+        <div class="figure">
+          <svg viewBox="0 0 720 170" role="img" aria-label="Quy trình tuyển dụng DXC Luxoft và vị trí hiện tại của bạn" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="lx11a" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" class="dgm-arrow-head"/></marker></defs>
+            <rect x="10" y="40" width="120" height="56" rx="8" fill="var(--surface-2)" class="dgm-layer"/>
+            <text x="70" y="64" text-anchor="middle" class="dgm-text" font-size="12" font-weight="700">HR screening</text>
+            <text x="70" y="82" text-anchor="middle" class="dgm-sub" font-size="10">✔ đã qua · đã nói 45M</text>
+            <rect x="152" y="40" width="120" height="56" rx="8" fill="var(--surface-2)" class="dgm-layer"/>
+            <text x="212" y="64" text-anchor="middle" class="dgm-text" font-size="12" font-weight="700">Technical</text>
+            <text x="212" y="82" text-anchor="middle" class="dgm-sub" font-size="10">✔ đã qua</text>
+            <rect x="294" y="30" width="140" height="76" rx="8" fill="var(--brand-600)"/>
+            <text x="364" y="58" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">Hiring Manager</text>
+            <text x="364" y="75" text-anchor="middle" class="dgm-inv-sub" font-size="10">project lead / PM</text>
+            <text x="364" y="92" text-anchor="middle" class="dgm-inv" font-size="10" font-weight="700">◀ bạn đang ở đây</text>
+            <rect x="456" y="40" width="120" height="56" rx="8" fill="var(--surface-2)" class="dgm-layer" stroke-dasharray="4 3"/>
+            <text x="516" y="64" text-anchor="middle" class="dgm-text" font-size="12" font-weight="700">Client</text>
+            <text x="516" y="82" text-anchor="middle" class="dgm-sub" font-size="10">có thể có, tùy dự án</text>
+            <rect x="598" y="40" width="112" height="56" rx="8" fill="var(--ok)"/>
+            <text x="654" y="64" text-anchor="middle" class="dgm-inv" font-size="12" font-weight="700">Offer</text>
+            <text x="654" y="82" text-anchor="middle" class="dgm-inv-sub" font-size="10">deal lương ở đây</text>
+            <path d="M130,68 L148,68" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx11a)"/>
+            <path d="M272,68 L290,68" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx11a)"/>
+            <path d="M434,68 L452,68" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx11a)"/>
+            <path d="M576,68 L594,68" class="dgm-arrow" stroke-width="1.6" marker-end="url(#lx11a)"/>
+            <text x="364" y="132" text-anchor="middle" class="dgm-label" font-size="11" font-weight="700">HM chấm 4 trục: Phù hợp với team · Động lực &amp; gắn bó · Giao tiếp · Điều kiện (notice, lương, hybrid)</text>
+            <text x="364" y="152" text-anchor="middle" class="dgm-sub" font-size="10">Theo trang "How we hire" của DXC Luxoft: bước project lead → client (optional) → offer</text>
+          </svg>
+        </div>
+        <dl class="kv">
+          <dt>Phù hợp với team</dt><dd>Bạn có làm được việc của <em>dự án này</em> không: integration AUTOSAR, CI/automation, làm việc với nhiều team. HM đã có feedback kỹ thuật, nên họ hỏi ở mức "bạn đã làm gì, vai trò gì, kết quả gì", không hỏi cơ chế.</dd>
+          <dt>Động lực &amp; gắn bó</dt><dd>Nỗi lo lớn nhất của một công ty dịch vụ là <strong>người nghỉ giữa dự án</strong>. Với CV của bạn, HM sẽ thắc mắc: <em>đang làm AI, sao quay lại embedded? Có quay lại AI không?</em> Câu trả lời phải cho thấy bạn chọn vị trí này có chủ đích.</dd>
+          <dt>Giao tiếp</dt><dd>Trả lời có cấu trúc (STAR), ngắn gọn, nói được tiếng Anh. Có thể HM chuyển sang tiếng Anh giữa chừng để kiểm tra.</dd>
+          <dt>Điều kiện</dt><dd>Notice period, lương mong muốn (chỉ ghi nhận, chưa deal), ngày bắt đầu, hybrid, đi công tác. Trả lời <strong>rõ và nhất quán với những gì đã nói với HR</strong>.</dd>
+        </dl>
+
+        <!-- ================= 2 ================= -->
+        <h2>✅ 2. Mở đầu &amp; giới thiệu</h2>
+        <div class="taglist">
+          <button class="btn btn--sm" data-action="expand-qa">Mở tất cả</button>
+          <button class="btn btn--sm" data-action="collapse-qa">Thu gọn tất cả</button>
+        </div>
+
+        <div class="qa"><div class="qa__q">✅ Tell me about yourself. <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p>Dùng pitch 90 giây ở <a href="LX0-jd-strategy.html">LX0 mục 5</a>, nhưng <strong>bớt tên module, thêm vai trò và kết quả</strong>. Khung 4 nhịp:</p>
+            <ol>
+              <li><strong>Định vị:</strong> embedded engineer, ~4 năm ở Bosch, mạnh về integration và automation.</li>
+              <li><strong>AUTOSAR Classic:</strong> MCAL validation rồi BSW integrator trong team CUBAS trên RH850, làm cầu nối giữa project và các BSW team.</li>
+              <li><strong>2024–2025, hai dự án song song:</strong> system test engineer trong dự án AUTOSAR Adaptive (ARA), đồng thời <strong>lead một team automation nhỏ cho SENT</strong>, rút chu kỳ validation từ 1–2 tháng xuống 2–3 ngày; đưa build/package/test vào Azure Pipelines + Conan. Không nói "lead team Adaptive".</li>
+              <li><strong>Nối vào vị trí:</strong> 1,5 năm gần đây vận hành hạ tầng platform (Docker, Kubernetes, Terraform, cloud), đúng phần CI operations của JD.</li>
+            </ol>
+            <p class="mb-0"><em>"…So this role brings together the two things I do best: AUTOSAR integration and building automation that keeps a project green and fast."</em></p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>I'm an embedded software engineer with nearly four years at Bosch, and most of my work has been in integration and automation.</p>
+                <p>I started in AUTOSAR Classic, validating MCAL drivers on target hardware and on VECU. Then I joined the CUBAS integration team as a BSW integrator on RH850 D3, D4 and D5. I integrated modules like BswM, Diag, CAN, COM, EcuM, OS and memory, debugged integration failures with TRACE32, and acted as the link between the project and several BSW component teams.</p>
+                <p>After that, I worked on two projects in parallel. On the AUTOSAR Adaptive project, I was a system test engineer, validating the ARA stack on Renesas R-Car, Raspberry Pi 4, QNX and embedded Linux. At the same time, I led a small automation team for SENT validation, and we cut the full validation cycle from one to two months down to two to three days. I also integrated build, package and test workflows into Azure Pipelines with Conan.</p>
+                <p>For the last year and a half, I've been building and running an internal engineering platform with Docker, Kubernetes, Terraform and cloud infrastructure.</p>
+                <p class="mb-0">So this role brings together the two things I do best: AUTOSAR integration, and building automation that keeps a project green and fast.</p>
+              </div>
+            </div>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Trong 4 năm đó, giai đoạn nào bạn thích nhất? Vì sao?</li><li>Bạn tự đánh giá mình đang ở level nào: middle hay senior?</li></ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">✅ Hiện tại bạn đang làm gì? Team bao nhiêu người, vai trò của bạn? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p>Kể ngắn (30 giây) về vai trò AI Platform Engineer, rồi <strong>kéo về phần hạ tầng/automation</strong>, đừng sa vào LLM, RAG, agent.</p>
+            <ul>
+              <li>Xây và vận hành một nền tảng nội bộ: quản lý truy cập API, phân quyền (Entra ID), theo dõi chi phí, triển khai trên Azure/GCP bằng Terraform, Docker, Kubernetes.</li>
+              <li>Team [số người], vai trò của bạn [..].</li>
+              <li>Câu nối: <em>"The domain is AI, but day to day it's platform and automation work: infrastructure as code, deployments, access control, monitoring. That's very close to running a CI system."</em></li>
+            </ul>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>Right now I'm an AI platform engineer at Bosch. I build and operate an internal engineering platform: API access management, access control with Entra ID, cost monitoring, and deployments on Azure and Google Cloud using Terraform, Docker and Kubernetes. The team has [number] people, and my part is [..].</p>
+                <p class="mb-0">The domain is AI, but day to day it's platform and automation work: infrastructure as code, deployments, access control and monitoring. That's very close to what it takes to run a CI system, which is one of the reasons this role appeals to me.</p>
+              </div>
+            </div>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Vậy bạn đã rời embedded được 1,5 năm, kiến thức có bị mai một không?</li></ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Bạn biết gì về Luxoft và dự án này? <span class="qa__lv qa__lv--definition">Hiểu biết</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <ul>
+              <li><strong>Luxoft:</strong> công ty dịch vụ phần mềm, thuộc <strong>DXC Technology</strong> từ 2019 (nay dùng tên DXC Luxoft). Mảng automotive định vị là <em>software systems integrator</em> cho OEM và Tier-1. Văn phòng HCMC ở E.town 5, Cộng Hòa.</li>
+              <li><strong>Dự án (theo JD):</strong> phần mềm cho <strong>Telematics Control Unit</strong>, team đa quốc gia (kỹ sư ở Singapore và châu Âu). Nền kỹ thuật là AUTOSAR Classic, OSEK, CAN, modem 3G/4G. Trọng tâm vị trí là <strong>software integration và CI</strong>, theo quy trình ASPICE.</li>
+              <li>Kết thúc bằng một câu hỏi để HM nói thêm: <em>"From the JD I understand the focus is integration and CI for a TCU platform. Could you tell me more about where the project is now?"</em></li>
+            </ul>
+            <p class="mb-0">Không đoán tên khách hàng. Nếu HM không nói, đừng hỏi dồn (thường bị ràng buộc NDA).</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>Luxoft is part of DXC Technology, and in automotive it positions itself as a software systems integrator for OEMs and Tier-1 suppliers.</p>
+                <p>From the job description, this project develops software for a telematics control unit, in a multinational team with engineers in Singapore and Europe. The technical base is AUTOSAR Classic, OSEK and CAN, plus a cellular modem, and the focus of this position is software integration and CI under ASPICE.</p>
+                <p class="mb-0">Could you tell me more about where the project is right now?</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <!-- ================= 3 ================= -->
+        <h2>✅ 3. Động lực &amp; định hướng (phần quan trọng nhất)</h2>
+        <div class="callout callout--warn">
+          <div class="callout__icon">⚠️</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Nguyên tắc:</strong> nói về điều bạn <em>hướng tới</em>, không nói về điều bạn muốn <em>thoát khỏi</em>. Không chê Bosch, không lấy thu nhập làm lý do chính. Chỉ nhắc thu nhập nếu bị hỏi thẳng, và đặt nó ở vị trí phụ.</p>
+          </div>
+        </div>
+
+        <div class="qa"><div class="qa__q">✅ Vì sao bạn muốn rời Bosch? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p>Ba ý, theo thứ tự:</p>
+            <ol>
+              <li><strong>Bosch cho bạn nền tảng tốt</strong> (ghi nhận: Best/Outstanding Performance hằng năm, một giải cấp công ty).</li>
+              <li><strong>Bạn muốn quay lại sản phẩm ô tô thật</strong>, ở vai trò ghép được integration AUTOSAR với CI/automation. Vai trò hiện tại thiên về platform nội bộ.</li>
+              <li><strong>Muốn trải nghiệm môi trường đa quốc gia</strong>, nhiều khách hàng, toolchain CI hiện đại (Gerrit/Zuul).</li>
+            </ol>
+            <p class="mb-0"><em>"Bosch gave me a strong foundation and I'm grateful for it. What I'm looking for now is to go back to automotive product work, in a role that combines integration with CI, and to work in a multinational, customer-facing setup. This position matches that very closely."</em></p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>Bosch gave me a strong foundation, and I'm grateful for it. I was recognized as a top performer every year there.</p>
+                <p>What I'm looking for now is to go back to automotive product work. My current role is focused on internal platforms, and I miss working on a real ECU product. I also want a role that combines integration with CI, in a multinational, customer-facing environment.</p>
+                <p class="mb-0">This position matches all three, which is why I applied.</p>
+              </div>
+            </div>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Sao không xin chuyển nội bộ về lại team embedded ở Bosch?</li><li>Lương có phải lý do không?</li></ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">✅ Sao không chuyển nội bộ về lại team embedded ở Bosch? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Trả lời thật theo tình huống của bạn: [đã cân nhắc / không có vị trí phù hợp kết hợp integration + CI / muốn môi trường mới]. Điểm cần nhấn: <em>"I did consider it, but what attracts me here is the specific combination: TCU product, integration plus CI ownership, and a multinational team. That's not something I could get by moving internally."</em> Không nói xấu cơ chế nội bộ của Bosch.</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>I did consider it. [One sentence on your real situation, for example: there wasn't an opening that combined integration and CI.]</p>
+                <p class="mb-0">What attracts me here is the specific combination: a TCU product, ownership of integration and CI, and a multinational team. I couldn't get that by moving internally, so it made sense to look outside.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">✅ Lương có phải lý do bạn chuyển việc không? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Thành thật nhưng đặt ở vị trí phụ: <em>"Compensation is one factor, of course, but it's not the deciding one. If it were only about salary, I wouldn't pick this specific role. What decides it for me is the product and the integration + CI scope."</em> Tiếng Việt: "Thu nhập là một yếu tố, như ai cũng vậy, nhưng không phải yếu tố quyết định…"</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>Compensation is one factor, of course, as it is for everyone. But it's not the deciding one.</p>
+                <p class="mb-0">If it were only about salary, I wouldn't be this specific about the kind of role I'm looking for. What decides it for me is the product and the scope: integration and CI on an automotive platform.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">✅ Bạn đang làm AI, một mảng đang rất "hot". Sao lại quay về embedded? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p>Câu rủi ro nhất với CV của bạn. HM thật ra đang hỏi: <em>"Bạn có ở lại không, hay sẽ quay lại AI?"</em> Trả lời theo 3 nhịp:</p>
+            <ol>
+              <li><strong>Gốc của bạn là embedded:</strong> học Kỹ thuật Máy tính, 2,5 năm đầu ở Bosch là AUTOSAR Classic và Adaptive. Mảng AI là một giai đoạn bạn được giao và học được nhiều.</li>
+              <li><strong>Điều bạn mang về:</strong> kỹ năng hạ tầng và tự động hóa (IaC, container, cloud, monitoring, cost control) làm bạn mạnh hơn ở đúng phần CI operations của JD.</li>
+              <li><strong>Lựa chọn có chủ đích:</strong> bạn thích làm việc gần phần cứng và sản phẩm thật; AI là công cụ bạn sẽ dùng để làm embedded tốt hơn (ví dụ phân loại log khi CI fail), không phải hướng đi thay thế.</li>
+            </ol>
+            <p class="mb-0"><em>"Embedded is my background, and it's where I want to build my career. The platform work gave me strong infrastructure and automation skills, which is exactly the CI side of this role. I see AI as a tool I'll use in embedded work, not a different career path."</em></p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>Embedded is my background, and it's where I want to build my career. I studied computer engineering, and my first two and a half years at Bosch were all AUTOSAR, first Classic and then Adaptive.</p>
+                <p>The platform role was a valuable step. It gave me strong skills in infrastructure as code, containers, cloud and monitoring, which is exactly the CI operations side of this role.</p>
+                <p class="mb-0">But I enjoy working close to hardware and real products. I see AI as a tool I'll use to do embedded work better, for example to triage CI failures or analyze test logs, not as a different career path.</p>
+              </div>
+            </div>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Nếu một năm nữa có cơ hội AI tốt hơn thì sao?</li><li>Bạn tự chọn chuyển sang AI hay được phân công? (trả lời thật: [..])</li></ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Nếu sau này có cơ hội làm AI lương cao hơn, bạn có đi không? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Không hứa suông kiểu "em sẽ ở mãi", vì nghe không thật. Nói về <strong>điều kiện giữ bạn lại</strong>: <em>"What keeps me in a job is meaningful work and growth. If this role gives me ownership of integration and CI and a path toward a lead role, I have no reason to look elsewhere. And if AI tooling helps the project, I'd rather bring it here."</em></p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>I don't want to just promise that I'll stay forever, because that wouldn't mean much. What keeps me in a job is meaningful work and growth.</p>
+                <p class="mb-0">If this role gives me ownership of integration and CI and a path toward a lead role, I have no reason to look elsewhere. And if AI tooling can help the project, I'd rather bring it here than leave for it.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">✅ Vì sao chọn Luxoft và vị trí này? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <ol>
+              <li><strong>Vai trò ghép đúng hai nửa kinh nghiệm:</strong> integration AUTOSAR (CUBAS) và CI/automation (SENT, Azure Pipelines, platform).</li>
+              <li><strong>Sản phẩm TCU:</strong> mảng kết nối, OTA, eCall, là hướng phát triển của xe hiện đại; bạn muốn mở rộng sang domain này.</li>
+              <li><strong>Môi trường:</strong> team đa quốc gia, nhiều khách hàng, toolchain gating hiện đại; Luxoft có đào tạo và chương trình onsite.</li>
+            </ol>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>There are three reasons.</p>
+                <p>First, the role combines the two halves of my experience: AUTOSAR integration from the CUBAS team, and CI and automation from the SENT initiative and my platform work.</p>
+                <p>Second, the product. Telematics, with connectivity, OTA and eCall, is where modern vehicles are going, and I want to grow into that domain.</p>
+                <p class="mb-0">Third, the environment: a multinational team, several customers, a modern gating toolchain, and Luxoft's focus on training and international opportunities.</p>
+              </div>
+            </div>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Bạn còn đang ứng tuyển nơi nào khác không?</li></ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Bosch là công ty sản phẩm lớn. Luxoft là công ty dịch vụ. Bạn nghĩ khác biệt là gì, bạn có thích nghi được không? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <ul>
+              <li><strong>Khác biệt:</strong> làm trực tiếp với khách hàng, yêu cầu và ưu tiên có thể đổi nhanh, chất lượng và đúng hạn ảnh hưởng thẳng tới quan hệ với khách hàng; có thể chuyển dự án.</li>
+              <li><strong>Vì sao bạn hợp:</strong> ở CUBAS bạn đã là <em>integration point</em> giữa project stakeholder và nhiều BSW team, quen với việc phối hợp, làm rõ yêu cầu, báo cáo tiến độ.</li>
+              <li><em>"I'm used to working between stakeholders. At CUBAS I aligned interfaces and resolved issues between the project and several component teams, so working closely with a customer feels like a natural next step."</em></li>
+            </ul>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>In a service company you work directly with the customer, priorities can change quickly, and quality and on-time delivery affect the customer relationship directly. You may also move between projects.</p>
+                <p class="mb-0">I think I'll adapt well, because I'm used to working between stakeholders. In the CUBAS team, I was the integration point between the project and several BSW teams: aligning interfaces, clarifying requirements and reporting progress. Working closely with a customer feels like a natural next step.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 JD có phần "Lead CI operations and manage the integration team". Bạn có muốn làm lead không? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p>Bạn apply vị trí engineer. Đừng tự hạ mình, cũng đừng nhận vơ:</p>
+            <ul>
+              <li>Muốn đóng góp vững ở vai trò engineer trước, hiểu dự án và hệ thống CI.</li>
+              <li>Đã có kinh nghiệm dẫn dắt: lead một team automation nhỏ cho SENT, song song với dự án ARA (lập kế hoạch, chia việc, theo dõi tiến độ, delivery); đào tạo đồng nghiệp dùng tool AI nội bộ.</li>
+              <li>Sẵn sàng nhận thêm trách nhiệm khi team cần, và muốn hướng tới lead trong [1–2] năm.</li>
+              <li>Hỏi lại: <em>"How much of the lead scope is expected from this position at the start?"</em></li>
+            </ul>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>I applied for the engineer position, and my first goal is to contribute solidly: learn the project, the platform and the CI system.</p>
+                <p>That said, I do have leadership experience. I led a small automation team for SENT, in parallel with my system test work on the Adaptive project, from planning and task breakdown to tracking and delivery, and I've trained colleagues on internal tools. So I'm ready to take on more responsibility when the team needs it, and I'd like to grow toward a lead role in [one to two] years.</p>
+                <p class="mb-0">How much of the lead scope is expected from this position at the start?</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Định hướng của bạn trong 3–5 năm tới? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Định hướng phải <strong>khớp với vị trí</strong>: <em>"In the next one to two years, I want to become the go-to person for integration and CI on this project. In three to five years, I see myself as an integration or CI lead, owning the quality pipeline of a platform and mentoring others."</em> Không nói "muốn làm PM" hay "muốn quay lại AI".</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>In the next one to two years, I want to become the go-to person for integration and CI on this project: someone the team relies on when the build breaks or the pipeline needs to scale.</p>
+                <p class="mb-0">In three to five years, I see myself as an integration or CI lead, owning the quality pipeline of a platform and mentoring other engineers.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <!-- ================= 4 ================= -->
+        <h2>✅ 4. Kinh nghiệm &amp; năng lực (mức HM)</h2>
+        <p>HM không đào cơ chế như vòng technical, nhưng hỏi về <strong>vai trò, quy mô, kết quả và cách bạn làm việc</strong>. Điền trước bảng số liệu ở <a href="LX10-project-deep-dive.html">LX10 mục 7</a>: quy mô team, số component, thời gian dự án. Nói "khoảng" nếu không nhớ chính xác, không bịa.</p>
+
+        <div class="qa"><div class="qa__q">✅ Dự án/thành tích bạn tự hào nhất? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p>Chọn <strong>SENT automation</strong> vì khớp JD nhất ("enhance speed, efficiency… of the CI system"). Kể theo STAR:</p>
+            <dl class="kv">
+              <dt>S</dt><dd>Validation SENT stack làm thủ công, một chu kỳ đầy đủ mất khoảng 1–2 tháng.</dd>
+              <dt>T</dt><dd>Song song với việc system test trong dự án ARA, bạn được giao <strong>lead một team automation nhỏ</strong> cho SENT [số người: ..], từ lập kế hoạch tới delivery.</dd>
+              <dt>A</dt><dd>Chia việc, thiết kế workflow automation-first, theo dõi tiến độ trong team Agile [số người: ..]; tích hợp build/package/test vào Azure Pipelines + Conan.</dd>
+              <dt>R</dt><dd>Chu kỳ còn <strong>2–3 ngày</strong>. Nhắc thêm một câu: bạn làm việc này <em>song song</em> với dự án ARA, nên nó cũng chứng minh khả năng quản lý thời gian và giao việc.</dd>
+            </dl>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>I'm most proud of the SENT automation initiative.</p>
+                <p>Validation of the SENT stack was done manually, and one full cycle took about one to two months. Alongside my system test work on the AUTOSAR Adaptive project, I was asked to lead a small automation team for SENT, from planning to delivery.</p>
+                <p>I broke the work down, designed an automation-first workflow, and tracked progress with a team of [..] people in an Agile setup. I also integrated build, package and test into Azure Pipelines with Conan.</p>
+                <p class="mb-0">The result was a full cycle in two to three days, delivered while I was also working on the Adaptive project. The main lesson for me: measure first, then automate the biggest bottleneck.</p>
+              </div>
+            </div>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Khó khăn lớn nhất khi làm là gì?</li><li>Có ai phản đối thay đổi không, bạn thuyết phục thế nào?</li></ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">✅ Khó khăn kỹ thuật lớn nhất bạn từng gặp và cách vượt qua? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Chọn <strong>lỗi timing SENT trên ST/Infineon</strong> hoặc <strong>một lỗi integration ở CUBAS</strong>. Ở mức HM, nhấn <em>cách tiếp cận</em> hơn chi tiết thanh ghi: reproduce → khoanh vùng (phần cứng hay phần mềm, module nào) → dùng debugger (UDE/TRACE32) xác nhận root cause → fix → verify và ngăn tái diễn. Chi tiết thật: [tên lỗi, triệu chứng, thời gian xử lý]. Đây cũng là chỗ nhắc khung <strong>8D</strong> một câu (JD có yêu cầu).</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>One of the hardest was a SENT timing and signal-behavior defect on ST and Infineon targets. [One sentence on the symptom.]</p>
+                <p>First I made the issue reproducible. Then I narrowed it down: was it the hardware, the driver configuration, or the protocol timing? Using the UDE debugger, I analyzed the interaction between hardware and software at register and timing level until I found the root cause: [..].</p>
+                <p class="mb-0">After the fix, I verified it and made sure the scenario was covered by tests so it wouldn't come back. That's basically the 8D mindset: contain the problem, find the real root cause, fix it, and prevent it from happening again.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <h3>4.1 Kinh nghiệm trải qua nhiều vai trò: nói lợi ích <em>và</em> lý do chuyển</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Giai đoạn (theo CV)</th><th>Thời gian</th><th>HM có thể thắc mắc</th></tr></thead>
+          <tbody>
+            <tr><td>AUTOSAR Classic: MCAL validation + BSW integrator CUBAS</td><td>09/2022 – 05/2024 (~20 tháng)</td><td>Ổn, ít bị hỏi</td></tr>
+            <tr><td>Hai dự án song song: system test engineer dự án AUTOSAR Adaptive (ARA) + lead team automation SENT nhỏ</td><td>05/2024 – 04/2025 (~11 tháng)</td><td><strong>Sao chưa tới 1 năm đã đổi? Làm hai dự án cùng lúc thế nào?</strong></td></tr>
+            <tr><td>AI Platform Engineer</td><td>04/2025 – nay (~18 tháng)</td><td><strong>Sao rời automotive? Tự chọn hay được giao?</strong></td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout callout--key">
+          <div class="callout__icon">🔑</div>
+          <div class="callout__body">
+            <div class="callout__title">Có nên nói lý do chuyển không? Có, nhưng ngắn.</div>
+            <p>Nếu chỉ nói "mỗi lần chuyển đều có lợi" mà không nói <em>vì sao</em> chuyển, HM sẽ tự đoán, và thường đoán theo hướng xấu: làm không tốt, dự án thất bại, thiếu kiên định. Một lý do <strong>thật, trung tính, một câu</strong> sẽ dập tắt suy đoán đó.</p>
+            <p><strong>Công thức cho mỗi lần chuyển (≈ 15–20 giây):</strong> <em>Lý do</em> (1 câu, đúng sự thật) → <em>Bạn đã làm gì với cơ hội đó</em> (1 câu, có kết quả) → <em>Nó đóng góp gì cho vị trí này</em> (1 câu).</p>
+            <ul class="mb-0">
+              <li><strong>Được công ty điều chuyển cũng không sao</strong>, và thường là tín hiệu tốt nếu bạn được <em>chọn</em> (vì kỹ năng, vì kết quả trước đó). Chỉ cần thêm vế "bạn đã làm gì với nó" để không nghe bị động.</li>
+              <li><strong>Lý do của lần chuyển cuối (sang AI) phải khớp với lý do bạn rời Bosch bây giờ:</strong> vai trò hiện tại đưa bạn ra xa sản phẩm ô tô → nên bạn tìm đường quay lại. Câu chuyện nhất quán là thứ thuyết phục nhất.</li>
+              <li><strong>Không:</strong> đổ lỗi (quản lý kém, dự án bị hủy vì ai đó), than phiền ("bị ép sang AI"), kể dài về tái cơ cấu, hay bịa lý do. LinkedIn và HR có thể đối chiếu.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="qa"><div class="qa__q">✅ Bốn năm mà ba vai trò, kinh nghiệm khá trải dài. Sao lại chuyển nhiều vậy? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p><strong>Mở bằng sự thật quan trọng nhất:</strong> cả ba đều <strong>trong Bosch</strong>, cùng một công ty, không phải nhảy việc. Sau đó đi từng lần chuyển theo công thức ở trên. Thay [..] bằng lý do thật của bạn. Dưới đây là các phương án thường gặp, <strong>chỉ chọn cái đúng với bạn</strong>:</p>
+            <dl class="kv">
+              <dt>Classic → Adaptive (05/2024)</dt><dd>
+                <ul class="mb-0">
+                  <li><strong>Nếu được điều chuyển theo nhu cầu:</strong> <em>"The company needed people for the AUTOSAR Adaptive project, so I moved there as a system test engineer. Because I already knew SENT from the Classic side, I was also asked to lead a small SENT automation team in parallel."</em></li>
+                  <li><strong>Nếu bạn chủ động xin:</strong> <em>"After almost two years at component and integration level, I wanted to see the system level, so I applied for an opening in the Adaptive team."</em></li>
+                  <li><strong>Nếu giai đoạn dự án kết thúc:</strong> <em>"The integration phase I worked on wrapped up, and I moved to the Adaptive team where my test and automation background was needed."</em></li>
+                </ul>
+              </dd>
+              <dt>Adaptive → AI Platform (04/2025)</dt><dd>
+                <ul class="mb-0">
+                  <li><strong>Nếu được chọn vào team mới:</strong> <em>"The company set up an internal AI platform team and picked people with an automation and tooling background. I'd built several internal tools that won awards, so I was selected."</em></li>
+                  <li><strong>Nếu bạn chủ động chuyển:</strong> <em>"I wanted to strengthen my infrastructure and platform skills, and an internal role opened up that let me do that."</em></li>
+                  <li><strong>Nếu dự án ARA giảm quy mô / tái cơ cấu:</strong> <em>"After an organizational change in the project, I moved to a newly formed platform team."</em> Chỉ nói một câu, không giải thích nội bộ.</li>
+                </ul>
+              </dd>
+              <dt>Câu chốt</dt><dd><em>"So each move came with a clear reason and new scope: component, then full-stack integration, then system testing while leading a small automation team in parallel, then running a platform. Now I want to bring all of that back to automotive product work, which is exactly why I applied for this role."</em></dd>
+            </dl>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>All three roles were within Bosch, so this is internal growth, not job hopping.</p>
+                <p>I started in AUTOSAR Classic, at component level and then integration level. In 2024 I moved to the AUTOSAR Adaptive project as a system test engineer because [real reason], and in parallel I led a small automation team for SENT. In 2025 I moved to the platform team because [real reason], where I built strong infrastructure skills.</p>
+                <p class="mb-0">Each move came with a clear reason and new scope: component work, full-stack integration, system testing plus leading a small automation team, then running a platform. Now I want to bring all of that back to automotive product work, which is exactly why I applied for this role.</p>
+              </div>
+            </div>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Bạn tự chọn hay được phân công?</li><li>Sao vai trò Adaptive chưa tới 1 năm?</li><li>Biết nhiều mảng vậy, sâu nhất mảng nào?</li></ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Những lần chuyển đó là bạn tự chọn hay bị phân công? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p>Trả lời thật. Cả hai đáp án đều ổn nếu nói đúng cách:</p>
+            <ul class="mb-0">
+              <li><strong>Nếu được phân công:</strong> nhấn vế <em>được chọn</em> và <em>bạn đã chủ động làm gì</em>: <em>"It was the company's decision, based on project needs, but I took ownership in each role: I led the SENT automation and built the platform from scratch [..]. I'm flexible about where I'm needed, but for my next step I'm choosing the direction myself, and that direction is automotive integration and CI."</em> Vế cuối quan trọng: nó cho thấy lần này là lựa chọn có chủ đích, trả lời luôn nỗi lo "có quay lại AI không".</li>
+              <li><strong>Nếu tự chọn:</strong> nói rõ mục tiêu của mỗi lần và mục tiêu đó đã đạt: <em>"Yes, each time I wanted to grow in a specific direction: system level, then infrastructure. I got what I wanted from each step, and now it's time to apply it in a product role."</em></li>
+              <li><strong>Nếu lẫn lộn:</strong> nói đúng từng lần, đừng gộp cho gọn.</li>
+            </ul>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>[Pick the true version.]</p>
+                <p>If assigned: The moves were based on project needs, but I took ownership in each role. I led the SENT automation and helped build the platform. I'm flexible about where I'm needed, but for my next step I'm choosing the direction myself, and that direction is automotive integration and CI.</p>
+                <p class="mb-0">If chosen: Yes, each time I wanted to grow in a specific direction, first system level, then infrastructure. I got what I wanted from each step, and now it's time to apply it in a product role.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Giai đoạn Adaptive + SENT automation chỉ khoảng 11 tháng, sao ngắn vậy? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Nhấn vào việc <strong>cả hai dự án đều đã có kết quả</strong> trước khi chuyển: team automation SENT đạt mục tiêu (1–2 tháng → 2–3 ngày); bên ARA, các framework cho testing, development workflow, documentation đã được team ARA dùng. Sau đó nêu lý do chuyển (một câu, như trên). Không để HM có cảm giác bạn bỏ dở giữa chừng.</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>In that period I worked on two projects in parallel, and both had delivered before I moved. The SENT automation team reached its goal: the validation cycle went down to two to three days. On the Adaptive side, the frameworks I built for testing, development workflows and documentation were adopted by the ARA system team. So I didn't leave anything unfinished.</p>
+                <p class="mb-0">After that, [real reason in one sentence], and I moved to the platform team.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Bạn làm hai dự án song song thế nào? Chia thời gian ra sao? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p>Câu này gần như chắc bị hỏi khi bạn nói "hai dự án song song". Đây là <strong>điểm cộng</strong>: nó cho thấy bạn quản lý được thời gian, ưu tiên và nhiều đầu mối cùng lúc, đúng kiểu công việc của integration và CI. Nói rõ:</p>
+            <ul>
+              <li><strong>Vai trò ở mỗi dự án:</strong> dự án ARA là <em>thành viên</em> system test; dự án SENT là <em>lead</em> một team automation nhỏ [số người: ..]. Không nói mình lead team Adaptive.</li>
+              <li><strong>Cách chia thời gian:</strong> [tỉ lệ thật, ví dụ ..% ARA, ..% SENT; hoặc theo ngày/tuần], ai là người quyết định ưu tiên khi hai bên đụng nhau [..].</li>
+              <li><strong>Cách làm:</strong> lập kế hoạch theo sprint cho cả hai, chia việc rõ trong team SENT để team không phụ thuộc vào thời gian của bạn, báo sớm khi có xung đột lịch.</li>
+              <li><strong>Kết quả:</strong> cả hai đều giao được: SENT 1–2 tháng → 2–3 ngày; bên ARA, các framework cho testing, development workflow, documentation được team ARA dùng.</li>
+            </ul>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>From 2024 to 2025, I worked on two projects at the same time. On the AUTOSAR Adaptive project, I was a system test engineer. On the SENT project, I led a small automation team of [..] people.</p>
+                <p>I split my time roughly [..], and when the two collided, I agreed on priorities with [my manager / both leads] early, instead of trying to do everything at once. In the SENT team, I broke the work into clear tasks with owners, so the team could keep moving even when I was busy with Adaptive testing.</p>
+                <p class="mb-0">Both delivered. The SENT validation cycle went from one to two months down to two to three days, and on the Adaptive side, the frameworks I built for testing, development workflows and documentation were adopted by the ARA system team. It taught me a lot about planning and about delegating well, which I think is very relevant to integration and CI work, where you always juggle several teams.</p>
+              </div>
+            </div>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Có lúc nào hai dự án cùng gấp không? Bạn xử lý thế nào?</li><li>Nếu ở đây cũng phải hỗ trợ hai dự án, bạn thấy sao?</li></ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Bạn biết nhiều mảng (Classic, Adaptive, AI). Vậy bạn sâu nhất ở mảng nào? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">HM đang lo bạn "biết rộng mà không sâu". Trả lời theo hình chữ T: <strong>sâu</strong> ở integration và automation (đó là sợi chỉ xuyên suốt cả ba vai trò), <strong>rộng</strong> ở phần còn lại. <em>"My depth is in integration and automation. That's the common thread through all three roles: integrating the BSW stack, automating SENT validation, and automating platform operations. Adaptive and AI gave me breadth, system-level thinking and infrastructure skills, which make me better at that core."</em> Nếu bị hỏi dồn, kể chi tiết CUBAS (xem <a href="LX10-project-deep-dive.html">LX10 mục 2</a>) để chứng minh độ sâu.</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>My depth is in integration and automation. That's the common thread through all three roles: integrating the AUTOSAR Classic BSW stack, automating SENT validation, and automating platform operations.</p>
+                <p class="mb-0">Adaptive and AI gave me breadth: system-level thinking and infrastructure skills. They make me better at the core, but the core is integration and automation. I'm happy to go into detail on the CUBAS integration work if that helps.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <h3>4.2 Đa dạng kỹ năng: nói thế nào để thành điểm mạnh</h3>
+        <div class="callout callout--key">
+          <div class="callout__icon">🔑</div>
+          <div class="callout__body">
+            <div class="callout__title">"Nhiều góc nhìn cho team" nên nói. "Dễ luân chuyển sang team khác" thì không tự nói ra.</div>
+            <p><strong>Nên nói, nhưng phải cụ thể và gắn với vị trí:</strong> đừng nói chung chung "em có nhiều kỹ năng nên team có nhiều góc nhìn". Hãy nói kỹ năng đó giúp gì cho <em>integration và CI</em>: integration là nơi mọi thứ gặp nhau (code của component team, cấu hình, test, hạ tầng). Người từng làm cả component, integration, system test và hạ tầng sẽ nói được ngôn ngữ của từng bên và đoán nhanh lỗi nằm ở đâu.</p>
+            <p><strong>Không tự nói "dễ luân chuyển sang team khác":</strong> HM đang tuyển cho <em>dự án của họ</em>. Câu này dễ bị hiểu thành "người này không gắn bó với team em", hoặc làm nỗi lo "kinh nghiệm trải dài, biết rộng không sâu" nặng thêm. Ý linh hoạt này chỉ nói <strong>khi được hỏi</strong> (ví dụ câu "có thể bị chuyển dự án" bên dưới), và luôn kèm vế "em vẫn muốn đi sâu ở integration và CI".</p>
+            <p class="mb-0"><strong>Nguyên tắc:</strong> sự đa dạng là để <em>phục vụ</em> chiều sâu (integration + automation), không phải thay thế chiều sâu.</p>
+          </div>
+        </div>
+
+        <div class="qa"><div class="qa__q">✅ Bạn mang lại gì cho team mà ứng viên khác khó có? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p>Dùng sự đa dạng như <strong>góc nhìn của người đã đứng ở từng chỗ trong chuỗi</strong>:</p>
+            <ul>
+              <li><strong>Component</strong> (MCAL validation): hiểu component team nghĩ gì, test gì.</li>
+              <li><strong>Integration</strong> (CUBAS BSW): hiểu chỗ các module gặp nhau và hay gãy.</li>
+              <li><strong>System</strong> (ARA trên R-Car, QNX, Linux): nhìn hành vi ở mức hệ thống.</li>
+              <li><strong>Hạ tầng và automation</strong> (SENT team, Azure Pipelines, Docker/K8s/Terraform): biến quy trình thành pipeline.</li>
+            </ul>
+            <p class="mb-0">Kết quả cho team: khi build hay test đỏ, bạn phân biệt nhanh được đó là lỗi code, cấu hình, test hay hạ tầng, và biết kéo đúng người vào.</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>I think it's the combination of perspectives. I've worked at almost every point in the chain: component level with MCAL validation, integration with the CUBAS BSW stack, system level on the Adaptive project, and infrastructure and automation with the SENT team and my platform work.</p>
+                <p>In integration and CI, that matters, because that's where everything meets: component code, configuration, tests and infrastructure. When the pipeline turns red, I can usually tell quickly whether it's a code issue, a configuration issue, a flaky test or an infrastructure problem, and I can talk to each team in its own language.</p>
+                <p class="mb-0">So I'd bring a bit of each of those viewpoints into the team, while my depth stays in integration and automation.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">➕ Ở công ty dịch vụ, bạn có thể bị chuyển dự án. Bạn thấy sao? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Đây là chỗ <strong>đúng lúc</strong> để nói ý "kỹ năng đa dạng nên linh hoạt": dùng chính lịch sử của bạn (đổi phạm vi nhiều lần, từng làm hai dự án song song) làm bằng chứng thích nghi. Nhưng kết bằng vế <strong>muốn ở lại và đi sâu trong integration và CI</strong>, để không nghe như bạn sẵn sàng đi bất cứ đâu.</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>I'm comfortable with that. I've changed scope several times at Bosch, and for about a year I worked on two projects in parallel, so I'm used to ramping up quickly and switching context.</p>
+                <p>Because I've worked at component, integration, system and infrastructure level, I can also step in where the project needs support, for example test automation or CI infrastructure.</p>
+                <p class="mb-0">That said, what matters to me is staying in automotive integration and CI, where I can keep building depth. Within that area, working on different projects is actually a good way to learn.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <h3>4.3 Câu hỏi khác về hồ sơ và khả năng bắt nhịp</h3>
+        <div class="qa"><div class="qa__q">➕ Bạn tốt nghiệp 04/2023 nhưng đi làm từ 09/2022? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Giải thích ngắn theo đúng thực tế: [đi làm khi đang hoàn thành học phần cuối / đồ án]. CV ghi bạn <strong>tốt nghiệp loại giỏi và trước thời hạn</strong>, có thể nói kèm để cho thấy bạn quản lý được cả hai việc.</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>I started at Bosch in September 2022 while I was finishing my final [semester / thesis], and I graduated in April 2023.</p>
+                <p class="mb-0">I still graduated with distinction and ahead of schedule, so I was able to manage both at the same time.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">✅ JD có nhiều tool bạn chưa dùng (EB tresos, VectorCAST, Jenkins/Gerrit/Zuul, Ansible, AWS). Bạn bắt nhịp thế nào? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p>Nói thật, rồi chỉ ra khái niệm đã nắm qua tool tương đương:</p>
+            <div class="table-wrap"><table>
+              <thead><tr><th>Trong JD</th><th>Bạn đã dùng</th></tr></thead>
+              <tbody>
+                <tr><td>EB tresos, AUTOSAR Builder</td><td>RTA-CAR, cấu hình và integrate BSW</td></tr>
+                <tr><td>VectorCAST</td><td>Cantata, Pytest</td></tr>
+                <tr><td>Jenkins, GitLab CI, Zuul</td><td>Azure Pipelines</td></tr>
+                <tr><td>Artifactory</td><td>Conan (package management)</td></tr>
+                <tr><td>AWS, Ansible</td><td>Azure, GCP, Terraform, Docker, Kubernetes</td></tr>
+              </tbody>
+            </table></div>
+            <p class="mb-0"><em>"I haven't used those exact tools, but I've worked with the same concepts. My plan for the first month would be to learn the project's pipeline end to end, then take small tasks in it. I've switched toolchains several times at Bosch and ramped up quickly each time."</em></p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>I haven't used those exact tools in a project, but I've worked with the same concepts.</p>
+                <p>For AUTOSAR configuration I used RTA-CAR instead of EB tresos. For unit testing I used Cantata and Pytest instead of VectorCAST. For CI I used Azure Pipelines instead of Jenkins or Zuul, and Conan for package management, which plays a similar role to Artifactory. For infrastructure I used Terraform, Docker and Kubernetes on Azure and GCP.</p>
+                <p class="mb-0">My plan for the first month would be to learn the project's pipeline end to end, then take small tasks in it. I've switched toolchains several times at Bosch and ramped up quickly each time.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Bạn chưa làm telematics/modem. Có lo không? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Chưa làm trực tiếp, nhưng vị trí là <strong>integration và CI</strong>, phần domain học được trong quá trình làm. Bạn đã tìm hiểu mức tổng quan (TCU làm gì: eCall, remote service, OTA; modem điều khiển bằng AT command; xem <a href="LX3-telematics-at.html">LX3</a>) và đã quen debug ở mức giao thức với SENT.</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>I haven't worked on telematics directly. But this position is focused on integration and CI, and the domain knowledge is something I can learn on the job.</p>
+                <p class="mb-0">I've already studied the basics: what a TCU does, like eCall, remote services and OTA, and how the modem is controlled with AT commands over a serial interface. I'm also used to protocol-level debugging from my SENT work, so I'm confident I can ramp up quickly.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Trong 3 tháng đầu, bạn đóng góp được gì? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <ul class="steps">
+              <li><h4>Tháng 1: hiểu hệ thống</h4><p class="mb-0">Kiến trúc phần mềm TCU, luồng CI từ push tới release, toolchain, quy trình ASPICE của dự án. Nhận task nhỏ để quen pipeline.</p></li>
+              <li><h4>Tháng 2: làm việc độc lập</h4><p class="mb-0">Tự xử lý task integration và lỗi build/test; bắt đầu ghi lại những điểm chậm hoặc hay lỗi trong pipeline.</p></li>
+              <li><h4>Tháng 3: cải tiến</h4><p class="mb-0">Đề xuất và làm một cải tiến đo được (thời gian build, tỉ lệ fail không rõ lý do, automation một bước thủ công), giống cách bạn đã làm với SENT.</p></li>
+            </ul>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>In the first month, I'd focus on understanding the system: the TCU software architecture, the CI flow from push to release, the toolchain and the project's ASPICE process, while taking small tasks.</p>
+                <p>In the second month, I'd work independently on integration tasks and on build or test failures, and start noting where the pipeline is slow or unstable.</p>
+                <p class="mb-0">By the third month, I'd like to propose and deliver one measurable improvement, for example build time, flaky failures, or automating a manual step, the same way I approached the SENT automation.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <!-- ================= 5 ================= -->
+        <h2>✅ 5. Làm việc nhóm &amp; hành vi (STAR)</h2>
+        <p>Chuẩn bị sẵn <strong>4 câu chuyện</strong> và dùng lại cho nhiều câu hỏi. Mỗi chuyện cần chi tiết thật (thời gian, quy mô, kết quả).</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Câu chuyện (từ CV)</th><th>Dùng cho câu hỏi</th></tr></thead>
+          <tbody>
+            <tr><td><strong>A.</strong> CUBAS: integration point giữa project và nhiều BSW team</td><td>Bất đồng với team khác, bị block, làm việc liên team, giao tiếp</td></tr>
+            <tr><td><strong>B.</strong> Lead team automation SENT nhỏ (1–2 tháng → 2–3 ngày), song song với dự án ARA</td><td>Thành tích, dẫn dắt, thuyết phục thay đổi, deadline, ưu tiên, làm nhiều việc cùng lúc</td></tr>
+            <tr><td><strong>C.</strong> Debug timing SENT trên ST/Infineon</td><td>Khó khăn kỹ thuật, áp lực, giải quyết vấn đề có cấu trúc (8D)</td></tr>
+            <tr><td><strong>D.</strong> Đào tạo và thúc đẩy dùng tool AI nội bộ; các tool được giải thưởng (Collect Review Finding, Pullogic…)</td><td>Chủ động, sáng kiến, ảnh hưởng không cần chức danh</td></tr>
+          </tbody>
+        </table></div>
+
+        <div class="qa"><div class="qa__q">✅ Kể về một lần bạn bất đồng với đồng nghiệp hoặc team khác. <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Dùng chuyện <strong>A</strong>: một lỗi integration mà component team cho rằng không phải lỗi của họ. Điểm cần nghe thấy: bạn <strong>mang dữ liệu</strong> (log, trace TRACE32, bước reproduce) thay vì tranh luận; tập trung vào giải quyết vấn đề chứ không phải ai sai; kết quả [..]. <em>"I focused on facts rather than blame. Once I showed the trace and a reliable way to reproduce it, the discussion moved to fixing it."</em></p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>In the CUBAS integration team, we had an integration failure that the [..] team believed wasn't caused by their module. [One or two sentences of real detail.]</p>
+                <p>Instead of arguing, I focused on facts. I reproduced the issue reliably, captured a TRACE32 trace and logs, and showed exactly where the behavior diverged. Once they saw the data, the discussion moved from who was at fault to how to fix it, and [result].</p>
+                <p class="mb-0">What I learned is that clear evidence and a reliable way to reproduce the issue resolve most disagreements.</p>
+              </div>
+            </div>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>Nếu có dữ liệu mà họ vẫn không đồng ý thì sao? (escalate lên lead, kèm dữ liệu và tác động tới tiến độ)</li></ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Kể về một lần bạn không đồng ý với quyết định của lead/manager. <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Khung: nêu quan điểm riêng tư, có số liệu → lắng nghe lý do của lead → nếu vẫn quyết theo hướng của lead thì <strong>làm hết sức theo quyết định đó</strong> (disagree and commit). Chi tiết thật: [..]. Tránh chuyện mà kết cục là "em đúng, sếp sai".</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>[One or two sentences describing a real situation.] I shared my view with my lead privately, together with the data I had.</p>
+                <p>I also listened to their reasons, and it turned out there were [constraints I wasn't aware of, for example a customer deadline]. We went with their decision, and I committed fully to making it work. [Result.]</p>
+                <p class="mb-0">Since then, I always try to understand the wider context before pushing back, and when I do push back, I bring data.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">✅ Kể về một lần làm việc dưới deadline gấp. <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Chuyện <strong>B</strong> hoặc một đợt delivery ở CUBAS. Cho thấy: chia nhỏ việc, ưu tiên phần quan trọng nhất, <strong>báo rủi ro sớm</strong> cho lead thay vì giữ tới phút cuối, và vẫn giữ chất lượng (không bỏ test). Chi tiết thật: [..].</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>[Situation, for example a delivery in the CUBAS project or a SENT automation milestone.] We had [..] to deliver [..].</p>
+                <p>I broke the work into small pieces, agreed with my lead on what was essential for the deadline, and flagged the risk early instead of waiting until the last day. We kept testing in scope, because skipping tests only moves the problems to later.</p>
+                <p class="mb-0">[Result: delivered on time / with a small agreed scope cut.] The main lesson is that raising risks early gives everyone more options.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">✅ Kể về một lỗi bạn từng mắc và bạn xử lý thế nào. <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Chọn lỗi <strong>thật, có hậu quả vừa phải, đã sửa xong và rút được bài học thành quy trình</strong> (ví dụ một lần thiếu test case/thiếu kiểm tra dẫn tới phát hiện lỗi muộn [..]). Khung: chịu trách nhiệm ngay, báo minh bạch → sửa → thêm bước kiểm tra để không lặp lại. Không chọn lỗi gây hậu quả lớn cho khách hàng, không chọn "lỗi" giả như "em quá cầu toàn".</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>[Describe a real, moderate mistake, for example a missed test case that let a defect be found late.]</p>
+                <p>As soon as I realized it, I told my lead and the team, explained the impact, and fixed it. Then I looked at why it happened and added [a checklist item / a test / a review step] so it wouldn't happen again.</p>
+                <p class="mb-0">It taught me that being transparent quickly matters more than looking perfect, and that the best fix is one that changes the process.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Kể về một lần bạn dẫn dắt hoặc ảnh hưởng người khác khi không có chức danh quản lý. <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Chuyện <strong>B</strong> (dẫn dắt automation SENT) hoặc <strong>D</strong> (đào tạo, hướng dẫn và thúc đẩy đồng nghiệp dùng tool AI nội bộ). Nhấn: bạn thuyết phục bằng kết quả đo được và bằng cách làm cho việc của người khác dễ hơn.</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>When I led the SENT automation, I coordinated team members without being their manager. So I focused on results: I automated one part first, showed the time it saved, and made the tools easy for others to use. [Add one real detail about convincing someone.]</p>
+                <p class="mb-0">Once the cycle started shrinking, people trusted the approach and adoption followed. I did something similar with internal AI tools: hands-on training and practical guidance worked better than any mandate.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Bạn đã làm việc với team nước ngoài / khác múi giờ chưa? Tiếng Anh thế nào? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Trả lời theo thực tế: [đã làm việc với team/đồng nghiệp ở .. qua email, meeting, ticket]. CV ghi tiếng Anh <em>professional working proficiency</em>. Nêu cách bạn làm việc với team ở xa: viết rõ ràng (ticket, tóm tắt sau meeting), tận dụng khoảng giờ chung, chủ động hỏi lại khi chưa rõ. Chuẩn bị tinh thần HM chuyển sang tiếng Anh ngay sau câu này.</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>Yes. [Describe your real experience, for example: I've worked with colleagues in .. through email, meetings and tickets.] My English is at a professional working level, and I use it every day for documentation and technical discussions.</p>
+                <p class="mb-0">When working across time zones, I try to write clearly: detailed tickets, short summaries after meetings and precise questions, so the other side can act without waiting for me. I keep the overlapping hours for discussions that really need to happen live.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Khi có nhiều việc gấp cùng lúc, bạn ưu tiên thế nào? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Tiêu chí: việc nào đang <strong>block người khác</strong> hoặc ảnh hưởng release/khách hàng thì làm trước; việc còn lại xếp theo deadline và tác động. Khi không thể làm hết, <strong>báo lead sớm và cùng chốt thứ tự</strong>, không tự âm thầm bỏ việc. Với integration: giữ nhánh chính xanh luôn là ưu tiên số 1, vì một build đỏ block cả team.</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>First, I look at what's blocking other people or affecting a release or the customer. Those come first. Then I order the rest by deadline and impact.</p>
+                <p class="mb-0">If I can't do everything, I tell my lead early and we agree on the order together, instead of quietly dropping something. In integration specifically, keeping the main branch green is always priority number one, because a red build blocks the whole team.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">➕ Kể về một lần bạn nhận feedback tiêu cực. <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Khung: feedback là gì → bạn phản ứng thế nào (lắng nghe, hỏi rõ, không phòng thủ) → thay đổi cụ thể → kết quả sau đó. Chi tiết thật: [..]. Có thể nối tới tool <em>Collect Review Finding</em> bạn làm: bạn coi review finding là dữ liệu để cải thiện.</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>[Describe the real feedback.] My first reaction was to listen and ask questions to understand it, rather than defend myself. Then I [specific change], and [result].</p>
+                <p class="mb-0">I actually built a tool at Bosch, Collect Review Finding, that turns review findings into quality statistics, because I believe feedback is data you can learn from.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">✅ Điểm mạnh và điểm yếu của bạn? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <ul>
+              <li><strong>Điểm mạnh</strong> (chọn 2, mỗi cái kèm bằng chứng): tự động hóa việc lặp lại (SENT 1–2 tháng → 2–3 ngày; nhiều giải thưởng tool nội bộ); làm việc xuyên ranh giới component và tìm root cause (CUBAS, SENT debug).</li>
+              <li><strong>Điểm yếu</strong>: một điểm thật, không thuộc lõi công việc, và đang khắc phục. Ví dụ hợp lý: chưa dùng Zuul/Gerrit trong dự án thật và đang tự học; hoặc một thói quen làm việc thật [..] kèm cách bạn đã cải thiện. Không chọn AUTOSAR integration hay debug.</li>
+            </ul>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>My first strength is automating repetitive work. I cut the SENT validation cycle from one to two months down to two to three days, and several of my internal tools won innovation awards at Bosch.</p>
+                <p>My second strength is working across component boundaries to find root causes, from integration failures in the CUBAS team to SENT timing defects on ST and Infineon targets.</p>
+                <p class="mb-0">As for a weakness, I haven't used Gerrit and Zuul in a real project yet. I've studied the gating model and compared it with the Azure Pipelines setups I've built, but I know the hands-on part will take a few weeks on the job. [Or replace with a real working habit you've improved.]</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <!-- ================= 6 ================= -->
+        <h2>🎯 6. Tình huống trong dự án</h2>
+        <p>HM thường đưa tình huống để xem bạn phản ứng thế nào. Trả lời theo khung: <strong>ổn định tình hình trước → tìm nguyên nhân → báo đúng người → ngăn tái diễn</strong>.</p>
+
+        <div class="qa"><div class="qa__q">🎯 Ngày mai release, hôm nay build integration đỏ, người viết code đang nghỉ phép. Bạn làm gì? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <ol>
+              <li>Xác định change gây lỗi (so với baseline xanh gần nhất, git bisect nếu cần).</li>
+              <li>Nếu change không bắt buộc cho release: <strong>revert</strong> để baseline xanh, release đúng hạn.</li>
+              <li>Nếu bắt buộc: tìm người thay thế trong team đó, hoặc tự fix nếu rõ ràng, có review.</li>
+              <li><strong>Báo lead/PM ngay</strong> về rủi ro và phương án, để họ quyết và báo khách hàng nếu cần.</li>
+              <li>Sau release: thêm test vào gate để lỗi tương tự bị chặn trước khi merge.</li>
+            </ol>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>First, I'd find the change that broke the build by comparing with the last green baseline, using git bisect if needed.</p>
+                <p>If that change isn't required for the release, I'd revert it so the baseline is green and we can release on time. If it is required, I'd find someone else in that team who knows the code, or fix it myself if the cause is clear, with a review.</p>
+                <p class="mb-0">Either way, I'd inform the lead or PM immediately about the risk and the options, so they can decide and inform the customer if needed. After the release, I'd add a test to the gate so a similar change is blocked before it's merged.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Khách hàng đổi requirement sát deadline. <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Không từ chối, cũng không nhận ngay. Phân tích tác động (code, test, tài liệu, traceability theo ASPICE) → ước lượng → báo lead/PM để thống nhất với khách hàng: dời deadline, giảm phạm vi, hay đưa vào bản sau. Mọi thay đổi đi qua change request để còn traceability. Kinh nghiệm liên quan: bạn đã làm requirement analysis và requirement-to-test mapping ở Bosch.</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>I wouldn't refuse it, but I wouldn't accept it on the spot either. First I'd analyze the impact on code, tests, documentation and traceability.</p>
+                <p>Then I'd give an estimate and bring it to the lead or PM, so they can agree with the customer whether to move the deadline, reduce scope, or plan it for the next release. Every change should go through a change request to keep traceability under ASPICE.</p>
+                <p class="mb-0">I've done requirement analysis and requirement-to-test mapping at Bosch, so I know how far a late change can ripple.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Bạn bị block vì team khác chưa giao phần của họ. <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Liên hệ trực tiếp để hiểu lý do và ngày giao dự kiến → trong lúc chờ, làm phần không phụ thuộc (stub/mock interface, chuẩn bị test) → nếu ảnh hưởng tiến độ, báo lead kèm tác động cụ thể. Chuyện thật: vai trò integration point ở CUBAS, phối hợp nhiều BSW team.</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>First, I'd contact the other team directly to understand the reason and get an expected delivery date.</p>
+                <p>While waiting, I'd work on the parts that don't depend on them, for example stubbing or mocking the interface and preparing the tests. If the delay affects the schedule, I'd inform my lead with the concrete impact.</p>
+                <p class="mb-0">I did this regularly as the integration point in the CUBAS team, coordinating with several BSW teams.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Task của bạn trễ so với ước lượng. Bạn báo thế nào? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Báo <strong>ngay khi thấy rủi ro</strong>, không đợi tới hạn. Nói rõ: lý do, phần đã xong, ước lượng mới, phương án (cần hỗ trợ gì, có thể cắt phần nào). HM rất quý người báo xấu sớm.</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>I'd raise it as soon as I see the risk, not on the due date. I'd explain why it's late, what's already done, the new estimate and the options, for example what help I need or which part could move to later.</p>
+                <p class="mb-0">In my experience, managers appreciate bad news early much more than surprises at the end.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Bạn có sẵn sàng OT không? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0"><em>"Yes, when the project needs it, for example around a release or a critical issue. At the same time, I believe frequent overtime is a signal to improve planning or automation, which is something I like to work on."</em> Luxoft VN trả lương OT theo luật (theo trang công ty trên ITviec), nên không cần hỏi thêm ở vòng này.</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>Yes, when the project needs it, for example around a release or a critical issue.</p>
+                <p class="mb-0">At the same time, I believe frequent overtime is a signal that planning or automation can be improved, and that's exactly the kind of thing I like to work on.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <!-- ================= 7 ================= -->
+        <h2>✅ 7. Điều kiện: notice, lương, ngày bắt đầu, hybrid</h2>
+        <div class="callout callout--note">
+          <div class="callout__icon">📌</div>
+          <div class="callout__body">
+            <p class="mb-0"><strong>Nhất quán là ưu tiên số 1.</strong> HM sẽ đối chiếu với ghi chú của HR. Trả lời ngắn, rõ, cùng con số đã nói với HR. Vòng này chỉ ghi nhận, lương được deal ở bước offer.</p>
+          </div>
+        </div>
+
+        <div class="qa"><div class="qa__q">✅ Notice period của bạn bao lâu? <span class="qa__lv qa__lv--definition">Thông tin</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p>Mở hợp đồng Bosch kiểm tra trước. Mức tối thiểu theo Bộ luật Lao động 2019 (Điều 35) khi người lao động đơn phương chấm dứt:</p>
+            <div class="table-wrap"><table>
+              <thead><tr><th>Loại hợp đồng</th><th>Báo trước tối thiểu</th></tr></thead>
+              <tbody>
+                <tr><td>Không xác định thời hạn</td><td>45 ngày</td></tr>
+                <tr><td>Xác định thời hạn 12–36 tháng</td><td>30 ngày</td></tr>
+                <tr><td>Dưới 12 tháng</td><td>3 ngày làm việc</td></tr>
+              </tbody>
+            </table></div>
+            <p class="mb-0">Câu mẫu: <em>"My notice period is [45 days] according to my contract. I'll make sure to hand over properly, and I can try to discuss an earlier release with my manager if needed."</em> Đừng hứa ngắn hơn hợp đồng.</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>My notice period is [45] days according to my contract.</p>
+                <p class="mb-0">I'll make sure to hand over my work properly, and if needed, I can try to discuss an earlier release date with my manager.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">✅ Mức lương mong muốn của bạn? <span class="qa__lv qa__lv--definition">Thông tin</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p><strong>Giữ 45M gross</strong>, một con số, không đưa khoảng, lý do dựa vào kinh nghiệm khớp JD:</p>
+            <p><em>"As I shared with HR, my expectation is around 45 million VND gross per month, based on my experience in AUTOSAR integration and CI automation. I'm open to discussing the full package."</em></p>
+            <p class="mb-0">Tiếng Việt: "Như em đã chia sẻ với HR, mức mong muốn của em là khoảng 45 triệu gross/tháng, dựa trên kinh nghiệm AUTOSAR integration và CI/automation. Em sẵn sàng trao đổi thêm khi xem tổng package." Không lấy kinh nghiệm LLM làm lý do đòi lương.</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>As I shared with HR, my expectation is around 45 million VND gross per month, based on my experience in AUTOSAR integration and CI automation.</p>
+                <p class="mb-0">I'm open to discussing the full package, including the 13th-month salary, bonus and benefits.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <h3>7.1 Selling bản thân khi bị hỏi "Vì sao là 45M?"</h3>
+        <p>HM có thể hỏi để <strong>kiểm tra bạn có hiểu giá trị của mình không</strong>, hoặc để lấy lý do xếp level cho bạn. Họ không cần bạn chứng minh bằng bảng lương thị trường. Họ cần nghe <strong>bạn giải quyết được vấn đề gì của dự án, và có bằng chứng</strong>.</p>
+        <dl class="kv">
+          <dt>Trụ 1 — Integration AUTOSAR thực chiến</dt><dd>BSW integrator trong team CUBAS trên RH850 D3/D4/D5, integrate và validate BswM, Diag, Can, Com, EcuM, OS, MCAL, Mem; trước đó validate MCAL ở mức unit/component trên target và VECU. <strong>Giá trị cho dự án:</strong> bắt nhịp nhanh với lõi kỹ thuật, ít thời gian đào tạo.</dd>
+          <dt>Trụ 2 — CI/automation có kết quả đo được</dt><dd>Dẫn dắt automation SENT: <strong>1–2 tháng → 2–3 ngày</strong>; đưa build/package/test vào Azure Pipelines + Conan; vận hành hạ tầng bằng Docker, Kubernetes, Terraform. <strong>Giá trị:</strong> đúng phần "enhance speed, efficiency, scalability and stability of the CI system" trong JD.</dd>
+          <dt>Trụ 3 — Debug &amp; phối hợp liên team</dt><dd>TRACE32 và UDE ở mức register/memory/trace; xử lý lỗi timing SENT trên ST/Infineon; làm cầu nối giữa project và nhiều BSW team. <strong>Giá trị:</strong> khi integration gãy, bạn khoanh vùng và kéo đúng người vào xử lý.</dd>
+          <dt>Bằng chứng độc lập</dt><dd>Best/Outstanding Performance mỗi năm ở Bosch, một giải cấp công ty, nhiều giải thưởng tool nội bộ. Đây là đánh giá của người khác, không phải bạn tự nhận.</dd>
+        </dl>
+        <div class="callout callout--warn">
+          <div class="callout__icon">⚠️</div>
+          <div class="callout__body">
+            <div class="callout__title">Không nên</div>
+            <ul class="mb-0">
+              <li>Nói theo kiểu "em cần" (chi phí sống, gia đình). Lương trả theo giá trị, không theo nhu cầu.</li>
+              <li><strong>Dẫn trung vị thị trường</strong>: báo cáo ITviec ghi Embedded Engineer 3–4 năm là 28,4M, 5–8 năm là 39,4M, đều <em>thấp hơn</em> 45M. Dẫn số này là tự làm yếu lập luận.</li>
+              <li>Lấy kinh nghiệm LLM làm lý do đòi lương; so sánh với lương đồng nghiệp hay ứng viên khác.</li>
+              <li>Xin lỗi hoặc rào đón về con số ("em biết là hơi cao…"), hay nói quá 60–90 giây. Nói xong ý chính thì dừng.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="qa"><div class="qa__q">✅ Vì sao bạn đưa ra con số 45M? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p>Con số dựa trên <strong>3 căn cứ</strong>: phạm vi vị trí, kinh nghiệm khớp trực tiếp, và việc vị trí cần <em>cả hai</em> mảng integration và CI.</p>
+            <p><em>"I based it on three things. First, the scope of the role: it covers both AUTOSAR integration and CI operations, with part of the lead responsibilities. Second, my experience maps directly onto both: I was a BSW integrator on RH850, and I led an automation initiative that cut a validation cycle from one to two months down to two to three days. Third, that combination is fairly specific, since many teams need two people to cover it. That's why I think 45 million gross is a fair number, and I'm open to discussing the full package."</em></p>
+            <p class="mb-0">Tiếng Việt: "Em dựa trên ba điều: phạm vi vị trí gồm cả integration và CI; kinh nghiệm của em khớp trực tiếp cả hai mảng; và sự kết hợp này khá đặc thù. Vì vậy em nghĩ 45 triệu gross là hợp lý, và em sẵn sàng trao đổi khi xem tổng package."</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>I based it on three things.</p>
+                <p>First, the scope of the role: it covers both AUTOSAR integration and CI operations, with part of the lead responsibilities.</p>
+                <p>Second, my experience maps directly onto both. I was a BSW integrator on RH850 in the CUBAS team, and I led an automation initiative that cut a validation cycle from one to two months down to two to three days.</p>
+                <p class="mb-0">Third, that combination is fairly specific; many teams need two people to cover it. That's why I think 45 million gross is a fair number. That said, I'm open to discussing the full package.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">✅ Tại sao chúng tôi nên trả bạn mức đó? / What makes you worth it? <span class="qa__lv qa__lv--experience">Kinh nghiệm</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p>Trả lời theo khung <strong>giá trị → bằng chứng → lợi ích cho dự án</strong>, dùng 3 trụ ở trên. Kết thúc bằng điều bạn sẽ mang lại, không phải điều bạn đã có.</p>
+            <p><em>"Because you'd get someone who can contribute on both sides of the role from early on. On integration, I've already integrated a full AUTOSAR Classic BSW stack and debugged it with TRACE32, so the ramp-up is mostly about your project, not the technology. On CI, I've shown I can measure a slow process and turn it into an automated one; the SENT cycle went from one to two months to two to three days. And I've been rated a top performer every year at Bosch. In practice, that means less onboarding time and measurable improvements to the pipeline."</em></p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>Because you'd get someone who can contribute on both sides of the role from early on.</p>
+                <p>On integration, I've already integrated a full AUTOSAR Classic BSW stack and debugged it with TRACE32, so the ramp-up is mostly about your project, not the technology.</p>
+                <p>On CI, I've shown I can measure a slow process and turn it into an automated one: the SENT cycle went from one to two months to two to three days. And I was rated a top performer every year at Bosch.</p>
+                <p class="mb-0">In practice, that means less onboarding time and measurable improvements to the pipeline.</p>
+              </div>
+            </div>
+            <div class="qa__followups"><div class="qa__followups-label">Đào tiếp</div><ul><li>"Measurable improvements" cụ thể là gì? (xem câu 6–12 tháng đầu bên dưới)</li></ul></div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Có ứng viên khác cùng số năm kinh nghiệm đòi thấp hơn. Sao chúng tôi nên chọn bạn? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Không chê ứng viên khác, không hạ giá ngay. Chuyển từ <em>số năm</em> sang <em>độ khớp và kết quả</em>: <em>"I can't speak for other candidates. What I can say is that my experience covers both halves of this role, integration and CI, and I have concrete results in both, not just exposure. If the difference in cost is small compared to faster onboarding and a more stable pipeline, I think it's a good investment. And I'm flexible on the package as a whole."</em></p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>I can't speak for other candidates. What I can say is that my experience covers both halves of this role, integration and CI, and I have concrete results in both, not just exposure.</p>
+                <p class="mb-0">If the difference in cost is small compared to faster onboarding and a more stable pipeline, I think it's a good investment. And I'm flexible on the package as a whole.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Mức này khá cao so với khoảng 4 năm kinh nghiệm. <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Không tranh luận về số năm. Nói về <strong>độ phủ trong 4 năm đó</strong>: từ component (MCAL) → integration toàn stack (CUBAS) → system test ARA song song lead team automation SENT → vận hành platform; mỗi bước đều là thăng tiến nội bộ, kèm đánh giá hiệu suất cao mỗi năm. <em>"In four years I've covered component testing, full-stack integration, system validation, and leading automation. I'd rather be evaluated on what I can deliver in this role than on the number of years."</em> Sau đó hỏi: <em>"Which level is this position mapped to, and what do you expect at that level?"</em></p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>In four years I've covered component testing, full-stack integration, system validation and leading automation, and each step was an internal promotion in scope, with top performance ratings every year.</p>
+                <p class="mb-0">So I'd rather be evaluated on what I can deliver in this role than on the number of years. Which level is this position mapped to, and what do you expect at that level?</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Bạn chưa dùng EB tresos, VectorCAST, Jenkins/Zuul… sao vẫn đề xuất mức đó? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Phân biệt <strong>tool</strong> và <strong>năng lực</strong>: <em>"The value of an integration engineer isn't knowing a specific tool's menus. It's understanding the AUTOSAR stack, how integration breaks, and how to build a CI flow that catches problems early. I've done all of that with RTA-CAR, Cantata and Azure Pipelines. The tools in your stack use the same concepts, so learning them takes weeks, while the underlying experience takes years."</em></p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>The value of an integration engineer isn't knowing a specific tool's menus. It's understanding the AUTOSAR stack, how integration breaks, and how to build a CI flow that catches problems early.</p>
+                <p class="mb-0">I've done all of that with RTA-CAR, Cantata and Azure Pipelines. The tools in your stack use the same concepts, so learning them takes weeks, while the underlying experience takes years.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Bạn đã rời embedded khoảng 1,5 năm. Sao vẫn giữ mức đó? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Biến điểm yếu thành điểm cộng cho phần CI: <em>"For the integration side, my AUTOSAR experience is still solid; I've kept it fresh and I passed your technical round. For the CI operations side, the last year and a half actually made me stronger: infrastructure as code, containers, Kubernetes, monitoring and cost control are exactly what running a CI system at scale requires."</em></p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>For the integration side, my AUTOSAR experience is still solid. I've kept it fresh, and I passed your technical round.</p>
+                <p class="mb-0">For the CI operations side, the last year and a half actually made me stronger. Infrastructure as code, containers, Kubernetes, monitoring and cost control are exactly what running a CI system at scale requires.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">➕ Trong 6–12 tháng đầu, bạn mang lại gì xứng với mức lương đó? <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p>Đưa ra cam kết <strong>đo được</strong> nhưng không hứa con số cụ thể khi chưa biết hệ thống:</p>
+            <ul class="mb-0">
+              <li><strong>Tháng 1–3:</strong> làm độc lập các task integration và xử lý lỗi build/test, không cần kèm cặp nhiều.</li>
+              <li><strong>Tháng 3–6:</strong> ít nhất một cải tiến CI có số liệu trước/sau (thời gian build, thời gian chờ feedback, tỉ lệ fail không rõ lý do, hoặc automation một bước thủ công).</li>
+              <li><strong>Tháng 6–12:</strong> trở thành người team tìm đến khi integration gãy; hỗ trợ và hướng dẫn thành viên mới, sẵn sàng nhận phần trách nhiệm lead khi được giao.</li>
+            </ul>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>In the first three months, I'd work independently on integration tasks and build or test failures without needing much guidance.</p>
+                <p>Between three and six months, I'd deliver at least one CI improvement with before-and-after numbers, for example build time, feedback time, the rate of unexplained failures, or automating a manual step.</p>
+                <p class="mb-0">Between six and twelve months, I'd like to be the person the team turns to when integration breaks, help onboard new members, and take on part of the lead responsibilities when asked.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 "Ngân sách của chúng tôi hơi thấp hơn mức đó." / "Con số đó có linh hoạt không?" <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <ul>
+              <li><strong>Không hạ giá ngay tại chỗ</strong>, cũng không từ chối thẳng.</li>
+              <li>Hỏi thông tin: <em>"Could you share which level this position is mapped to, and what the package includes, such as 13th-month salary, bonus and insurance?"</em></li>
+              <li>Hẹn trao đổi ở bước offer: <em>"I'm flexible when I see the full package, and I'd be happy to discuss it with HR at the offer stage."</em></li>
+              <li>Không tiết lộ mức tối thiểu bạn chấp nhận.</li>
+            </ul>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>I understand. Could you share which level this position is mapped to, and what the package includes, such as the 13th-month salary, bonus and insurance?</p>
+                <p class="mb-0">I'm flexible when I see the full package, and I'd be happy to discuss the details with HR at the offer stage.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">➕ "Chúng tôi thấy bạn hợp với level middle hơn senior." <span class="qa__lv qa__lv--application">Áp dụng</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Hỏi tiêu chí trước khi phản hồi: <em>"Could you share what you look for at the senior level? I'd like to understand where you see the gap."</em> Nếu tiêu chí là thứ bạn đã có bằng chứng (dẫn dắt initiative, làm độc lập, phối hợp liên team), nêu bằng chứng một cách bình tĩnh. Nếu vẫn chưa thống nhất, đề xuất phương án: <em>"Would it be possible to review the level and salary after the probation period, based on agreed goals?"</em> Không chấp nhận hay từ chối ngay; để quyết định cho bước offer.</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>Could you share what you look for at the senior level? I'd like to understand where you see the gap.</p>
+                <p>For example, I've led an automation initiative end to end, worked independently across several BSW teams, and been rated a top performer every year.</p>
+                <p class="mb-0">If we still see it differently, would it be possible to review the level and salary after the probation period, based on agreed goals?</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Lương hiện tại của bạn là bao nhiêu? <span class="qa__lv qa__lv--definition">Thông tin</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Ưu tiên quay về mức mong muốn: <em>"My expectation for this role is 45 million gross, based on the scope of the position."</em> Nếu họ vẫn hỏi, nói thật <strong>tổng thu nhập</strong> (lương tháng + lương tháng 13 + bonus) [..]. Không nói khống: một số công ty yêu cầu phiếu lương hoặc kiểm tra mức đóng BHXH.</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>My expectation for this role is 45 million gross, based on the scope of the position and my experience.</p>
+                <p class="mb-0">[If they still ask:] My current total income, including the 13th-month salary and bonus, is about [..] per year.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Bạn có đang phỏng vấn nơi khác hoặc có offer nào không? <span class="qa__lv qa__lv--definition">Thông tin</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Trả lời thật, không cần kể tên công ty: [có / không]. Nếu có: <em>"I'm in a few other processes, but this role is my first choice because of the integration and CI scope."</em> Nếu không: <em>"I'm being selective. This role is the one I'm focusing on."</em> Không bịa offer để ép giá.</p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>[If yes:] I'm in a couple of other processes, but this role is my first choice because of the integration and CI scope.</p>
+                <p class="mb-0">[If no:] I'm being selective, and this role is the one I'm focusing on.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Khi nào bạn có thể bắt đầu? <span class="qa__lv qa__lv--definition">Thông tin</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <p class="mb-0">Tính từ ngày dự kiến nhận offer + notice period. Ví dụ: <em>"If I receive the offer by [..], I can start around [..], after my [45]-day notice period."</em></p>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>If I receive the offer by [date], I can start around [date], after my [45]-day notice period.</p>
+                <p class="mb-0">I'll make sure the handover at my current job is clean, so I can start here fully focused.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="qa"><div class="qa__q">🎯 Bạn có ổn với làm hybrid / lên văn phòng theo lịch không? Có thể đi công tác nước ngoài không? <span class="qa__lv qa__lv--definition">Thông tin</span><span class="qa__toggle">▾</span></div>
+          <div class="qa__a"><div class="qa__a-inner">
+            <ul>
+              <li>JD có dòng <em>"Maintain consistent and reliable attendance"</em>, các tin tuyển dụng ghi vị trí là hybrid tại HCMC. Trả lời: ổn với lịch lên văn phòng của dự án, nhất là khi cần làm với bench/phần cứng.</li>
+              <li>Đi công tác/onsite: trả lời theo hoàn cảnh thật [sẵn sàng / sẵn sàng ngắn hạn / cần trao đổi thêm]. Luxoft có chương trình onsite nước ngoài, team có kỹ sư ở Singapore và châu Âu.</li>
+            </ul>
+            <div class="callout callout--interview">
+              <div class="callout__icon">🇬🇧</div>
+              <div class="callout__body">
+                <div class="callout__title">English answer</div>
+                <p>Yes, I'm fine with the project's office schedule. For integration work especially, being on site with the benches and hardware is often necessary.</p>
+                <p class="mb-0">As for business trips or onsite assignments, [I'm open to them / I'm open to short trips / I'd like to discuss the details]. Meeting the teams in Singapore and Europe in person from time to time would actually be valuable.</p>
+              </div>
+            </div>
+          </div></div>
+        </div>
+
+        <!-- ================= 8 ================= -->
+        <h2>✅ 8. Câu hỏi ngược cho Hiring Manager</h2>
+        <p>Chọn <strong>3–4 câu</strong>. Câu hỏi về <em>công việc</em> trước, về <em>quy trình</em> sau cùng. Không hỏi lương, ngày nghỉ, phúc lợi ở vòng này (để dành cho HR ở bước offer).</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Nhóm</th><th>Câu hỏi</th></tr></thead>
+          <tbody>
+            <tr><td>Dự án</td><td><em>"What phase is the project in now, and what are the main challenges for the next six months?"</em></td></tr>
+            <tr><td>Team</td><td><em>"How is the team organized between Vietnam, Singapore and Europe, and who would I work with most closely?"</em></td></tr>
+            <tr><td>Kỳ vọng</td><td><em>"What would success look like for this position after three to six months?"</em></td></tr>
+            <tr><td>CI hiện tại</td><td><em>"What's the biggest pain point in the current integration and CI flow: build time, bench availability, or test stability?"</em></td></tr>
+            <tr><td>Phạm vi lead</td><td><em>"How much of the CI lead scope in the JD is expected from this position at the start?"</em></td></tr>
+            <tr><td>Phát triển</td><td><em>"How do people usually grow in this team, for example toward an integration or CI lead role?"</em></td></tr>
+            <tr><td>Bước tiếp theo</td><td><em>"What are the next steps in the process? Will there be an interview with the client?"</em></td></tr>
+          </tbody>
+        </table></div>
+
+        <!-- ================= 9 ================= -->
+        <h2>✅ 9. Checklist trước buổi phỏng vấn</h2>
+        <ul class="steps">
+          <li><h4>Hỏi HR 3 điều</h4><p class="mb-0">Tên và chức danh người phỏng vấn (tra LinkedIn trước); phỏng vấn tiếng Anh hay tiếng Việt; sau vòng này còn vòng khách hàng không.</p></li>
+          <li><h4>Kiểm tra hợp đồng Bosch</h4><p class="mb-0">Loại hợp đồng và số ngày báo trước. Tính sẵn ngày có thể bắt đầu.</p></li>
+          <li><h4>Tính tổng thu nhập hiện tại</h4><p class="mb-0">Lương tháng × 12 + lương tháng 13 + bonus. Chỉ dùng nếu bị hỏi thẳng.</p></li>
+          <li><h4>Điền số liệu dự án</h4><p class="mb-0">Bảng ở <a href="LX10-project-deep-dive.html">LX10 mục 7</a>, và các ô [..] trong bài này.</p></li>
+          <li><h4>Luyện nói thành tiếng</h4><p class="mb-0">Pitch, "vì sao rời Bosch", "vì sao quay lại embedded", 4 câu chuyện STAR. Mỗi câu ít nhất một lần bằng tiếng Anh, bấm giờ 60–90 giây.</p></li>
+          <li><h4>Kỹ thuật</h4><p class="mb-0">Kiểm tra camera, mic, mạng, phông nền; mở sẵn CV và danh sách câu hỏi ngược.</p></li>
+        </ul>
+
+        <!-- ================= 10 ================= -->
+        <h2>10. Trước (~2020) → Nay</h2>
+        <div class="evo">
+          <div class="evo__head">💰 <span>Thuế TNCN và cách quy đổi 45M gross ra net</span></div>
+          <div class="evo__grid">
+            <div class="evo__cell evo__cell--then"><div class="evo__label">⏪ Trước (2020–2025)</div><p>Giảm trừ bản thân <strong>11 triệu/tháng</strong> (người phụ thuộc 4,4 triệu), biểu thuế lũy tiến <strong>7 bậc</strong> (5%–35%). Với 45M gross, đóng bảo hiểm 10,5% (≈ 4,73M): thuế ≈ 4,2M, <strong>net ≈ 36,1M</strong>.</p></div>
+            <div class="evo__cell evo__cell--now"><div class="evo__label">⏩ Nay (2026)</div><p>Giảm trừ bản thân <strong>15,5 triệu/tháng</strong> (người phụ thuộc 6,2 triệu), biểu thuế <strong>5 bậc</strong>: 5% tới 10M, 10% tới 30M, 20% tới 60M, 30% tới 100M, 35% trên 100M. Với 45M gross: thu nhập tính thuế ≈ 24,78M, thuế ≈ 1,98M, <strong>net ≈ 38,3M</strong> (không người phụ thuộc, bảo hiểm đóng trên toàn bộ lương).</p></div>
+          </div>
+          <div class="evo__why"><b>Vì sao quan trọng:</b> nếu ở bước offer công ty đưa con số net hoặc so sánh với lương hiện tại, bạn cần quy đổi nhanh và chính xác. Nhiều bảng tính lương trên mạng vẫn dùng mức 11 triệu cũ.</div>
+        </div>
+
+        <!-- ================= 11 ================= -->
+        <h2>11. Cheat-sheet 1 trang</h2>
+        <div class="cheatsheet">
+          <div class="cheatsheet__group"><h4>Định vị</h4><ul>
+            <li>Embedded, ~4 năm Bosch</li>
+            <li>Integration + automation</li>
+            <li>CUBAS BSW integrator (RH850)</li>
+            <li>SENT: 1–2 tháng → 2–3 ngày</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Động lực</h4><ul>
+            <li>Quay lại sản phẩm ô tô thật (TCU)</li>
+            <li>Ghép integration + CI</li>
+            <li>Team đa quốc gia, toolchain hiện đại</li>
+            <li>AI = công cụ, không phải hướng đi khác</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>4 câu chuyện STAR</h4><ul>
+            <li>A. CUBAS liên team</li>
+            <li>B. Lead team automation SENT (song song ARA)</li>
+            <li>C. Debug timing SENT</li>
+            <li>D. Đào tạo, tool nội bộ</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Điều kiện</h4><ul>
+            <li>Lương: 45M gross (như với HR)</li>
+            <li>Notice: [..] ngày theo hợp đồng</li>
+            <li>Bắt đầu: [..]</li>
+            <li>Hybrid ổn; onsite: [..]</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Vì sao 45M</h4><ul>
+            <li>Vị trí = integration + CI (+ một phần lead)</li>
+            <li>Khớp cả hai: CUBAS + SENT automation</li>
+            <li>Bằng chứng: 1–2 tháng → 2–3 ngày</li>
+            <li>Top performer mỗi năm ở Bosch</li>
+            <li>Lợi ích: bắt nhịp nhanh, pipeline cải thiện đo được</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Không nên</h4><ul>
+            <li>Chê Bosch</li>
+            <li>Lấy lương làm lý do chính</li>
+            <li>Đưa khoảng lương / đổi con số</li>
+            <li>Kể dài về LLM</li>
+            <li>Hứa notice ngắn hơn hợp đồng</li>
+          </ul></div>
+          <div class="cheatsheet__group"><h4>Hỏi ngược</h4><ul>
+            <li>Dự án đang ở giai đoạn nào?</li>
+            <li>Thành công sau 3–6 tháng là gì?</li>
+            <li>Điểm nghẽn CI hiện tại?</li>
+            <li>Bước tiếp theo, có vòng client?</li>
+          </ul></div>
+        </div>
+
+        <!-- ================= 12 ================= -->
+        <h2>12. Nguồn tham khảo</h2>
+        <ul class="small text-soft">
+          <li>DXC Luxoft — <a href="https://career.luxoft.com/hiring-process" target="_blank" rel="noopener">How we hire</a> (các bước: technical → project lead → client optional → offer).</li>
+          <li>ITviec — <a href="https://itviec.com/companies/dxc-luxoft-vietnam" target="_blank" rel="noopener">DXC Luxoft Vietnam</a> (quy mô, OT có trả lương, phúc lợi) và <a href="https://itviec.com/companies/dxc-luxoft-vietnam/review" target="_blank" rel="noopener">reviews</a>.</li>
+          <li>Luxoft Careers — <a href="https://career.luxoft.com/locations/vietnam" target="_blank" rel="noopener">Vietnam</a>; tin <a href="https://career.luxoft.com/jobs/senior-embedded-software-engineer-24956" target="_blank" rel="noopener">Senior Embedded Software Engineer (HCMC)</a> (team ở Singapore và châu Âu).</li>
+          <li>Bộ luật Lao động 2019, Điều 35 — thời hạn báo trước khi người lao động đơn phương chấm dứt hợp đồng.</li>
+          <li>Thuế TNCN 2026 — <a href="https://luatvietnam.vn/thue-phi-le-phi/cach-tinh-thue-tncn-2026-565-106276-article.html" target="_blank" rel="noopener">LuatVietnam</a>; <a href="https://vneconomy.vn/tu-2026-nang-muc-giam-tru-gia-canh-thue-thu-nhap-ca-nhan-len-155-trieu-dongthang.htm" target="_blank" rel="noopener">VnEconomy</a>.</li>
+          <li>ITviec — <a href="https://itviec.com/report/vietnam-it-salary-and-recruitment-market" target="_blank" rel="noopener">Vietnam IT Salary Report 2025–2026</a> (trung vị Embedded Engineer: 28,4M cho 3–4 năm, 39,4M cho 5–8 năm).</li>
+          <li>Kinh nghiệm cá nhân: <code>cv/CV_Cao_Viet_Hoang.md</code>.</li>
+        </ul>
+
+        <div class="learn-bar" id="learnBar">
+          <div class="learn-bar__text">Trạng thái bài học: <strong id="learnState">Chưa hoàn thành</strong>. Đánh dấu khi đã điền hết các ô [..] và trả lời trôi các câu ✅ bằng cả tiếng Việt lẫn tiếng Anh.</div>
+          <button class="btn btn--primary" id="learnToggle">Đánh dấu đã học xong</button>
+        </div>
+
+        <div class="page-nav" id="pageNav"></div>
+      </main>
+
+      <footer style="padding:20px 28px;border-top:1px solid var(--border);color:var(--text-mute);font-size:13px">Chủ đề LX11 · Luxoft Hiring Manager round — Interview Prep</footer>
+    </div>
+    <nav class="onthispage" id="onThisPage"></nav>
+  </div>
+  <script src="../../assets/js/app.js?v=8"></script>
+</body>
+</html>

@@ -40,7 +40,8 @@
     { id: "LX7", file: "luxoft/LX7-aspice-8d-cm.html",  title: "ASPICE · 8D · Config Management",  prio: "core", group: "Luxoft — TCU · CI & Integration", desc: "ASPICE 4.0 SWE/SUP/MAN, integration strategy, CM & baseline, 8D problem solving." },
     { id: "LX8", file: "luxoft/LX8-vector-tools-debug.html", title: "CANoe/CAPL/CANape · Debugger", prio: "core", group: "Luxoft — TCU · CI & Integration", desc: "CANalyzer/CANoe/CANape, CAPL, CAN FD/LIN/Ethernet, XCP/A2L, Lauterbach & iSystem." },
     { id: "LX9", file: "luxoft/LX9-linux-git-flashing.html", title: "Linux · Git · UDS Flashing & OTA", prio: "core", group: "Luxoft — TCU · CI & Integration", desc: "Linux/QNX troubleshooting, systemd/journalctl, Git cho integration lead (bisect, cherry-pick), bootloader & trình tự flash UDS, OTA." },
-    { id: "LX10", file: "luxoft/LX10-project-deep-dive.html", title: "Project deep-dive (dự án của bạn)", prio: "must", group: "Luxoft — TCU · CI & Integration", desc: "Câu hỏi đào sâu theo từng dự án trong CV: CUBAS, MCAL, SENT debug, SENT automation, AI platform; bảng số liệu cần điền." }
+    { id: "LX10", file: "luxoft/LX10-project-deep-dive.html", title: "Project deep-dive (dự án của bạn)", prio: "must", group: "Luxoft — TCU · CI & Integration", desc: "Câu hỏi đào sâu theo từng dự án trong CV: CUBAS, MCAL, SENT debug, SENT automation, AI platform; bảng số liệu cần điền." },
+    { id: "LX11", file: "luxoft/LX11-hiring-manager-round.html", title: "Vòng Hiring Manager", prio: "must", group: "Luxoft — TCU · CI & Integration", desc: "~54 câu HM (có câu trả lời tiếng Anh): động lực, vì sao rời Bosch/quay lại embedded, STAR, tình huống, notice, lương 45M + selling vì sao xứng đáng, kinh nghiệm trải dài + lý do chuyển vai trò, 2 dự án song song, đa dạng kỹ năng, câu hỏi ngược, checklist." }
   ];
 
   const PRIO_LABEL = {
